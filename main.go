@@ -1,6 +1,7 @@
+// Package main is the main polaris mode entry point.
 package main
 
-// Main launches the golang polaris implementation.
+// Main starts all necessary Polaris services, and parses command line arguments.
 func main() {
 
 }
