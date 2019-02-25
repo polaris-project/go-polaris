@@ -14,3 +14,8 @@ type Hash [HashLength]byte
 
 // Address represents a 20 byte, hex-encoded ECDSA public key.
 type Address [AddressLength]byte
+
+// Bytes converts a given hash to a byte array.
+func (hash Hash) Bytes() []byte {
+	return hash[:] // Return byte array value
+}
