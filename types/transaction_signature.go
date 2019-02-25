@@ -12,9 +12,11 @@ import (
 )
 
 var (
-	// ErrAlreadySigned defines an error describing a situation in which a message has already been signed,
-	// but is
+	// ErrAlreadySigned defines an error describing a situation in which a message has already been signed.
 	ErrAlreadySigned = errors.New("already signed")
+
+	// ErrNilHash defines an error describing a situation in which a message has no hash.
+	ErrNilHash = errors.New("hash not set")
 )
 
 // Signature is a data type representing a verifiable ECDSA signature--that of which
@@ -27,9 +29,15 @@ type Signature struct {
 
 /* BEGIN EXPORTED METHODS */
 
-// SignTransaction signs a given transaction via ecdsa.
+// SignTransaction signs a given transaction via ecdsa, and sets the transaction signature to the new signature.
 // Returns a new signature composed of v, r, s values.
+// If the transaction has already been signed, returns an ErrAlreadySigned error, as well as a nil signature pointer.
+// If the transaction has no hash, returns an ErrNilHash error, as well as a nil signature pointer.
 func SignTransaction(transaction *Transaction, privateKey *ecdsa.PrivateKey) (*Signature, error) {
+	if transaction.Hash.IsNil() { // Check no existing hash
+		return &Signature{}, ErrNilHash // Return no hash error
+	}
+
 	if transaction.Signature == nil { // Check no existing signature
 		r, s, err := ecdsa.Sign(rand.Reader, privateKey, transaction.Hash.Bytes()) // Sign via ECDSA
 
