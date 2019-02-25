@@ -20,7 +20,7 @@ before_install:
   - go get -t -v ./...
 
 before_script:
-  - GO_FILES=$(find . -iname '*.go' -type f | grep -v -r ./vendor/) # All the .go files, excluding vendor/, .vendor-new/
+  - GO_FILES=$(find . -iname '*.go' -type f) # All the .go files, excluding vendor/, .vendor-new/
   # For .vendor-new inclusion, GO_FILES=$(find . -iname '*.go' -type f | grep -v -r ./vendor/ ./.vendor-new/)
   - go get github.com/mattn/goveralls
   - go get golang.org/x/tools/cmd/cover
