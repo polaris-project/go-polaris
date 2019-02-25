@@ -23,5 +23,5 @@ type Transaction struct {
 
 	Signature *Signature `json:"signature" gencodec:"required"` // ECDSA transaction signature
 
-	Hash common.Hash `json:"hash" gencodec:"required"` // Transaction hash
+	Hash common.Hash `json:"hash" gencodec:"required"` // Transaction hash (does not include transaction signature)
 }
