@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/polaris-project/go-polaris/common"
+	"github.com/polaris-project/go-polaris/crypto"
 )
 
 // Transaction is a data type representing a transfer of monetary value between addresses.
@@ -24,4 +25,21 @@ type Transaction struct {
 	Signature *Signature `json:"signature" gencodec:"required"` // ECDSA transaction signature
 
 	Hash common.Hash `json:"hash" gencodec:"required"` // Transaction hash (does not include transaction signature)
+}
+
+// NewTransaction - Create a new transaction
+func NewTransaction(accountNonce uint64, sender, recipient *common.Address, gasPrice *big.Int, payload []byte, signature *Signature) *Transaction {
+	// Sorry if I'm dumb and do something stupid
+
+	transaction := &Transaction{
+		AccountNonce: accountNonce,
+		Sender:       sender,
+		Recipient:    recipient,
+		GasPrice:     gasPrice,
+		Payload:      payload,
+		Signature:    nil,
+	}
+
+	transaction.Hash = crypto.Sha3(transaction.Bytes())
+	return transaction
 }
