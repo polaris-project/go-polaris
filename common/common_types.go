@@ -32,6 +32,19 @@ func NewHash(b []byte) Hash {
 	return hash // Return hash value
 }
 
+// IsNil checks if a given hash is nil.
+func (hash Hash) IsNil() bool {
+	nilBytes := 0 // Init nil bytes buffer
+
+	for _, byteVal := range hash[:] { // Iterate through hash
+		if byteVal == 0 { // Check nil byte
+			nilBytes++ // Increment nil bytes
+		}
+	}
+
+	return nilBytes == HashLength
+}
+
 // Bytes converts a given hash to a byte array.
 func (hash Hash) Bytes() []byte {
 	return hash[:] // Return byte array value
