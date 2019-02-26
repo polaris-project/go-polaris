@@ -30,7 +30,30 @@ go mod vendor
 
 ### Code Standards
 
-#### TODO:
+All code is documented in the [godoc-recognizable](https://blog.golang.org/godoc-documenting-go-code) format, that of which specifies each exported function should be preceded by a comment in the following format:
+
+```Go
+// Fprint formats using the default formats for its operands and writes to w.
+// Spaces are added between operands when neither is a string.
+// It returns the number of bytes written and any write error encountered.
+func Fprint(w io.Writer, a ...interface{}) (n int, err error) {
+```
+
+Additionally, all package names--regardless of the file they're found in (but must be a .go file)--must be documented in the following format:
+
+```Go
+// Package sort provides primitives for sorting slices and user-defined
+// collections.
+package sort
+```
+
+Finally, as would be found in the godoc "documenting Go code spec", all known bugs should be documented in the following format:
+
+```Go
+// BUG(r): The rule Title uses for word boundaries does not handle Unicode punctuation properly.
+```
+
+In the aforementioned example, "r" would be replaced with the name or username of an individual responsible for or knowing of the bug.
 
 ### User Accounts
 
