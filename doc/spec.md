@@ -2,6 +2,32 @@
 
 ## Specs
 
+### Third-Party Dependencies
+
+#### Database
+
+For all applicable instances, [boltdb](https://github.com/boltdb/bolt) will be used as the working database engine and client.
+
+#### Sha3
+
+For hashing via Sha3, Go's [/x/Sha3]("golang.org/x/crypto/sha3") package will be used.
+
+#### Dependency Management
+
+To manage external dependencies, Go's module system will be used. To enable modules in Go...
+
+```zsh
+# enable go modules: https://github.com/golang/go/wiki/Modules
+export GO111MODULE=on
+```
+
+To download all necessary dependencies into the vendor/ folder...
+
+```zsh
+# download dependencies to vendor folder
+go mod vendor
+```
+
 ### User Accounts
 
 Each user account is composed of an ecdsa private key. However, one should note that an "account" is not the same as an "address." An address is simply the 0x-prefix encoded byte value of a serialized ecdsa public key. Generally, an account's public key is derived from the account's private key (generated via `crypto/ecdsa`, `elliptic.p521()`, `crypto/rand`).
