@@ -57,9 +57,9 @@ In the aforementioned example, "r" would be replaced with the name or username o
 
 ### User Accounts
 
-Each user account is composed of an ecdsa private key. However, one should note that an "account" is not the same as an "address." An address is simply the 0x-prefix encoded byte value of a serialized ecdsa public key. Generally, an account's public key is derived from the account's private key (generated via `crypto/ecdsa`, `elliptic.p521()`, `crypto/rand`).
+Each user account is composed of an ecdsa private key. However, one should note that an "account" is not the same as an "address." An address is simply the 0x-prefix encoded sha3 hash of the byte value of a serialized ecdsa public key. Generally, an account's public key is derived from the account's private key (generated via `crypto/ecdsa`, `elliptic.p521()`, `crypto/rand`).
 
-An ecdsa key pair is represented by the `Account` struct, that of which stores private in the form of a pointer to an `ecdsa.PrivateKey`.
+An ecdsa key pair is represented by the `Account` struct, that of which stores a private key in the form of a pointer to an `ecdsa.PrivateKey`. Additionally, an account should also store a field called `SerializedPrivateKey`, that of which should be empty at all times except when the account is written to persistent memory.
 
 #### Generation
 
@@ -67,9 +67,11 @@ As was mentioned earlier, each account's private key is derived from the Golang 
 
 #### Serialization
 
-Accounts will be serialized via JSON and stored in a keystore path defined in the applicable common package (that of which is a child of the root Polaris data path specified in common).
+Accounts will be serialized via JSON and stored in a keystore path defined in the applicable common package (a child of the root Polaris data path specified in common).
 
-Whilst writing an account to persistent memory via JSON, the account's private key will be temporarily set to nil, and reset after writing to memory. During the time that the ecdsa.privateKey pointer is set to nil, a field of `Account` will be set--`SerializedPrivateKey`. This `SerializedPrivateKey` field will take the value of an x509 encoded byte array value of the given private key. After having stored this serialized private key in the given account struct, the account will be written to persistent memory, and the value of `PrivateKey` subsequently reset to before writing to memory--`SerializedPrivateKey` should be set to nil after having reset `PrivateKey` to its previous state.
+Whilst writing an account to persistent memory via JSON, the account's private key will be temporarily set to nil, and reset to its previous state after writing to memory. During the time that the ecdsa.privateKey pointer is set to nil, a field of `Account` will be set--`SerializedPrivateKey`. This `SerializedPrivateKey` field will take the value of an x509 encoded byte array value of the given private key. After having stored this serialized private key in the given account struct, the account will be written to persistent memory, and the value of `PrivateKey` subsequently reset to before writing to memory--`SerializedPrivateKey` should be set to nil after having reset `PrivateKey` to its previous state.
+
+Whilst reading an account from persistent memory via JSON, the account's serialized private key will be recovered from the given "account\_{address}.json" file (i.e. 0x000 => "account_0x000.json"), that of which should be deserialized into a pointer to an ecdsa private key. After having recovered the private key pointer from the serialized private key, the serialized private key should be set to nil, and the `PrivateKey` field be set to the deserialized private key (actual ecdsa.PrivateKey instance pointer).
 
 #### Addresses
 
@@ -77,4 +79,4 @@ Account addresses will--as has been stated earlier--be derived from the account 
 
 #### Code Structure
 
-Additionally, all of the `Account` functionality will be written in its own package, rather than in `common` or `types` (preferably in a package called `accounts`).
+Additionally, all of the `Account` functionality will be written in its own package, rather than in `common` or `types` (preferably in a package called `accounts`). Therefore, as the accounts logic will be written in its own package, all of the account related logic should be written in a folder called "accounts".
