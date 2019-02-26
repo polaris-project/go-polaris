@@ -13,3 +13,6 @@
 
 # Deps
 vendor/
+
+# VS Code
+.vscode/
