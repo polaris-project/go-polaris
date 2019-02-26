@@ -14,6 +14,8 @@ import (
 type Transaction struct {
 	AccountNonce uint64 `json:"nonce" gencodec:"required"` // Index in account transaction list
 
+	Amount *big.Int `json:"amount" gencodec:"required"` // Transaction value
+
 	Sender    *common.Address `json:"sender" gencodec:"required"`    // Transaction sender
 	Recipient *common.Address `json:"recipient" gencodec:"required"` // Transaction recipient
 
@@ -27,19 +29,20 @@ type Transaction struct {
 	Hash common.Hash `json:"hash" gencodec:"required"` // Transaction hash (does not include transaction signature)
 }
 
-// NewTransaction - Create a new transaction
-func NewTransaction(accountNonce uint64, sender, recipient *common.Address, gasPrice *big.Int, payload []byte, signature *Signature) *Transaction {
-	// Sorry if I'm dumb and do something stupid
-
+// NewTransaction creates a new transaction with the given account nonce, value, sender, recipient, gas price, gas limit, and payload.
+func NewTransaction(accountNonce uint64, sender, recipient *common.Address, amount *big.Int, gasLimit uint64, gasPrice *big.Int, payload []byte, signature *Signature) *Transaction {
 	transaction := &Transaction{
-		AccountNonce: accountNonce,
-		Sender:       sender,
-		Recipient:    recipient,
-		GasPrice:     gasPrice,
-		Payload:      payload,
-		Signature:    nil,
+		AccountNonce: accountNonce, // Set account nonce
+		Amount: amount, // Set amount
+		Sender:       sender, // Set sender
+		Recipient:    recipient, // Set recipient
+		GasLimit: gasLimit, // Set gas limit
+		GasPrice:     gasPrice, // Set gas price
+		Payload:      payload, // Set payload
+		Signature:    nil, // Set signature
 	}
 
-	transaction.Hash = crypto.Sha3(transaction.Bytes())
-	return transaction
+	(*transaction).Hash = crypto.Sha3(transaction.Bytes()) // Set transaction hash
+
+	return transaction // Return initialized transaction
 }
