@@ -13,4 +13,11 @@ func (transaction *Transaction) Bytes() []byte {
 	return marshaledVal // Return marshaled value
 }
 
+// String serializes a given transaction to a string via json.
+func (transaction *Transaction) String() string {
+	marshaledVal, _ := json.MarshalIndent(*transaction, "", "  ") // Marshal JSON
+
+	return string(marshaledVal) // Returned the marshalled JSON as a string
+}
+
 /* END EXPORTED METHODS */
