@@ -6,7 +6,7 @@
 
 #### Database
 
-For all applicable instances, [boltdb](https://github.com/boltdb/bolt) will be used as the working database engine and client.
+For all applicable instances, [boltdb](https://github.com/boltdb/bolt) will deemed the working database engine and client.
 
 #### Sha3
 
@@ -14,7 +14,7 @@ For hashing via Sha3, Go's [/x/Sha3]("golang.org/x/crypto/sha3") package will be
 
 #### Dependency Management
 
-To manage external dependencies, Go's module system will be used. To enable modules in Go...
+To manage external dependencies, use Go's module system. To enable modules in Go...
 
 ```zsh
 # enable go modules: https://github.com/golang/go/wiki/Modules
