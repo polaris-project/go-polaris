@@ -14,7 +14,7 @@ For hashing via Sha3, Go's [/x/Sha3]("golang.org/x/crypto/sha3") package will be
 
 #### Dependency Management
 
-To manage external dependencies, use Go's module system. To enable modules in Go...
+To manage external dependencies, use Go's [module system](https://github.com/golang/go/wiki/Modules). To enable modules in Go...
 
 ```zsh
 # enable go modules: https://github.com/golang/go/wiki/Modules
