@@ -28,6 +28,10 @@ To download all necessary dependencies into the vendor/ folder...
 go mod vendor
 ```
 
+### Code Standards
+
+#### TODO:
+
 ### User Accounts
 
 Each user account is composed of an ecdsa private key. However, one should note that an "account" is not the same as an "address." An address is simply the 0x-prefix encoded byte value of a serialized ecdsa public key. Generally, an account's public key is derived from the account's private key (generated via `crypto/ecdsa`, `elliptic.p521()`, `crypto/rand`).
