@@ -80,3 +80,9 @@ Account addresses will--as has been stated earlier--be derived from the account 
 #### Code Structure
 
 Additionally, all of the `Account` functionality will be written in its own package, rather than in `common` or `types` (preferably in a package called `accounts`). Therefore, as the accounts logic will be written in its own package, all of the account related logic should be written in a folder called "accounts".
+
+### Dag
+
+Unlike many other cryptographically secured digital currencies, Polaris is based around a directed-acyclic-graph data structure. This "dag" structure is composed of a list of transactions where each transaction contains the hash of its parent (previous transaction).
+
+No transaction--with the exception of the genesis--can have a parent transaction value of nil.
