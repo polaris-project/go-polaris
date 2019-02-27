@@ -5,26 +5,38 @@ package types
 import (
 	"math/big"
 	"testing"
-
-	"github.com/polaris-project/go-polaris/crypto"
 )
 
 /* BEGIN EXPORTED METHODS TESTS */
 
 // TestBytesTransaction tests the functionality of the Bytes() transaction helper method.
 func TestBytesTransaction(t *testing.T) {
-	transaction := &Transaction{
-		AccountNonce: 0,                // Set nonce
-		Sender:       nil,              // Set sender
-		Recipient:    nil,              // Set recipient
-		GasPrice:     big.NewInt(1000), // Set gas price
-		Payload:      []byte("test"),   // Set payload
-		Signature:    nil,              // Set signature
-	}
+	transaction := NewTransaction(
+		0,                      // Nonce
+		nil,                    // Sender
+		nil,                    // Recipient
+		big.NewInt(10),         // Amount
+		1,                      // Gas limit
+		big.NewInt(1000),       // Gas price
+		[]byte("test payload"), // Payload
+	) // Initialize a new transaction using the NewTransaction method
 
-	transaction.Hash = crypto.Sha3(transaction.Bytes()) // Hash transaction
+	t.Log(transaction.Bytes()) // Log transaction bytes & test the Bytes() method
+}
 
-	t.Log(transaction.Bytes()) // Log transaction bytes
+// TestBytesTransaction tests the functionality of the String() transaction helper method.
+func TestStringTransaction(t *testing.T) {
+	transaction := NewTransaction(
+		0,                      // Nonce
+		nil,                    // Sender
+		nil,                    // Recipient
+		big.NewInt(10),         // Amount
+		1,                      // Gas limit
+		big.NewInt(1000),       // Gas price
+		[]byte("test payload"), // Payload
+	) // Initialize a new transaction using the NewTransaction method
+
+	t.Log(transaction.String()) // Log transaction string & test the String() method
 }
 
 /* END EXPORTED METHODS TESTS */

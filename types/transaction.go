@@ -31,8 +31,10 @@ type Transaction struct {
 	Hash common.Hash `json:"hash" gencodec:"required"` // Transaction hash (does not include transaction signature)
 }
 
+/* BEGIN EXPORTED METHODS */
+
 // NewTransaction creates a new transaction with the given account nonce, value, sender, recipient, gas price, gas limit, and payload.
-func NewTransaction(accountNonce uint64, sender, recipient *common.Address, amount *big.Int, gasLimit uint64, gasPrice *big.Int, payload []byte, signature *Signature) *Transaction {
+func NewTransaction(accountNonce uint64, sender, recipient *common.Address, amount *big.Int, gasLimit uint64, gasPrice *big.Int, payload []byte) *Transaction {
 	transaction := &Transaction{
 		AccountNonce: accountNonce, // Set account nonce
 		Amount:       amount,       // Set amount
@@ -48,3 +50,5 @@ func NewTransaction(accountNonce uint64, sender, recipient *common.Address, amou
 
 	return transaction // Return initialized transaction
 }
+
+/* BEGIN EXPORTED METHODS */
