@@ -11,7 +11,6 @@ import (
 
 // TestBytesTransaction tests the functionality of the Bytes() transaction helper method.
 func TestBytesTransaction(t *testing.T) {
-	// Create a new transaction using the NewTransaction method
 	transaction := NewTransaction(
 		0,                      // Nonce
 		nil,                    // Sender
@@ -20,14 +19,13 @@ func TestBytesTransaction(t *testing.T) {
 		1,                      // Gas limit
 		big.NewInt(1000),       // Gas price
 		[]byte("test payload"), // Payload
-	)
+	) // Initialize a new transaction using the NewTransaction method
 
 	t.Log(transaction.Bytes()) // Log transaction bytes & test the Bytes() method
 }
 
-// TestBytesTransaction tests the functionality of the Bytes() transaction helper method.
+// TestBytesTransaction tests the functionality of the String() transaction helper method.
 func TestStringTransaction(t *testing.T) {
-	// Create a new transaction using the NewTransaction method
 	transaction := NewTransaction(
 		0,                      // Nonce
 		nil,                    // Sender
@@ -36,7 +34,7 @@ func TestStringTransaction(t *testing.T) {
 		1,                      // Gas limit
 		big.NewInt(1000),       // Gas price
 		[]byte("test payload"), // Payload
-	)
+	) // Initialize a new transaction using the NewTransaction method
 
 	t.Log(transaction.String()) // Log transaction string & test the String() method
 }
