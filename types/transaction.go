@@ -38,8 +38,8 @@ func NewTransaction(accountNonce uint64, sender, recipient *common.Address, amou
 		Amount:       amount,       // Set amount
 		Sender:       sender,       // Set sender
 		Recipient:    recipient,    // Set recipient
-		GasLimit:     gasLimit,     // Set gas limit
 		GasPrice:     gasPrice,     // Set gas price
+		GasLimit:     gasLimit,     // Set gas limit
 		Payload:      payload,      // Set payload
 		Signature:    nil,          // Set signature
 	}
