@@ -26,6 +26,8 @@ type Transaction struct {
 
 	Signature *Signature `json:"signature" gencodec:"required"` // ECDSA transaction signature
 
+	ParentTransaction common.Hash `json:"parent" gencodec:"required"` // Parent hash
+
 	Hash common.Hash `json:"hash" gencodec:"required"` // Transaction hash (does not include transaction signature)
 }
 
