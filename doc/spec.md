@@ -97,13 +97,13 @@ A single `Transaction` consists of the following parameters:
 
 | Parameter          | Value                                                                                                                      | Type            |
 |--------------------|----------------------------------------------------------------------------------------------------------------------------|-----------------|
-| AccountNonce       | Transaction index in account list of transactions.                                                                         | uint64          |
-| Amount             | Transaction value.                                                                                                         | *big.Int        |
+| AccountNonce       | Transaction index in account list of transactions.                                                                         |      uint64     |
+| Amount             | Transaction value.                                                                                                         |     *big.Int    |
 | Sender             | Transaction sender address.                                                                                                | *common.Address |
 | Recipient          | Transaction recipient address.                                                                                             | *common.Address |
-| ParentTransactions | Parent transaction hashes (usually 1, but in the case of a poorly synchronized network, may be more).                      | []common.Hash   |
-| GasPrice           | Amount of polaris willing to pay per single unit of gas (in increments of 0.000000001 polaris).                            | *big.Int        |
-| GasLimit           | Amount of gas willing to pay at max.                                                                                       | uint64          |
-| Payload            | Data sent with transaction (i.e. contract bytecode, message, etc...)                                                       | []byte          |
-| Signature          | ECDSA sender signature.                                                                                                    | *Signature      |
-| Hash               | Transaction hash including transaction signature (if set). To verify, exclude signature from tx hash as message to verify. | common.Hash     |
+| ParentTransactions | Parent transaction hashes (usually 1, but in the case of a poorly synchronized network, may be more).                      |  []common.Hash  |
+| GasPrice           | Amount of polaris willing to pay per single unit of gas (in increments of 0.000000001 polaris).                            |     *big.Int    |
+| GasLimit           | Amount of gas willing to pay at max.                                                                                       |      uint64     |
+| Payload            | Data sent with transaction (i.e. contract bytecode, message, etc...)                                                       |      []byte     |
+| Signature          | ECDSA sender signature.                                                                                                    |    *Signature   |
+| Hash               | Transaction hash including transaction signature (if set). To verify, exclude signature from tx hash as message to verify. |   common.Hash   |
