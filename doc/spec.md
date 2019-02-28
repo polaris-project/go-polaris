@@ -1,18 +1,16 @@
 # Polaris Go Implementation Specifications
 
-## Specs
+## Third-Party Dependencies
 
-### Third-Party Dependencies
-
-#### Database
+### Database
 
 For all applicable instances, [boltdb](https://github.com/boltdb/bolt) will deemed the working database engine and client.
 
-#### Sha3
+### Sha3
 
 For hashing via Sha3, Go's [/x/Sha3]("golang.org/x/crypto/sha3") package will be used.
 
-#### Dependency Management
+### Dependency Management
 
 To manage external dependencies, use Go's [module system](https://github.com/golang/go/wiki/Modules). To enable modules in Go...
 
@@ -28,7 +26,7 @@ To download all necessary dependencies into the vendor/ folder...
 go mod vendor
 ```
 
-### Code Standards
+## Code Standards
 
 All code is documented in the [godoc-recognizable](https://blog.golang.org/godoc-documenting-go-code) format, that of which specifies each exported function should be preceded by a comment in the following format:
 
@@ -55,17 +53,17 @@ Finally, as would be found in the godoc "documenting Go code spec", all known bu
 
 In the aforementioned example, "r" would be replaced with the name or username of an individual responsible for or knowing of the bug.
 
-### User Accounts
+## User Accounts
 
 Each user account is composed of an ecdsa private key. However, one should note that an "account" is not the same as an "address." An address is simply the 0x-prefix encoded sha3 hash of the byte value of a serialized ecdsa public key. Generally, an account's public key is derived from the account's private key (generated via `crypto/ecdsa`, `elliptic.p521()`, `crypto/rand`).
 
 An ecdsa key pair is represented by the `Account` struct, that of which stores a private key in the form of a pointer to an `ecdsa.PrivateKey`. Additionally, an account should also store a field called `SerializedPrivateKey`, that of which should be empty at all times except when the account is written to persistent memory.
 
-#### Generation
+### Generation
 
 As was mentioned earlier, each account's private key is derived from the Golang standard library ecdsa package `GenerateKey()` method. Generally, this `GenerateKey()` method will be used in conjunction with both a `crypto/rand` Reader (`rand.Reader` [make sure `crypto/rand` is imported, rather than `math/rand`]) and `elliptic.P521()`, though this can be substituted as seen fit.
 
-#### Serialization
+### Serialization
 
 Accounts will be serialized via JSON and stored in a keystore path defined in the applicable common package (a child of the root Polaris data path specified in common).
 
@@ -73,15 +71,15 @@ Whilst writing an account to persistent memory via JSON, the account's private k
 
 Whilst reading an account from persistent memory via JSON, the account's serialized private key will be recovered from the given `"account\_{address}.json"` file (i.e. `0x000` => `"account_0x000.json"`), that of which should be deserialized into a pointer to an ecdsa private key. After having recovered the private key pointer from the serialized private key, the serialized private key should be set to nil, and the `PrivateKey` field be set to the deserialized private key (actual `ecdsa.PrivateKey` instance pointer).
 
-#### Addresses
+### Addresses
 
 Account addresses will--as has been stated earlier--be derived from the account public key. To obtain the account address, one simply hashes the x509 encoded byte value of the account public key via Polaris's crypto package `Sha3` method.
 
-#### Code Structure
+### Code Structure
 
 Additionally, all of the `Account` functionality will be written in its own package, rather than in `common` or `types` (preferably in a package called `accounts`). Therefore, as the accounts logic will be written in its own package, all of the account related logic should be written in a folder called "accounts".
 
-### Dag
+## Dag
 
 Unlike many other cryptographically secured digital currencies, Polaris is based around a directed-acyclic-graph data structure. This "dag" structure is composed of a list of transactions where each transaction contains the hash of its parent (previous transaction).
 
