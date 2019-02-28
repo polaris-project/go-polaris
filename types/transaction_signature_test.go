@@ -29,7 +29,7 @@ func TestSignTransaction(t *testing.T) {
 		GasPrice:     big.NewInt(1000), // Set gas price
 		Payload:      []byte("test"),   // Set payload
 		Signature:    nil,              // Set signature
-	}
+	} // Initialize transaction
 
 	transaction.Hash = crypto.Sha3(transaction.Bytes()) // Set hash
 
@@ -37,6 +37,10 @@ func TestSignTransaction(t *testing.T) {
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
+	}
+
+	if transaction.Signature == nil { // Check was not signed
+		t.Fatal("transaction not signed") // Panic
 	}
 }
 

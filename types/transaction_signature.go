@@ -49,7 +49,7 @@ func SignTransaction(transaction *Transaction, privateKey *ecdsa.PrivateKey) (*S
 			V: transaction.Hash.Bytes(), // Set hash
 			R: r,                        // Set R
 			S: s,                        // Set S
-		}
+		} // Set transaction signature
 
 		(*transaction).Hash = crypto.Sha3(transaction.Bytes()) // Set transaction hash
 
