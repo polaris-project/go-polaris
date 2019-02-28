@@ -96,7 +96,7 @@ As is the case with most other digital currency networks, a transaction is an at
 A single `Transaction` consists of the following parameters:
 
 | Parameter          | Value                                                                                                                      | Type            |
-|--------------------|----------------------------------------------------------------------------------------------------------------------------|:---------------:|
+|--------------------|----------------------------------------------------------------------------------------------------------------------------|-----------------|
 | AccountNonce       | Transaction index in account list of transactions.                                                                         |      uint64     |
 | Amount             | Transaction value.                                                                                                         |     *big.Int    |
 | Sender             | Transaction sender address.                                                                                                | *common.Address |
