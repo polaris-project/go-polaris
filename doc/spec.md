@@ -93,9 +93,11 @@ The only piece of information that the `dag.go` `Dag` struct will serve and stor
 
 As is the case with most other digital currency networks, a transaction is an atomic action on the network, that of which can represent the transfer of data or monetary value. In the case of Polaris, either may be true.
 
-A single `Transaction` consists of the following parameters:
+### Fields
 
-| Parameter          | Value                                                                                                                      | Type            |
+A single `Transaction` consists of the following fields:
+
+| Field              | Value                                                                                                                      | Type            |
 |--------------------|----------------------------------------------------------------------------------------------------------------------------|-----------------|
 | AccountNonce       | Transaction index in account list of transactions.                                                                         |      uint64     |
 | Amount             | Transaction value.                                                                                                         |     *big.Int    |
