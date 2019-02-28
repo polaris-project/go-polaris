@@ -81,10 +81,29 @@ Additionally, all of the `Account` functionality will be written in its own pack
 
 ## Dag
 
-Unlike many other cryptographically secured digital currencies, Polaris is based around a directed-acyclic-graph data structure. This "dag" structure is composed of a list of transactions where each transaction contains the hash of its parent (previous transaction).
+Unlike many other cryptographically secured digital currencies, Polaris is based around a directed-acyclic-graph data structure. This "dag" structure is composed of a list of transactions where each transaction contains the hash of its parents (previous transactions).
 
 No transaction--with the exception of the genesis--can have a parent transaction value of nil.
 
 Each entry into the acyclic graph will be treated as an entry into the dag's respective database. Additionally, all of the dag-related logic should take place in the types package. To ensure that the dag never reaches a size that is not indexable, the dag will not be treated as a strict slice of transaction pointers, but simply a key-value database instance, that of which will operate on [boltdb](https://github.com/boltdb/bolt).
 
 The only piece of information that the `dag.go` `Dag` struct will serve and store will be the hash of the genesis transaction, the dag's `DagConfig` pointer (contains supply allocation information and other metadata), and the dag length (should be stored as a pointer to a big integer). The dag's config stores an "identifier" that will be used to open a new database, as well write to memory (i.e. db stored under folder with name equivalent to identifier). The working dag db instance will be stored as a global variable in `dag.go` (all methods needing access to the dag db should not open a new db, but use the `dag.go` `WorkingDagDB` variable as a pointer to the db instance). In addition, the `dag.go` initializing pseudo-constructor method should accept a `DagConfig` struct instance pointer, that of which will provide the dag version, the genesis transaction information (`Alloc` address => float64 map), and the string dag identifier.
+
+## Transaction
+
+As is the case with most other digital currency networks, a transaction is an atomic action on the network, that of which can represent the transfer of data or monetary value. In the case of Polaris, either may be true.
+
+A single `Transaction` consists of the following parameters:
+
+| Parameter          | Value                                                                                                                      | Type            |
+|--------------------|----------------------------------------------------------------------------------------------------------------------------|-----------------|
+| AccountNonce       | Transaction index in account list of transactions.                                                                         | uint64          |
+| Amount             | Transaction value.                                                                                                         | *big.Int        |
+| Sender             | Transaction sender address.                                                                                                | *common.Address |
+| Recipient          | Transaction recipient address.                                                                                             | *common.Address |
+| ParentTransactions | Parent transaction hashes (usually 1, but in the case of a poorly synchronized network, may be more).                      | []common.Hash   |
+| GasPrice           | Amount of polaris willing to pay per single unit of gas (in increments of 0.000000001 polaris).                            | *big.Int        |
+| GasLimit           | Amount of gas willing to pay at max.                                                                                       | uint64          |
+| Payload            | Data sent with transaction (i.e. contract bytecode, message, etc...)                                                       | []byte          |
+| Signature          | ECDSA sender signature.                                                                                                    | *Signature      |
+| Hash               | Transaction hash including transaction signature (if set). To verify, exclude signature from tx hash as message to verify. | common.Hash     |
