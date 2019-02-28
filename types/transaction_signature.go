@@ -8,6 +8,7 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/polaris-project/go-polaris/common"
 	"github.com/polaris-project/go-polaris/crypto"
 )
 
@@ -33,16 +34,16 @@ type Signature struct {
 // Returns a new signature composed of v, r, s values.
 // If the transaction has already been signed, returns an ErrAlreadySigned error, as well as a nil signature pointer.
 // If the transaction has no hash, returns an ErrNilHash error, as well as a nil signature pointer.
-func SignTransaction(transaction *Transaction, privateKey *ecdsa.PrivateKey) (*Signature, error) {
+func SignTransaction(transaction *Transaction, privateKey *ecdsa.PrivateKey) error {
 	if transaction.Hash.IsNil() { // Check no existing hash
-		return &Signature{}, ErrNilHash // Return no hash error
+		return ErrNilHash // Return no hash error
 	}
 
 	if transaction.Signature == nil { // Check no existing signature
 		r, s, err := ecdsa.Sign(rand.Reader, privateKey, transaction.Hash.Bytes()) // Sign via ECDSA
 
 		if err != nil { // Check for errors
-			return &Signature{}, err // Return found error
+			return err // Return found error
 		}
 
 		(*transaction).Signature = &Signature{
@@ -53,10 +54,31 @@ func SignTransaction(transaction *Transaction, privateKey *ecdsa.PrivateKey) (*S
 
 		(*transaction).Hash = crypto.Sha3(transaction.Bytes()) // Set transaction hash
 
-		return transaction.Signature, nil // Return signature
+		return nil // Return signature
 	}
 
-	return &Signature{}, ErrAlreadySigned // Return already signed error
+	return ErrAlreadySigned // Return already signed error
+}
+
+// SignMessage signs a given message hash via ecdsa, and returns a new signature
+func SignMessage(messageHash common.Hash, privateKey *ecdsa.PrivateKey) (*Signature, error) {
+	if messageHash.IsNil() { // Check nil hash
+		return nil, ErrNilHash // Return no hash error
+	}
+
+	r, s, err := ecdsa.Sign(rand.Reader, privateKey, messageHash.Bytes()) // Sign via ECDSA
+
+	if err != nil { // Check for errors
+		return nil, err // Return found error
+	}
+
+	signature := &Signature{
+		V: messageHash.Bytes(), // Set hash
+		R: r,                   // Set R
+		S: s,                   // Set S
+	} // Set transaction signature
+
+	return signature, nil // Return signature
 }
 
 // Verify checks that a given signature is valid, and returns whether or not the given signature is valid.
