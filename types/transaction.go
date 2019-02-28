@@ -34,7 +34,7 @@ type Transaction struct {
 /* BEGIN EXPORTED METHODS */
 
 // NewTransaction creates a new transaction with the given account nonce, value, sender, recipient, gas price, gas limit, and payload.
-func NewTransaction(accountNonce uint64, sender, recipient *common.Address, amount *big.Int, gasLimit uint64, gasPrice *big.Int, payload []byte) *Transaction {
+func NewTransaction(accountNonce uint64, amount *big.Int, sender, recipient *common.Address, gasLimit uint64, gasPrice *big.Int, payload []byte) *Transaction {
 	transaction := &Transaction{
 		AccountNonce: accountNonce, // Set account nonce
 		Amount:       amount,       // Set amount
