@@ -19,6 +19,8 @@ type Transaction struct {
 	Sender    *common.Address `json:"sender" gencodec:"required"`    // Transaction sender
 	Recipient *common.Address `json:"recipient" gencodec:"required"` // Transaction recipient
 
+	ParentTransactions []common.Hash `json:"parent" gencodec:"required"` // Parent hash
+
 	GasPrice *big.Int `json:"gas_price" gencodec:"required"` // Gas price in units equivalent to 0.000000001 of a single unit
 	GasLimit uint64   `json:"gas_limit" gencodec:"required"` // Value of gas price willing to pay for transaction
 
@@ -26,15 +28,13 @@ type Transaction struct {
 
 	Signature *Signature `json:"signature" gencodec:"required"` // ECDSA transaction signature
 
-	ParentTransaction common.Hash `json:"parent" gencodec:"required"` // Parent hash
-
 	Hash common.Hash `json:"hash" gencodec:"required"` // Transaction hash (does not include transaction signature)
 }
 
 /* BEGIN EXPORTED METHODS */
 
 // NewTransaction creates a new transaction with the given account nonce, value, sender, recipient, gas price, gas limit, and payload.
-func NewTransaction(accountNonce uint64, amount *big.Int, sender, recipient *common.Address, gasLimit uint64, gasPrice *big.Int, payload []byte) *Transaction {
+func NewTransaction(accountNonce uint64, amount *big.Int, sender, recipient *common.Address, parentTransactions []common.Hash, gasLimit uint64, gasPrice *big.Int, payload []byte) *Transaction {
 	transaction := &Transaction{
 		AccountNonce: accountNonce, // Set account nonce
 		Amount:       amount,       // Set amount

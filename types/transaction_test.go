@@ -16,6 +16,7 @@ func TestNewTransactions(t *testing.T) {
 		big.NewInt(10),         // Amount
 		nil,                    // Sender
 		nil,                    // Recipient
+		nil,                    // Parents
 		1,                      // Gas limit
 		big.NewInt(1000),       // Gas price
 		[]byte("test payload"), // Payload
