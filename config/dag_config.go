@@ -14,7 +14,7 @@ type DagConfig struct {
 
 	Identifier string `json:"identifier"` // Dag/network name (e.g. "mainnet_beta", "mainnet_alpha")
 
-	NetworkID uint64 `json:"network"` // Dag version (e.g. 0 => mainnet, 1 => testnet, etc...)
+	Network uint64 `json:"network"` // Dag version (e.g. 0 => mainnet, 1 => testnet, etc...)
 }
 
 /* BEGIN EXPORTED METHODS */
@@ -35,10 +35,16 @@ func NewDagConfig(genesisFilePath string) (*DagConfig, error) {
 		return &DagConfig{}, err // Return found error
 	}
 
+	alloc := make(map[string]float64) // Init alloc map
+
+	for key, value := range readJSON["alloc"].(map[string]interface{}) { // Iterate through genesis addresses
+		alloc[key] = value.(float64) // Set alloc for address
+	}
+
 	return &DagConfig{
-		NetworkID:  readJSON["networkID"].(uint64),         // Set network ID
-		Identifier: readJSON["identifier"].(string),        // Set ID
-		Alloc:      readJSON["alloc"].(map[string]float64), // Set supply allocation
+		Network:    uint64(readJSON["network"].(float64)), // Set network
+		Identifier: readJSON["identifier"].(string),       // Set ID
+		Alloc:      alloc,                                 // Set supply allocation
 	}, nil
 }
 
