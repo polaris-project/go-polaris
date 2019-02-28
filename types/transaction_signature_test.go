@@ -33,7 +33,7 @@ func TestSignTransaction(t *testing.T) {
 
 	transaction.Hash = crypto.Sha3(transaction.Bytes()) // Set hash
 
-	_, err = SignTransaction(transaction, privateKey) // Sign transaction
+	err = SignTransaction(transaction, privateKey) // Sign transaction
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
@@ -63,7 +63,7 @@ func TestVerifySignature(t *testing.T) {
 
 	transaction.Hash = crypto.Sha3(transaction.Bytes()) // Set hash
 
-	_, err = SignTransaction(transaction, privateKey) // Sign transaction
+	err = SignTransaction(transaction, privateKey) // Sign transaction
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
