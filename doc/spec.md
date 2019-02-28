@@ -123,3 +123,7 @@ A single `Signature` consists of the following fields:
 | V     | Signature value (in the case of a transaction, the hash before setting the signature). | []byte    |
 | R     | Signature recovery value.                                                              | \*big.Int |
 | S     | Signature recovery value.                                                              | \*big.Int |
+
+### Verifying Signatures
+
+Transaction signatures can be verified through the transaction_signature.go `Verify()` helper method. The `Verify()` helper method takes a public key as a parameter, that of which should be equivalent as the public key used to sign the message.
