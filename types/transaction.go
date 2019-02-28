@@ -36,14 +36,15 @@ type Transaction struct {
 // NewTransaction creates a new transaction with the given account nonce, value, sender, recipient, gas price, gas limit, and payload.
 func NewTransaction(accountNonce uint64, amount *big.Int, sender, recipient *common.Address, parentTransactions []common.Hash, gasLimit uint64, gasPrice *big.Int, payload []byte) *Transaction {
 	transaction := &Transaction{
-		AccountNonce: accountNonce, // Set account nonce
-		Amount:       amount,       // Set amount
-		Sender:       sender,       // Set sender
-		Recipient:    recipient,    // Set recipient
-		GasPrice:     gasPrice,     // Set gas price
-		GasLimit:     gasLimit,     // Set gas limit
-		Payload:      payload,      // Set payload
-		Signature:    nil,          // Set signature
+		AccountNonce:       accountNonce,       // Set account nonce
+		Amount:             amount,             // Set amount
+		Sender:             sender,             // Set sender
+		Recipient:          recipient,          // Set recipient
+		ParentTransactions: parentTransactions, // Set parents
+		GasPrice:           gasPrice,           // Set gas price
+		GasLimit:           gasLimit,           // Set gas limit
+		Payload:            payload,            // Set payload
+		Signature:          nil,                // Set signature
 	}
 
 	(*transaction).Hash = crypto.Sha3(transaction.Bytes()) // Set transaction hash
