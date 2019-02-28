@@ -59,4 +59,14 @@ func SignTransaction(transaction *Transaction, privateKey *ecdsa.PrivateKey) (*S
 	return &Signature{}, ErrAlreadySigned // Return already signed error
 }
 
+// Verify checks that a given signature is valid, and returns whether or not the given signature is valid.
+// If no signature exists at the given memory address, false is returned.
+func (signature *Signature) Verify(publicKey *ecdsa.PublicKey) bool {
+	if signature == nil { // Check no existent signature
+		return false // No signature to verify
+	}
+
+	return ecdsa.Verify(publicKey, signature.V, signature.R, signature.S) // Verify signature contents
+}
+
 /* END EXPORTED METHODS */
