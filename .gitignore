@@ -16,3 +16,6 @@ vendor/
 
 # VS Code
 .vscode/
+
+# Test data
+common/data/
