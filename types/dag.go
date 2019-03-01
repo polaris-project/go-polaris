@@ -25,7 +25,6 @@ var (
 
 // NewDag creates a new dag with the given config, and writes the dag db to memory.
 // The newly opened dag db is stored in the WorkingDagDB variable.
-// If a dag with the given identifier already exists, an ErrDagAlreadyExists error is returned.
 func NewDag(config *config.DagConfig) error {
 	err := config.WriteToMemory() // Write dag config to persistent memory
 
