@@ -15,6 +15,10 @@ import (
 )
 
 var (
+	transactionBucket = []byte("transaction-bucket")
+)
+
+var (
 	// WorkingDagDB represents the current opened dag database.
 	WorkingDagDB *bolt.DB
 
@@ -28,6 +32,10 @@ var (
 
 	// ErrNilTransaction represents an error describing a transaction pointer of nil value.
 	ErrNilTransaction = errors.New("transaction pointer is nil")
+
+	// ErrNilTransactionAtHash represents an error describing a transaction pointer of nil value discovered through the
+	// querying of the working db for an invalid hash.
+	ErrNilTransactionAtHash = errors.New("no transaction exists in the dag with given hash")
 )
 
 // Dag is a simple struct used to abstract db reading and writing methods.
@@ -84,14 +92,36 @@ func (dag *Dag) AddTransaction(transaction *Transaction) error {
 		return ErrNilTransaction // Return error
 	}
 
-	if WorkingDagDB.
+	return nil // No error occurred, return nil
 }
 
 /*
 	BEGIN DB READING HELPER METHODS
 */
 
+// GetTransactionByHash attempts to query the working dag db by the given transaction hash.
+// If no transaction exists at this hash, an
+func (dag *Dag) GetTransactionByHash(transactionHash common.Hash) (*Transaction, error) {
+	var txBytes []byte // Init buffer
 
+	err := WorkingDagDB.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket(transactionBucket) // Get tx bucket
+
+		txBytes = bucket.Get(transactionHash.Bytes()) // Get tx at hash
+
+		if txBytes == nil { // Check no transaction at hash
+			return ErrNilTransactionAtHash // Return error
+		}
+
+		return nil // No error occurred, return nil
+	})
+
+	if err != nil { // Check for errors
+		return &Transaction{}, err // Return found error
+	}
+
+	return TransactionFromBytes(txBytes), nil // Return deserialized tx
+}
 
 /*
 	END DB READING HELPER METHODS
