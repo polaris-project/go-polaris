@@ -36,7 +36,7 @@ func (dagConfig *DagConfig) WriteToMemory() error {
 		return err // Return found error
 	}
 
-	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/config_%s.json", common.DataDir, dagConfig.Identifier)), dagConfig.Bytes(), 0644) // Write dag config to persistent memory
+	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/config_%s.json", common.ConfigDir, dagConfig.Identifier)), dagConfig.Bytes(), 0644) // Write dag config to persistent memory
 
 	if err != nil { // Check for errors
 		return err // Return error
@@ -47,7 +47,7 @@ func (dagConfig *DagConfig) WriteToMemory() error {
 
 // ReadDagConfigFromMemory reads a dag config with the given identifier from persistent memory.
 func ReadDagConfigFromMemory(identifier string) (*DagConfig, error) {
-	data, err := ioutil.ReadFile(filepath.FromSlash(fmt.Sprintf("%s/%s", common.ConfigDir, identifier))) // Read file
+	data, err := ioutil.ReadFile(filepath.FromSlash(fmt.Sprintf("%s/config_%s.json", common.ConfigDir, identifier))) // Read file
 
 	if err != nil { // Check for errors
 		return &DagConfig{}, err // Return found error
