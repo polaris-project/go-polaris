@@ -3,11 +3,30 @@
 package types
 
 import (
+	"bytes"
 	"math/big"
 	"testing"
 )
 
 /* BEGIN EXPORTED METHODS TESTS */
+
+// TestTransactionFromBytes tests the functionality of the TransactionFromBytes() transaction helper method.
+func TestTransactionFromBytes(t *testing.T) {
+	transaction := NewTransaction(
+		0,                      // Nonce
+		big.NewInt(10),         // Amount
+		nil,                    // Sender
+		nil,                    // Recipient
+		nil,                    // Parents
+		1,                      // Gas limit
+		big.NewInt(1000),       // Gas price
+		[]byte("test payload"), // Payload
+	) // Initialize a new transaction using the NewTransaction method
+
+	if !bytes.Equal(transaction.Bytes(), TransactionFromBytes(transaction.Bytes()).Bytes()) { // Check transactions not equal
+		t.Fatal("deserialized transaction should be equivalent to source") // Panic
+	}
+}
 
 // TestBytesTransaction tests the functionality of the Bytes() transaction helper method.
 func TestBytesTransaction(t *testing.T) {
