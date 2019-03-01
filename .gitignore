@@ -20,3 +20,4 @@ vendor/
 # Test data
 common/data/
 config/data/
+types/data/
