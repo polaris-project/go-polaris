@@ -19,8 +19,17 @@ type DagConfig struct {
 
 /* BEGIN EXPORTED METHODS */
 
-// NewDagConfig generates a new DagConfig from the given genesis.json file.
-func NewDagConfig(genesisFilePath string) (*DagConfig, error) {
+// NewDagConfig initializes a new DagConfig from a given set of parameters.
+func NewDagConfig(alloc map[string]float64, identifier string, network uint64) *DagConfig {
+	return &DagConfig{
+		Alloc:      alloc,      // Set alloc
+		Identifier: identifier, // Set identifier
+		Network:    network,    // Set network
+	} // Return initialized dag config
+}
+
+// NewDagConfigFromGenesis generates a new DagConfig from the given genesis.json file.
+func NewDagConfigFromGenesis(genesisFilePath string) (*DagConfig, error) {
 	rawJSON, err := ioutil.ReadFile(genesisFilePath) // Read genesis file
 
 	if err != nil { // Check for errors

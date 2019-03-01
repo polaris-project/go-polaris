@@ -12,7 +12,7 @@ import (
 
 // TestString tests the functionality of the dag config string() helper method.
 func TestString(t *testing.T) {
-	dagConfig, err := NewDagConfig("test_genesis.json") // Initialize new dag config with test genesis file.
+	dagConfig, err := NewDagConfigFromGenesis("test_genesis.json") // Initialize new dag config with test genesis file.
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
@@ -27,7 +27,7 @@ func TestString(t *testing.T) {
 
 // TestBytes tests the functionality fo the dag config bytes() helper method.
 func TestBytes(t *testing.T) {
-	dagConfig, err := NewDagConfig("test_genesis.json") // Initialize new dag config with test genesis file.
+	dagConfig, err := NewDagConfigFromGenesis("test_genesis.json") // Initialize new dag config with test genesis file.
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
@@ -40,7 +40,7 @@ func TestBytes(t *testing.T) {
 
 // TestWriteToMemory tests the functionality of outbound dag config I/O.
 func TestWriteToMemory(t *testing.T) {
-	dagConfig, err := NewDagConfig("test_genesis.json") // Initialize new dag config with test genesis file.
+	dagConfig, err := NewDagConfigFromGenesis("test_genesis.json") // Initialize new dag config with test genesis file.
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
@@ -55,7 +55,7 @@ func TestWriteToMemory(t *testing.T) {
 
 // TestReadDagConfigFromMemory tests the functionality of inbound dag config I/O.
 func TestReadDagConfigFromMemory(t *testing.T) {
-	dagConfig, err := NewDagConfig("test_genesis.json") // Initialize new dag config with test genesis file.
+	dagConfig, err := NewDagConfigFromGenesis("test_genesis.json") // Initialize new dag config with test genesis file.
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic

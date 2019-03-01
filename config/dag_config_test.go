@@ -7,9 +7,16 @@ import "testing"
 
 /* BEGIN EXPORTED METHODS TESTS */
 
-// TestNewDagConfig tests the functionality of the NewDagConfig() helper method.
+// TestNewDagConfig tests the functionality of the NewDagConfigFromGenesis() helper method.
 func TestNewDagConfig(t *testing.T) {
-	dagConfig, err := NewDagConfig("test_genesis.json") // Initialize new dag config with test genesis file.
+	dagConfig := NewDagConfig(nil, "test_dag_config", 1) // Initialize new dag config.
+
+	t.Log(dagConfig) // Log success
+}
+
+// TestNewDagConfig tests the functionality of the NewDagConfigFromGenesis() helper method.
+func TestNewDagConfigFromGenesis(t *testing.T) {
+	dagConfig, err := NewDagConfigFromGenesis("test_genesis.json") // Initialize new dag config with test genesis file.
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
