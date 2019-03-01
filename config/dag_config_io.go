@@ -3,7 +3,14 @@
 // supply allocations, the dag identifier, and other metadata.
 package config
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"path/filepath"
+
+	"github.com/polaris-project/go-polaris/common"
+)
 
 /* BEGIN EXPORTED METHODS */
 
@@ -12,6 +19,30 @@ func (dagConfig *DagConfig) String() string {
 	marshaledVal, _ := json.MarshalIndent(*dagConfig, "", "  ") // Marshal JSON
 
 	return string(marshaledVal) // Return marshalled JSON as a string
+}
+
+// Bytes serializes a given dag config to a byte array via json.
+func (dagConfig *DagConfig) Bytes() []byte {
+	marshaledVal, _ := json.MarshalIndent(*dagConfig, "", "  ") // Marshal JSON
+
+	return marshaledVal // Return marshalled JSON
+}
+
+// WriteToMemory writes the given dag config to persistent memory.
+func (dagConfig *DagConfig) WriteToMemory() error {
+	err := common.CreateDirIfDoesNotExit(common.ConfigDir) // Create config dir if necessary
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/config_%s.json", common.DataDir, dagConfig.Identifier)), dagConfig.Bytes(), 0644) // Write dag config to persistent memory
+
+	if err != nil { // Check for errors
+		return err // Return error
+	}
+
+	return nil // No error occurred, return nil
 }
 
 /* END EXPORTED METHODS */
