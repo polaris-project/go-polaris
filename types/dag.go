@@ -33,6 +33,12 @@ func NewDag(config *config.DagConfig) error {
 		return err // Return found error
 	}
 
+	err = common.CreateDirIfDoesNotExit(common.DbDir) // Make database directory
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
 	dagDB, err := bolt.Open(filepath.FromSlash(fmt.Sprintf("%s/%s.db", common.DbDir, config.Identifier)), 0644, &bolt.Options{Timeout: 5 * time.Second}) // Open DB with timeout
 
 	if err != nil { // Check for errors
