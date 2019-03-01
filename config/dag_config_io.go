@@ -45,4 +45,23 @@ func (dagConfig *DagConfig) WriteToMemory() error {
 	return nil // No error occurred, return nil
 }
 
+// ReadDagConfigFromMemory reads a dag config with the given identifier from persistent memory.
+func ReadDagConfigFromMemory(identifier string) (*DagConfig, error) {
+	data, err := ioutil.ReadFile(filepath.FromSlash(fmt.Sprintf("%s/%s", common.ConfigDir, identifier))) // Read file
+
+	if err != nil { // Check for errors
+		return &DagConfig{}, err // Return found error
+	}
+
+	buffer := &DagConfig{} // Initialize buffer
+
+	err = json.Unmarshal(data, buffer) // Deserialize JSON into buffer.
+
+	if err != nil { // Check for errors
+		return &DagConfig{}, err // Return found error
+	}
+
+	return buffer, nil // No error occurred, return read dag config
+}
+
 /* END EXPORTED METHODS */
