@@ -13,6 +13,9 @@ var (
 
 	// ConfigDir is the global configuration directory definition.
 	ConfigDir = filepath.FromSlash(fmt.Sprintf("%s/config", DataDir))
+
+	// DbDir is the global database directory definition.
+	DbDir = filepath.FromSlash(fmt.Sprintf("%s/db", DataDir))
 )
 
 /* BEGIN EXPORTED METHODS */
