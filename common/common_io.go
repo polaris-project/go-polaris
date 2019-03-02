@@ -39,7 +39,7 @@ func CreateDirIfDoesNotExit(dir string) error {
 
 /* BEGIN INTERNAL METHODS */
 
-// getDataDir fetches the data direcotry
+// getDataDir fetches the data directory
 func getDataDir() string {
 	abs, _ := filepath.Abs("./data") // Get absolute dir
 
