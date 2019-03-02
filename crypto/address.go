@@ -1,3 +1,4 @@
+// Package crypto provides cryptography helper methods.
 package crypto
 
 import (
@@ -8,6 +9,11 @@ import (
 )
 
 /* BEGIN EXPORTED METHODS */
+
+// AddressFromPrivateKey serializes and converts an ecdsa private key into an address (uses private key pub).
+func AddressFromPrivateKey(privateKey *ecdsa.PrivateKey) *common.Address {
+	return AddressFromPublicKey(&privateKey.PublicKey) // Return address
+}
 
 // AddressFromPublicKey serializes and converts an ecdsa public key into an address.
 func AddressFromPublicKey(publicKey *ecdsa.PublicKey) *common.Address {
