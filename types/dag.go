@@ -84,9 +84,17 @@ func NewDag(config *config.DagConfig) (*Dag, error) {
 		return &Dag{}, err // Return found error
 	}
 
-	return &Dag{
+	dag := &Dag{
 		DagConfig: config, // Set config
-	}, nil // Return dag
+	} // Initialize dag db header
+
+	err = dag.writeToMemory() // Write dag db header to persistent memory
+
+	if err != nil { // Check for errors
+		return &Dag{}, err // Return found error
+	}
+
+	return dag, nil // Return initialized dag
 }
 
 // AddTransaction appends a given transaction to the working dag.
