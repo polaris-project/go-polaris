@@ -3,18 +3,17 @@ package p2p
 
 import (
 	"context"
-	"fmt"
 
-	ipfsaddr "github.com/ipfs/go-ipfs-addr"
 	host "github.com/libp2p/go-libp2p-host"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	peerstore "github.com/libp2p/go-libp2p-peerstore"
+	multiaddr "github.com/multiformats/go-multiaddr"
 )
 
 var (
 	// BootstrapNodes represents all default bootstrap nodes on the given network.
 	BootstrapNodes = []string{
-		"/ipv4/108.41.124.60/tcp/3333",
+		"/ip4/108.41.124.60/tcp/3333",
 	}
 
 	// WorkingDHT is the current global DHT instance.
@@ -33,16 +32,14 @@ func BootstrapDht(ctx context.Context, host host.Host) error {
 		return err // Return found error
 	}
 
-	fmt.Println(host.Addrs()) // Log addresses
-
 	for _, addr := range BootstrapNodes { // Iterate through bootstrap nodes
-		address, err := ipfsaddr.ParseString(addr) // Parse multi address
+		address, err := multiaddr.NewMultiaddr(addr) // Parse multi address
 
 		if err != nil { // Check for errors
 			continue // Continue to next peer
 		}
 
-		peerInfo, err := peerstore.InfoFromP2pAddr(address.Multiaddr()) // Get peer info
+		peerInfo, err := peerstore.InfoFromP2pAddr(address) // Get peer info
 
 		if err != nil { // Check for errors
 			continue // Continue to next peer
