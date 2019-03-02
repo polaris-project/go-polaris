@@ -56,4 +56,10 @@ func NewTransaction(accountNonce uint64, amount *big.Float, sender, recipient *c
 	return transaction // Return initialized transaction
 }
 
+// Publish attempts to broadcast the given transaction to all available peers.
+// If no peers are available, nil is returned.
+func (transaction *Transaction) Publish() error {
+
+}
+
 /* BEGIN EXPORTED METHODS */
