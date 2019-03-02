@@ -4,6 +4,7 @@ package types
 
 import (
 	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
 	"math/big"
@@ -23,6 +24,8 @@ var (
 // Signature is a data type representing a verifiable ECDSA signature--that of which
 // is not necessarily a transaction signature.
 type Signature struct {
+	MarshaledPublicKey []byte `json:"pub" gencodec:"required"` // Signature public key
+
 	V []byte   `json:"v" gencodec:"required"` //  Signature message
 	R *big.Int `json:"r" gencodec:"required"` // Signature retrieval
 	S *big.Int `json:"s" gencodec:"required"` // Signature retrieval
@@ -47,9 +50,10 @@ func SignTransaction(transaction *Transaction, privateKey *ecdsa.PrivateKey) err
 		}
 
 		(*transaction).Signature = &Signature{
-			V: transaction.Hash.Bytes(), // Set hash
-			R: r,                        // Set R
-			S: s,                        // Set S
+			MarshaledPublicKey: elliptic.Marshal(elliptic.P521(), privateKey.PublicKey.X, privateKey.PublicKey.Y), // Set marshaled public key
+			V:                  transaction.Hash.Bytes(),                                                          // Set hash
+			R:                  r,                                                                                 // Set R
+			S:                  s,                                                                                 // Set S
 		} // Set transaction signature
 
 		(*transaction).Hash = crypto.Sha3(transaction.Bytes()) // Set transaction hash
@@ -83,9 +87,21 @@ func SignMessage(messageHash common.Hash, privateKey *ecdsa.PrivateKey) (*Signat
 
 // Verify checks that a given signature is valid, and returns whether or not the given signature is valid.
 // If no signature exists at the given memory address, false is returned.
-func (signature *Signature) Verify(publicKey *ecdsa.PublicKey) bool {
+func (signature *Signature) Verify(address *common.Address) bool {
+	x, y := elliptic.Unmarshal(elliptic.P521(), signature.MarshaledPublicKey) // Unmarshal public key
+
+	publicKey := &ecdsa.PublicKey{
+		Curve: elliptic.P521(), // Set curve
+		X:     x,               // Set x
+		Y:     y,               // Set y
+	} // Recover public key
+
 	if signature == nil { // Check no existent signature
 		return false // No signature to verify
+	}
+
+	if *crypto.AddressFromPublicKey(publicKey) != *address { // Check invalid public key
+		return false // Invalid
 	}
 
 	return ecdsa.Verify(publicKey, signature.V, signature.R, signature.S) // Verify signature contents

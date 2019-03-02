@@ -69,7 +69,7 @@ func TestVerifySignature(t *testing.T) {
 		t.Fatal(err) // Panic
 	}
 
-	if !transaction.Signature.Verify(&privateKey.PublicKey) { // Check that signature is valid
+	if !transaction.Signature.Verify(crypto.AddressFromPrivateKey(privateKey)) { // Check that signature is valid
 		t.Fatal("signature should be valid") // Panic
 	}
 }
