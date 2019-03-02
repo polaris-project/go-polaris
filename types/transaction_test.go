@@ -13,7 +13,7 @@ import (
 func TestNewTransactions(t *testing.T) {
 	transaction := NewTransaction(
 		0,                      // Nonce
-		big.NewInt(10),         // Amount
+		big.NewFloat(10),       // Amount
 		nil,                    // Sender
 		nil,                    // Recipient
 		nil,                    // Parents

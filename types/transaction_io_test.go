@@ -14,7 +14,7 @@ import (
 func TestTransactionFromBytes(t *testing.T) {
 	transaction := NewTransaction(
 		0,                      // Nonce
-		big.NewInt(10),         // Amount
+		big.NewFloat(10),       // Amount
 		nil,                    // Sender
 		nil,                    // Recipient
 		nil,                    // Parents
@@ -32,7 +32,7 @@ func TestTransactionFromBytes(t *testing.T) {
 func TestBytesTransaction(t *testing.T) {
 	transaction := NewTransaction(
 		0,                      // Nonce
-		big.NewInt(10),         // Amount
+		big.NewFloat(10),       // Amount
 		nil,                    // Sender
 		nil,                    // Recipient
 		nil,                    // Parents
@@ -48,7 +48,7 @@ func TestBytesTransaction(t *testing.T) {
 func TestStringTransaction(t *testing.T) {
 	transaction := NewTransaction(
 		0,                      // Nonce
-		big.NewInt(10),         // Amount
+		big.NewFloat(10),       // Amount
 		nil,                    // Sender
 		nil,                    // Recipient
 		nil,                    // Parents

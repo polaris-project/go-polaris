@@ -46,7 +46,7 @@ func TestGetTransactionByHash(t *testing.T) {
 
 	transaction := NewTransaction(
 		0,                                        // Nonce
-		big.NewInt(0),                            // Amount
+		big.NewFloat(0),                          // Amount
 		crypto.AddressFromPrivateKey(privateKey), // Sender
 		crypto.AddressFromPrivateKey(privateKey), // Recipient
 		nil,                    // Parents

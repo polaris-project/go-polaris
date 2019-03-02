@@ -3,14 +3,20 @@
 package types
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"path/filepath"
 	"time"
 
 	"github.com/boltdb/bolt"
 	"github.com/polaris-project/go-polaris/common"
 	"github.com/polaris-project/go-polaris/config"
+	"github.com/polaris-project/go-polaris/crypto"
 )
 
 var (
@@ -95,6 +101,99 @@ func NewDag(config *config.DagConfig) (*Dag, error) {
 	}
 
 	return dag, nil // Return initialized dag
+}
+
+// MakeGenesis makes the dag's genesis transaction set.
+// If the dag already has a genesis transaction, an ErrDuplicateTransaction error is returned.
+func (dag *Dag) MakeGenesis() error {
+	if !dag.Genesis.IsNil() { // Check genesis already exists
+		return ErrDuplicateTransaction // Return found error
+	}
+
+	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate gensis address
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	genesisTransactions := []*Transaction{} // Init genesis transactions buffer
+
+	x := uint64(0) // Init nonce
+
+	totalGenesisValue := 0.0 // Init total value buffer
+
+	for _, value := range dag.DagConfig.Alloc { // Iterate through alloc
+		totalGenesisValue += value // Increment value
+	}
+
+	genesisTransaction := NewTransaction(0, big.NewFloat(totalGenesisValue), nil, crypto.AddressFromPrivateKey(privateKey), nil, 0, big.NewInt(0), []byte("genesis")) // Initialize genesis transaction
+
+	err = dag.AddTransaction(genesisTransaction) // Add genesis transaction
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	/*
+		err = genesisTransaction.Publish() // Publish genesis
+
+		if err != nil { // Check for errors
+			return err // Return found error
+		}
+	*/
+
+	lastParent := genesisTransaction // Set last parent
+
+	for key, value := range dag.DagConfig.Alloc { // Iterate through alloc
+		decodedKey, err := hex.DecodeString(key) // Decode key
+
+		if err != nil { // Check for errors
+			return err // Return found error
+		}
+
+		decodedAddress := common.NewAddress(decodedKey) // Decode address
+
+		transaction := NewTransaction(x, big.NewFloat(value), crypto.AddressFromPrivateKey(privateKey), decodedAddress, []common.Hash{lastParent.Hash}, 0, big.NewInt(0), []byte("genesis_child")) // Initialize new genesis child transaction
+
+		err = SignTransaction(transaction, privateKey) // Sign transaction
+
+		if err != nil { // Check for errors
+			return err // Return found error
+		}
+
+		/*
+			err = transaction.Publish() // Publish transaction
+
+			if err != nil { // Check for errors
+				return err // Return found error
+			}
+		*/
+
+		genesisTransactions = append(genesisTransactions, transaction) // Initialize genesis transaction
+
+		lastParent = transaction // Set last parent
+
+		x++ // Increment nonce
+	}
+
+	return nil // No error occurred, return nil
+}
+
+// OpenDag attempts to open all dag-related resources.
+func OpenDag(identifier string) (*Dag, error) {
+	dagDbHeader, err := readDagDbHeaderFromMemory(identifier) // Read dag db header
+
+	if err != nil { // Check for errors
+		return &Dag{}, err // Return found error
+	}
+
+	WorkingDagDB, err = bolt.Open(filepath.FromSlash(fmt.Sprintf("%s/%s.db", common.DbDir, identifier)), 0644, &bolt.Options{Timeout: 5 * time.Second}) // Open DB with timeout
+
+	if err != nil { // Check for errors
+		return &Dag{}, err // Return found error
+	}
+
+	return dagDbHeader, nil // Return dag db header
 }
 
 // AddTransaction appends a given transaction to the working dag.

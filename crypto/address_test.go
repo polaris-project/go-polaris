@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"encoding/hex"
 	"testing"
 )
 
@@ -20,7 +21,7 @@ func TestAddressFromPrivateKey(t *testing.T) {
 
 	address := AddressFromPrivateKey(privateKey) // Derive address
 
-	t.Log(address) // Log success
+	t.Log(hex.EncodeToString(address.Bytes())) // Log success
 }
 
 // TestAddressFromPublicKey tests the functionality of the AddressFromPublicKey() helper method.

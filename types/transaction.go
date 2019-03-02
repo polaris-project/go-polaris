@@ -15,7 +15,7 @@ import (
 type Transaction struct {
 	AccountNonce uint64 `json:"nonce" gencodec:"required"` // Index in account transaction list
 
-	Amount *big.Int `json:"amount" gencodec:"required"` // Transaction value
+	Amount *big.Float `json:"amount" gencodec:"required"` // Transaction value
 
 	Sender    *common.Address `json:"sender" gencodec:"required"`    // Transaction sender
 	Recipient *common.Address `json:"recipient" gencodec:"required"` // Transaction recipient
@@ -37,7 +37,7 @@ type Transaction struct {
 /* BEGIN EXPORTED METHODS */
 
 // NewTransaction creates a new transaction with the given account nonce, value, sender, recipient, gas price, gas limit, and payload.
-func NewTransaction(accountNonce uint64, amount *big.Int, sender, recipient *common.Address, parentTransactions []common.Hash, gasLimit uint64, gasPrice *big.Int, payload []byte) *Transaction {
+func NewTransaction(accountNonce uint64, amount *big.Float, sender, recipient *common.Address, parentTransactions []common.Hash, gasLimit uint64, gasPrice *big.Int, payload []byte) *Transaction {
 	transaction := &Transaction{
 		AccountNonce:       accountNonce,       // Set account nonce
 		Amount:             amount,             // Set amount
