@@ -28,4 +28,11 @@ func TestIsNil(t *testing.T) {
 	}
 }
 
+// TestNewAddress tests the functionality of the NewAddress() helper method.
+func TestNewAddress(t *testing.T) {
+	address := NewAddress([]byte("99994467913f1743a5b2ca672fcfb4b7dd268d3f5d36f5e61079c8a2706c9112")) // Create new address
+
+	t.Log(address) // Log address
+}
+
 /* END EXPORTED METHODS TESTS */

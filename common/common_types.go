@@ -17,6 +17,10 @@ type Address [AddressLength]byte
 
 /* BEGIN EXPORTED METHODS */
 
+/*
+	BEGIN HASH METHODS
+*/
+
 // NewHash converts a given hash, b, to a 32-byte mem-prefix-compliant hash.
 func NewHash(b []byte) Hash {
 	var hash Hash // Hash
@@ -49,5 +53,32 @@ func (hash Hash) IsNil() bool {
 func (hash Hash) Bytes() []byte {
 	return hash[:] // Return byte array value
 }
+
+/*
+	END HASH METHODS
+*/
+
+/*
+	BEGIN ADDRESS METHODS
+*/
+
+// NewAddress formats a given byte array to an address.
+func NewAddress(b []byte) *Address {
+	var address Address // Initialize address buffer
+
+	bCropped := b // Init cropped buffer
+
+	if len(b) > len(address) { // Check crop side
+		bCropped = bCropped[len(bCropped)-AddressLength:] // Crop
+	}
+
+	copy(address[AddressLength-len(bCropped):], bCropped) // Copy source
+
+	return &address // Return address
+}
+
+/*
+	END ADDRESS METHODS
+*/
 
 /* END EXPORTED METHODS */
