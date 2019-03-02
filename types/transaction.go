@@ -4,6 +4,7 @@ package types
 
 import (
 	"math/big"
+	"time"
 
 	"github.com/polaris-project/go-polaris/common"
 	"github.com/polaris-project/go-polaris/crypto"
@@ -28,6 +29,8 @@ type Transaction struct {
 
 	Signature *Signature `json:"signature" gencodec:"required"` // ECDSA transaction signature
 
+	Timestamp time.Time `json:"timestamp" gencodec:"required"` // Transaction timestamp
+
 	Hash common.Hash `json:"hash" gencodec:"required"` // Transaction hash
 }
 
@@ -45,6 +48,7 @@ func NewTransaction(accountNonce uint64, amount *big.Int, sender, recipient *com
 		GasLimit:           gasLimit,           // Set gas limit
 		Payload:            payload,            // Set payload
 		Signature:          nil,                // Set signature
+		Timestamp:          time.Now().UTC(),   // Set timestamp
 	}
 
 	(*transaction).Hash = crypto.Sha3(transaction.Bytes()) // Set transaction hash
