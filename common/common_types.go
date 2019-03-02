@@ -77,6 +77,11 @@ func NewAddress(b []byte) *Address {
 	return &address // Return address
 }
 
+// Bytes converts a given address to a byte array.
+func (address *Address) Bytes() []byte {
+	return (*address)[:] // Return byte array value
+}
+
 /*
 	END ADDRESS METHODS
 */
