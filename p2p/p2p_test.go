@@ -23,19 +23,17 @@ func TestBootstrapDht(t *testing.T) {
 
 	defer cancel() // Cancel
 
-	_, err := NewHost(ctx, 2831) // Initialize libp2p host with context and nat manager
+	host, err := NewHost(ctx, 2831) // Initialize libp2p host with context and nat manager
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
 	}
 
-	/*
-		err = BootstrapDht(ctx, host) // Bootstrap
+	err = BootstrapDht(ctx, host) // Bootstrap
 
-		if err != nil { // Check for errors
-			t.Fatal(err) // Panic
-		}
-	*/
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
 }
 
 /* END EXPORTED METHODS TESTS */
