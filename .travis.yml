@@ -17,7 +17,8 @@ notifications:
   email: false
 
 before_install:
-  - go get -t -v ./...
+  - export GO111MODULE=on # Enable go mod
+  - go mod vendor # Download deps
 
 before_script:
   - GO_FILES=$(find . -iname '*.go' -type f) # All the .go files, excluding vendor/, .vendor-new/
@@ -34,8 +35,6 @@ before_script:
 script:
   - test -z $(gofmt -s -l $GO_FILES) # Fail if a .go file hasn't been formatted with gofmt
   - go vet ./... # Go vet is the official Go static analyzer
-  - export GO111MODULE=on # Enable go mod
-  - go mod vendor # Download deps
   - chmod +x ./test.sh && ./test.sh # Run unit tests
   - go build # Build
 
