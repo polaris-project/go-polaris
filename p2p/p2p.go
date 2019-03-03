@@ -2,6 +2,7 @@
 package p2p
 
 import (
+	"bufio"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -19,6 +20,8 @@ import (
 	host "github.com/libp2p/go-libp2p-host"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	peerstore "github.com/libp2p/go-libp2p-peerstore"
+	"github.com/libp2p/go-libp2p-protocol"
+	routed "github.com/libp2p/go-libp2p/p2p/host/routed"
 	multiaddr "github.com/multiformats/go-multiaddr"
 	"github.com/polaris-project/go-polaris/common"
 )
@@ -36,7 +39,7 @@ var (
 /* BEGIN EXPORTED METHODS */
 
 // NewHost initializes a new libp2p host with the given context.
-func NewHost(ctx context.Context, port int) (host.Host, error) {
+func NewHost(ctx context.Context, port int) (*routed.RoutedHost, error) {
 	peerIdentity, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate private key
 
 	if err != nil { // Check for errors
@@ -85,7 +88,19 @@ func NewHost(ctx context.Context, port int) (host.Host, error) {
 		return nil, err // Return found error
 	}
 
-	return libp2p.New(ctx, libp2p.NATPortMap(), libp2p.ListenAddrStrings("/ip4/127.0.0.1/tcp/"+strconv.Itoa(port), "/ip6/::1/tcp/"+strconv.Itoa(port)), libp2p.Identity(privateKey)) // Initialize libp2p host
+	host, err := libp2p.New(ctx, libp2p.NATPortMap(), libp2p.ListenAddrStrings("/ip4/127.0.0.1/tcp/"+strconv.Itoa(port), "/ip6/::1/tcp/"+strconv.Itoa(port)), libp2p.Identity(privateKey)) // Initialize libp2p host
+
+	if err != nil { // Check for errors
+		return nil, err // Return found error
+	}
+
+	err = BootstrapDht(ctx, host) // Bootstrap dht
+
+	if err != nil { // Check for errors
+		return nil, err // Return found error
+	}
+
+	return routed.Wrap(host, WorkingDHT), nil // Initialize routed libp2p host
 }
 
 // BootstrapDht bootstraps the WorkingDHT to the list of bootstrap nodes.
@@ -93,6 +108,12 @@ func BootstrapDht(ctx context.Context, host host.Host) error {
 	var err error // Init error buffer
 
 	WorkingDHT, err = dht.New(ctx, host) // Initialize DHT with host and context
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	err = WorkingDHT.Bootstrap(ctx) // Bootstrap
 
 	if err != nil { // Check for errors
 		return err // Return found error
@@ -121,8 +142,31 @@ func BootstrapDht(ctx context.Context, host host.Host) error {
 	return nil // No error occurred, return nil
 }
 
-func BroadcastDht(message []byte, streamEndpoint string) error {
+// BroadcastDht attempts to send a given message to all nodes in a dht at a given endpoint.
+func BroadcastDht(ctx context.Context, host *routed.RoutedHost, message []byte, streamProtocol string, dagIdentifier string) error {
+	peers := host.Peerstore().Peers() // Get peers
 
+	for _, peer := range peers { // Iterate through peers
+		if peer == (*host).ID() { // Check not same node
+			continue // Continue
+		}
+
+		stream, err := (*host).NewStream(ctx, peer, protocol.ID(streamProtocol)) // Connect
+
+		if err != nil { // Check for errors
+			continue // Continue
+		}
+
+		writer := bufio.NewWriter(stream) // Initialize writer
+
+		_, err = writer.Write(message) // Write message
+
+		if err != nil { // Check for errors
+			continue // Continue
+		}
+	}
+
+	return nil // No error occurred, return nil
 }
 
 /* END EXPORTED METHODS */
