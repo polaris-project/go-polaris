@@ -4,6 +4,8 @@ package p2p
 import (
 	"context"
 	"testing"
+
+	protocol "github.com/libp2p/go-libp2p-protocol"
 )
 
 /* BEGIN EXPORTED METHODS TESTS */
@@ -57,6 +59,13 @@ func TestBroadcastDht(t *testing.T) {
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
 	}
+}
+
+// TestGetStreamHeaderProtocolPath tests the functionality of the GetStreamHeaderProtocol() helper method.
+func TestGetStreamHeaderProtocolPath(t *testing.T) {
+	streamHeaderProtocolPath := GetStreamHeaderProtocolPath("test_network", PublishTransaction) // Get stream header protocol URI
+
+	t.Log(protocol.ID(streamHeaderProtocolPath)) // Get libp2p representation
 }
 
 /* END EXPORTED METHODS TESTS */

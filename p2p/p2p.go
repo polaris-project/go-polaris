@@ -26,15 +26,27 @@ import (
 	"github.com/polaris-project/go-polaris/common"
 )
 
+// Stream header protocol definitions
+const (
+	PublishTransaction StreamHeaderProtocol = iota
+)
+
 var (
+	// StreamHeaderProtocolNames represents all stream header protocol names.
+	StreamHeaderProtocolNames = []string{
+		"pub_transaction",
+	}
 	// BootstrapNodes represents all default bootstrap nodes on the given network.
 	BootstrapNodes = []string{
 		"/ip4/108.41.124.60/tcp/53956/ipfs/QmWy8fZPX4hnTmXtFzgUTa8ZGceHhdhUEj3wonj1r3bMEG",
 	}
 
-	// WorkingDHT is the current global DHT instance.
-	WorkingDHT *dht.IpfsDHT
+	// WorkingHost is the current global routed host.
+	WorkingHost *routed.RoutedHost
 )
+
+// StreamHeaderProtocol represents the stream protocol type enum.
+type StreamHeaderProtocol int
 
 /* BEGIN EXPORTED METHODS */
 
@@ -94,29 +106,31 @@ func NewHost(ctx context.Context, port int) (*routed.RoutedHost, error) {
 		return nil, err // Return found error
 	}
 
-	err = BootstrapDht(ctx, host) // Bootstrap dht
+	dht, err := BootstrapDht(ctx, host) // Bootstrap dht
 
 	if err != nil { // Check for errors
 		return nil, err // Return found error
 	}
 
-	return routed.Wrap(host, WorkingDHT), nil // Initialize routed libp2p host
+	routedHost := routed.Wrap(host, dht) // Initialize routed host
+
+	WorkingHost = routedHost // Set routed host
+
+	return WorkingHost, nil // Return working routed host
 }
 
 // BootstrapDht bootstraps the WorkingDHT to the list of bootstrap nodes.
-func BootstrapDht(ctx context.Context, host host.Host) error {
-	var err error // Init error buffer
-
-	WorkingDHT, err = dht.New(ctx, host) // Initialize DHT with host and context
+func BootstrapDht(ctx context.Context, host host.Host) (*dht.IpfsDHT, error) {
+	dht, err := dht.New(ctx, host) // Initialize DHT with host and context
 
 	if err != nil { // Check for errors
-		return err // Return found error
+		return nil, err // Return found error
 	}
 
-	err = WorkingDHT.Bootstrap(ctx) // Bootstrap
+	err = dht.Bootstrap(ctx) // Bootstrap
 
 	if err != nil { // Check for errors
-		return err // Return found error
+		return nil, err // Return found error
 	}
 
 	for _, addr := range BootstrapNodes { // Iterate through bootstrap nodes
@@ -139,7 +153,7 @@ func BootstrapDht(ctx context.Context, host host.Host) error {
 		}
 	}
 
-	return nil // No error occurred, return nil
+	return dht, nil // No error occurred, return nil
 }
 
 // BroadcastDht attempts to send a given message to all nodes in a dht at a given endpoint.
@@ -167,6 +181,11 @@ func BroadcastDht(ctx context.Context, host *routed.RoutedHost, message []byte, 
 	}
 
 	return nil // No error occurred, return nil
+}
+
+// GetStreamHeaderProtocolPath attempts to determine the libp2p stream header protocol URI from a given stream protocol and network.
+func GetStreamHeaderProtocolPath(network string, streamProtocol StreamHeaderProtocol) string {
+	return fmt.Sprintf("/%s/%s", network, StreamHeaderProtocolNames[streamProtocol]) // Return URI
 }
 
 /* END EXPORTED METHODS */
