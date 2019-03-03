@@ -121,4 +121,8 @@ func BootstrapDht(ctx context.Context, host host.Host) error {
 	return nil // No error occurred, return nil
 }
 
+func BroadcastDht(message []byte, streamEndpoint string) error {
+
+}
+
 /* END EXPORTED METHODS */
