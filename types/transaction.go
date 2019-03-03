@@ -73,6 +73,18 @@ func (transaction *Transaction) Publish(ctx context.Context, network string) err
 		return ErrNoWorkingHost // Return found error
 	}
 
+	if transaction.Hash.IsNil() { // Check no hash
+		return ErrNilHash // Return found error
+	}
+
+	if transaction.Signature == nil { // Check nil signature
+		return ErrNilSignature // Return found error
+	}
+
+	if !transaction.Signature.Verify(transaction.Sender) { // Check invalid signature
+		return ErrInvalidSignature // Return found error
+	}
+
 	context, cancel := context.WithCancel(ctx) // Get context
 
 	defer cancel() // Cancel
