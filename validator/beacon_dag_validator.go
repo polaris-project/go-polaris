@@ -26,9 +26,11 @@ func (validator *BeaconDagValidator) ValidateTransaction(transaction *types.Tran
 	return true // Transaction is valid
 }
 
-// ValidateTransaction
+// ValidateTransactionHash checks that a given transaction's hash is equivalent to the calculated hash of that given transaction.
 func (validator *BeaconDagValidator) ValidateTransactionHash(transaction *types.Transaction) bool {
-
+	if transaction.Hash.IsNil() { // Check transaction doesn't have transaction
+		return false // No valid hash
+	}
 }
 
 // ValidateTransactionTimestamp validates the given transaction's timestamp against that of its parents.
