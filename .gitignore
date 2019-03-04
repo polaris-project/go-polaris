@@ -22,3 +22,6 @@ common/data/
 config/data/
 types/data/
 p2p/data/
+
+# Data
+data/
