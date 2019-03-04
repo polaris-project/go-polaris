@@ -4,7 +4,10 @@
 package validator
 
 import (
+	"bytes"
+
 	"github.com/polaris-project/go-polaris/config"
+	"github.com/polaris-project/go-polaris/crypto"
 	"github.com/polaris-project/go-polaris/types"
 )
 
@@ -31,6 +34,12 @@ func (validator *BeaconDagValidator) ValidateTransactionHash(transaction *types.
 	if transaction.Hash.IsNil() { // Check transaction doesn't have transaction
 		return false // No valid hash
 	}
+
+	if !bytes.Equal(transaction.Hash.Bytes(), crypto.Sha3(transaction.Bytes()).Bytes()) { // Check hashes not equal
+		return false // Invalid hash
+	}
+
+	return true // Valid hash
 }
 
 // ValidateTransactionTimestamp validates the given transaction's timestamp against that of its parents.
