@@ -3,6 +3,7 @@
 package types
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -116,10 +117,6 @@ func (dag *Dag) MakeGenesis() error {
 		return err // Return found error
 	}
 
-	genesisTransactions := []*Transaction{} // Init genesis transactions buffer
-
-	x := uint64(0) // Init nonce
-
 	totalGenesisValue := 0.0 // Init total value buffer
 
 	for _, value := range dag.DagConfig.Alloc { // Iterate through alloc
@@ -128,21 +125,21 @@ func (dag *Dag) MakeGenesis() error {
 
 	genesisTransaction := NewTransaction(0, big.NewFloat(totalGenesisValue), nil, crypto.AddressFromPrivateKey(privateKey), nil, 0, big.NewInt(0), []byte("genesis")) // Initialize genesis transaction
 
-	err = dag.AddTransaction(genesisTransaction) // Add genesis transaction
+	err = dag.forceAddTransaction(genesisTransaction) // Add genesis transaction
 
 	if err != nil { // Check for errors
 		return err // Return found error
 	}
 
-	/*
-		err = genesisTransaction.Publish() // Publish genesis
+	err = genesisTransaction.Publish(context.Background(), dag.DagConfig.Identifier) // Publish genesis
 
-		if err != nil { // Check for errors
-			return err // Return found error
-		}
-	*/
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
 
 	lastParent := genesisTransaction // Set last parent
+
+	x := uint64(1) // Init nonce
 
 	for key, value := range dag.DagConfig.Alloc { // Iterate through alloc
 		decodedKey, err := hex.DecodeString(key) // Decode key
@@ -161,15 +158,17 @@ func (dag *Dag) MakeGenesis() error {
 			return err // Return found error
 		}
 
-		/*
-			err = transaction.Publish() // Publish transaction
+		err = dag.AddTransaction(transaction) // Add transaction
 
-			if err != nil { // Check for errors
-				return err // Return found error
-			}
-		*/
+		if err != nil { // Check for errors
+			return err // Return found error
+		}
 
-		genesisTransactions = append(genesisTransactions, transaction) // Initialize genesis transaction
+		err = transaction.Publish(context.Background(), dag.DagConfig.Identifier) // Publish transaction
+
+		if err != nil { // Check for errors
+			return err // Return found error
+		}
 
 		lastParent = transaction // Set last parent
 
@@ -231,13 +230,11 @@ func (dag *Dag) AddTransaction(transaction *Transaction) error {
 		return ErrInvalidSignature // Return found error
 	}
 
-	err = WorkingDagDB.Update(func(tx *bolt.Tx) error {
+	return WorkingDagDB.Update(func(tx *bolt.Tx) error {
 		workingTransactionBucket := tx.Bucket(transactionBucket) // Get transaction bucket
 
 		return workingTransactionBucket.Put(transaction.Hash.Bytes(), transaction.Bytes()) // Put transaction
 	}) // Write transaction
-
-	return nil // No error occurred, return nil
 }
 
 /*
@@ -289,6 +286,27 @@ func (dag *Dag) GetTransactionByHash(transactionHash common.Hash) (*Transaction,
 /*
 	BEGIN DB BUCKET HELPER METHODS
 */
+
+// forceAddTransaction forces the adding of a given transaction to the dag (only useful for adding a genesis tx).
+func (dag *Dag) forceAddTransaction(transaction *Transaction) error {
+	err := createTransactionBucketIfNotExist() // Create transaction bucket if it doesn't already exist
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	_, err = dag.GetTransactionByHash(transaction.Hash) // Get transaction by hash
+
+	if err == nil { // Check tx already exists
+		return ErrDuplicateTransaction // Return found error
+	}
+
+	return WorkingDagDB.Update(func(tx *bolt.Tx) error {
+		workingTransactionBucket := tx.Bucket(transactionBucket) // Get transaction bucket
+
+		return workingTransactionBucket.Put(transaction.Hash.Bytes(), transaction.Bytes()) // Put transaction
+	}) // Write transaction // No error occurred, return nil
+}
 
 // createTransactionBucketIfNotExist attempts to create the "transaction" bucket in the working dag db.
 func createTransactionBucketIfNotExist() error {
