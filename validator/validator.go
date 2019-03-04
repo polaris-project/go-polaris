@@ -9,5 +9,9 @@ import "github.com/polaris-project/go-polaris/types"
 type Validator interface {
 	ValidateTransaction(transaction *types.Transaction) bool // Validate a given transaction
 
+	ValidateTransactionHash(transaction *types.Transaction) bool // Validate a given transaction's hash
+
+	ValidateTransactionSenderBalance(transaction *types.Transaction) bool // Validate a given transaction's sender has 
+
 	ValidationProtocol() string // Get the current validator's validation protocol
 }
