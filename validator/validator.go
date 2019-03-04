@@ -13,6 +13,8 @@ type Validator interface {
 
 	ValidateTransactionTimestamp(transaction *types.Transaction) bool // Validate a given transaction's timestamp
 
+	ValidateTransactionSignature(transaction *types.Transaction) bool // Validate a given transaction's signature
+
 	ValidateTransactionSenderBalance(transaction *types.Transaction) bool // Validate a given transaction's sender has
 
 	ValidationProtocol() string // Get the current validator's validation protocol

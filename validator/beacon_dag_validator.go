@@ -35,11 +35,7 @@ func (validator *BeaconDagValidator) ValidateTransactionHash(transaction *types.
 		return false // No valid hash
 	}
 
-	if !bytes.Equal(transaction.Hash.Bytes(), crypto.Sha3(transaction.Bytes()).Bytes()) { // Check hashes not equal
-		return false // Invalid hash
-	}
-
-	return true // Valid hash
+	return bytes.Equal(transaction.Hash.Bytes(), crypto.Sha3(transaction.Bytes()).Bytes()) // Return hashes equivalent
 }
 
 // ValidateTransactionTimestamp validates the given transaction's timestamp against that of its parents.
@@ -59,6 +55,16 @@ func (validator *BeaconDagValidator) ValidateTransactionTimestamp(transaction *t
 	}
 
 	return true // Valid timestamp
+}
+
+// ValidateTransactionSignature validates the given transaction's signature against the transaction sender's public key.
+// If the transaction's signature is nil, false is returned.
+func (validator *BeaconDagValidator) ValidateTransactionSignature(transaction *types.Transaction) bool {
+	if transaction.Signature == nil { // Check has no signature
+		return false // Nil signature
+	}
+
+	return transaction.Signature.Verify(transaction.Sender) // Return signature validity
 }
 
 /* END EXPORTED METHODS */
