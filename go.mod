@@ -7,6 +7,7 @@ require (
 	github.com/libp2p/go-libp2p-host v0.0.1
 	github.com/libp2p/go-libp2p-kad-dht v0.0.3
 	github.com/libp2p/go-libp2p-peerstore v0.0.1
+	github.com/libp2p/go-libp2p-protocol v0.0.1
 	github.com/multiformats/go-multiaddr v0.0.1
 	golang.org/x/crypto v0.0.0-20190228161510-8dd112bcdc25
 	golang.org/x/sys v0.0.0-20190302025703-b6889370fb10 // indirect
