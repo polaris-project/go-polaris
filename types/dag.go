@@ -276,6 +276,39 @@ func (dag *Dag) GetTransactionByHash(transactionHash common.Hash) (*Transaction,
 	return TransactionFromBytes(txBytes), nil // Return deserialized tx
 }
 
+// GetTransactionChildren iterates through the dag's transactions, and finds transactions with the given hash as a parent.
+func (dag *Dag) GetTransactionChildren(transactionHash common.Hash) ([]*Transaction, error) {
+	if WorkingDagDB == nil { // Check no dag db
+		return []*Transaction{}, ErrDagDbNotOpened // Return found error
+	}
+
+	transactions := []*Transaction{} // Initialize tx buffer
+
+	err := createTransactionBucketIfNotExist() // Create transaction bucket if not exist
+
+	if err != nil { // Check for errors
+		return []*Transaction{}, err // Return found error
+	}
+
+	return transactions, WorkingDagDB.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket(transactionBucket) // Get transaction bucket
+
+		c := bucket.Cursor() // Get cursor
+
+		for currentTransactionHash, transactionBytes := c.First(); currentTransactionHash != nil; currentTransactionHash, transactionBytes = c.Next() { // Iterate through tx set
+			transaction := TransactionFromBytes(transactionBytes) // Deserialize transaction
+
+			for _, parentHash := range transaction.ParentTransactions { // Iterate through tx parents
+				if bytes.Equal(parentHash.Bytes(), transactionHash.Bytes()) { // Check matching parent
+					transactions = append(transactions, transaction) // Append to transactions
+				}
+			}
+		}
+
+		return nil // No error occurred, return nil
+	}) // Return filtered transactions
+}
+
 // GetTransactionsByAddress attempts to filter the dag by a given sending or receiving address.
 func (dag *Dag) GetTransactionsByAddress(address *common.Address) ([]*Transaction, error) {
 	if WorkingDagDB == nil { // Check no dag db

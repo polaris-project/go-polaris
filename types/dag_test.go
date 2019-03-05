@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/polaris-project/go-polaris/common"
 	"github.com/polaris-project/go-polaris/config"
 	"github.com/polaris-project/go-polaris/crypto"
 )
@@ -135,6 +136,85 @@ func TestGetTransactionByAddress(t *testing.T) {
 
 	if len(transactions) != 1 { // Check invalid tx set
 		t.Fatalf("should have found 1 related transaction; found %d", len(transactions)) // Log invalid filter
+	}
+
+	WorkingDagDB.Close() // Close working dag db
+
+	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
+}
+
+// TestGetTransactionChildren tests the functionality of the GetTransactionChildren() helper method.
+func TestGetTransactionChildren(t *testing.T) {
+	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
+
+	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
+
+	dag, err := NewDag(dagConfig) // Initialize dag with dag config
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate ecdsa private key
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	transaction := NewTransaction(
+		0,                                        // Nonce
+		big.NewFloat(0),                          // Amount
+		crypto.AddressFromPrivateKey(privateKey), // Sender
+		crypto.AddressFromPrivateKey(privateKey), // Recipient
+		nil,                                      // Parents
+		1,                                        // Gas limit
+		big.NewInt(1000),                         // Gas price
+		[]byte("test payload"),                   // Payload
+	) // Create new transaction
+
+	err = SignTransaction(transaction, privateKey) // Sign transaction
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	err = dag.AddTransaction(transaction) // Add transaction
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	child := NewTransaction(
+		1,                                        // Nonce
+		big.NewFloat(0),                          // Amount
+		crypto.AddressFromPrivateKey(privateKey), // Sender
+		crypto.AddressFromPrivateKey(privateKey), // Recipient
+		[]common.Hash{transaction.Hash},          // Set parent hash
+		1,                                        // Gas limit
+		big.NewInt(1000),                         // Gas price
+		[]byte("test payload"),                   // Payload
+	) // Create new child transaction
+
+	err = SignTransaction(child, privateKey) // Sign transaction
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	err = dag.AddTransaction(child) // Add transaction
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	children, err := dag.GetTransactionChildren(transaction.Hash) // Get children
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // panic
+	}
+
+	if len(children) != 1 { // Check invalid tx set
+		t.Fatalf("should have found 1 child transaction; found %d", len(children)) // Log invalid filter
 	}
 
 	WorkingDagDB.Close() // Close working dag db
