@@ -327,8 +327,7 @@ func (dag *Dag) CalculateAddressBalance(address *common.Address) (*big.Float, er
 
 	for _, transaction := range transactionsRegardingAddress { // Iterate through transactions
 		if bytes.Equal(transaction.Sender.Bytes(), address.Bytes()) { // Check was sender
-			balance.Sub(balance, transaction.Amount)                                                                                             // Subtract transaction amount
-			balance.Sub(balance, new(big.Float).SetInt(transaction.GasPrice.Mul(transaction.GasPrice, big.NewInt(int64(transaction.GasLimit))))) // Subtract gas
+			balance.Sub(balance, transaction.CalculateTotalValue()) // Subtract transaction value
 		}
 
 		if bytes.Equal(transaction.Recipient.Bytes(), address.Bytes()) { // Check was recipient

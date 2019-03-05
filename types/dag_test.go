@@ -189,7 +189,7 @@ func TestCalculateAddressBalance(t *testing.T) {
 		t.Fatal(err) // Panic
 	}
 
-	if balance.Cmp(big.NewFloat(-1.0)) != 0 { // Check invalid balance
+	if balance.Cmp(big.NewFloat(-1001.0)) != 0 { // Check invalid balance
 		t.Fatal("invalid balance calculation") // Panic
 	}
 
