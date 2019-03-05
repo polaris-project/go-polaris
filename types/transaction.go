@@ -92,4 +92,9 @@ func (transaction *Transaction) Publish(ctx context.Context, network string) err
 	return p2p.BroadcastDht(context, p2p.WorkingHost, transaction.Bytes(), p2p.GetStreamHeaderProtocolPath(network, p2p.PublishTransaction), network) // Broadcast transaction
 }
 
+// CalculateTotalValue calculates the total value of a transaction, including both its amount and total gas.
+func (transaction *Transaction) CalculateTotalValue() *big.Float {
+	return new(big.Float).Add(transaction.Amount, new(big.Float).SetInt(transaction.GasPrice.Mul(transaction.GasPrice, big.NewInt(int64(transaction.GasLimit))))) // Return total value
+}
+
 /* BEGIN EXPORTED METHODS */
