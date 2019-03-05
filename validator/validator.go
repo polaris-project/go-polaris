@@ -17,5 +17,7 @@ type Validator interface {
 
 	ValidateTransactionSenderBalance(transaction *types.Transaction) bool // Validate a given transaction's sender has
 
+	ValidateTransactionIsNotDuplicate(transaction *types.Transaction) bool // Validate that a given transaction does not already exist in the working dag
+
 	ValidationProtocol() string // Get the current validator's validation protocol
 }

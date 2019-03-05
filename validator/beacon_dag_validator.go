@@ -105,4 +105,15 @@ func (validator *BeaconDagValidator) ValidateTransactionSenderBalance(transactio
 	return balance.Cmp(transaction.CalculateTotalValue()) == 0 || balance.Cmp(transaction.CalculateTotalValue()) == 1 // Return sender balance adequate
 }
 
+// ValidateTransactionIsNotDuplicate checks that a given transaction does not already exist in the working dag.
+func (validator *BeaconDagValidator) ValidateTransactionIsNotDuplicate(transaction *types.Transaction) bool {
+	_, err := validator.WorkingDag.GetTransactionByHash(transaction.Hash) // Attempt to get tx by hash
+
+	if err == nil { // Check transaction exists
+		return false // Transaction is duplicate
+	}
+
+	return true // Transaction is unique
+}
+
 /* END EXPORTED METHODS */
