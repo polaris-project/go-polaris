@@ -77,7 +77,7 @@ func TestValidateTransaction(t *testing.T) {
 		t.Fatal("validator should not be nil") // Panic
 	}
 
-	if !validator.ValidateTransaction(transaction) { // Validate
+	if validator.ValidateTransaction(transaction) != nil { // Validate
 		t.Fatal("tx should be valid") // Panic
 	}
 

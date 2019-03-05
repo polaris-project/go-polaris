@@ -5,11 +5,29 @@ package validator
 
 import (
 	"bytes"
+	"errors"
 
 	"github.com/polaris-project/go-polaris/common"
 	"github.com/polaris-project/go-polaris/config"
 	"github.com/polaris-project/go-polaris/crypto"
 	"github.com/polaris-project/go-polaris/types"
+)
+
+var (
+	// ErrInvalidTransactionHash is an error definition representing a transcation hash of invalid value.
+	ErrInvalidTransactionHash = errors.New("transaction hash is invalid")
+
+	//ErrInvalidTransactionTimestamp is an error definition representing a transaction timestamp of invalid value.
+	ErrInvalidTransactionTimestamp = errors.New("invalid transaction timestamp")
+
+	// ErrInvalidTransactionSignature is an error definition representing a transaction signature of invalid value.
+	ErrInvalidTransactionSignature = errors.New("invalid transaction signature")
+
+	// ErrInsufficientSenderBalance is an error definition representing a sender balance of insufficient value.
+	ErrInsufficientSenderBalance = errors.New("insufficient sender balance")
+
+	// ErrDuplicateTransaction is an error definition representing a transaction of duplicate value in the working dag.
+	ErrDuplicateTransaction = errors.New("transcation already exists in the working dag (duplicate)")
 )
 
 // BeaconDagValidator represents a main dag validator.
@@ -30,24 +48,29 @@ func NewBeaconDagValidator(config *config.DagConfig, workingDag *types.Dag) *Bea
 }
 
 // ValidateTransaction validates the given transaction, transaction via the standard beacon dag validator.
-func (validator *BeaconDagValidator) ValidateTransaction(transaction *types.Transaction) bool {
+// Each validation issue is returned as an error.
+func (validator *BeaconDagValidator) ValidateTransaction(transaction *types.Transaction) error {
 	if !validator.ValidateTransactionHash(transaction) { // Check invalid hash
-		return false // Invalid hash
+		return ErrInvalidTransactionHash // Invalid hash
 	}
 
 	if !validator.ValidateTransactionTimestamp(transaction) { // Check invalid timestamp
-		return false // Invalid timestamp
+		return ErrInvalidTransactionTimestamp // Invalid timestamp
 	}
 
 	if !validator.ValidateTransactionSignature(transaction) { // Check invalid signature
-		return false // Invalid signature
+		return ErrInvalidTransactionSignature // Invalid signature
 	}
 
 	if !validator.ValidateTransactionSenderBalance(transaction) { // Check invalid value
-		return false // Invalid value
+		return ErrInsufficientSenderBalance // Invalid value
 	}
 
-	return true // Transaction is valid
+	if !validator.ValidateTransactionIsNotDuplicate(transaction) { // Check duplicate
+		return ErrDuplicateTransaction // Duplicate
+	}
+
+	return nil // Transaction is valid
 }
 
 // ValidateTransactionHash checks that a given transaction's hash is equivalent to the calculated hash of that given transaction.
