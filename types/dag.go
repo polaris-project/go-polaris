@@ -313,6 +313,37 @@ func (dag *Dag) GetTransactionsByAddress(address *common.Address) ([]*Transactio
 	END DB READING HELPER METHODS
 */
 
+/*
+	BEGIN HELPER METHODS
+*/
+
+// CalculateAddressBalance calculates the total balance of an address from genesis to latest tx.
+func (dag *Dag) CalculateAddressBalance(address *common.Address) (*big.Float, error) {
+	transactionsRegardingAddress, err := dag.GetTransactionsByAddress(address) // Filter by pertaining to
+
+	if err != nil { // Check for errors
+		return &big.Float{}, err // Return found error
+	}
+
+	balance := big.NewFloat(0) // Init balance buffer
+
+	for _, transaction := range transactionsRegardingAddress { // Iterate through transactions
+		if bytes.Equal(transaction.Sender.Bytes(), address.Bytes()) { // Check was sender
+			balance.Sub(balance, transaction.Amount) // Subtract transaction amount
+		}
+
+		if bytes.Equal(transaction.Recipient.Bytes(), address.Bytes()) { // Check was recipient
+			balance.Add(balance, transaction.Amount) // Add transaction amount
+		}
+	}
+
+	return balance, nil // Return balance
+}
+
+/*
+	END HELPER METHODS
+*/
+
 /* END EXPORTED METHODS */
 
 /* BEGIN INTERNAL METHODS */
