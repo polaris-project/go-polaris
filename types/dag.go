@@ -3,6 +3,7 @@
 package types
 
 import (
+	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -273,6 +274,39 @@ func (dag *Dag) GetTransactionByHash(transactionHash common.Hash) (*Transaction,
 	}
 
 	return TransactionFromBytes(txBytes), nil // Return deserialized tx
+}
+
+// GetTransactionsByAddress attempts to filter the dag by a given sending or receiving address.
+func (dag *Dag) GetTransactionsByAddress(address *common.Address) ([]*Transaction, error) {
+	if WorkingDagDB == nil { // Check no dag db
+		return []*Transaction{}, ErrDagDbNotOpened // Return found error
+	}
+
+	transactions := []*Transaction{} // Init tx buffer
+
+	err := createTransactionBucketIfNotExist() // Create transaction bucket if not exist
+
+	if err != nil { // Check for errors
+		return []*Transaction{}, err // Return found error
+	}
+
+	return transactions, WorkingDagDB.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket(transactionBucket) // Get transaction bucket
+
+		c := bucket.Cursor() // Get cursor
+
+		for transactionHash, transactionBytes := c.First(); transactionHash != nil; transactionHash, transactionBytes = c.Next() { // Iterate through tx set
+			transaction := TransactionFromBytes(transactionBytes) // Deserialize transaction
+
+			fmt.Println(address.Bytes())
+
+			if bytes.Equal(transaction.Sender.Bytes(), address.Bytes()) || bytes.Equal(transaction.Recipient.Bytes(), address.Bytes()) { // Check relevant
+				transactions = append(transactions, transaction) // Append transaction
+			}
+		}
+
+		return nil // No error occurred, return nil
+	}) // Return filtered transactions
 }
 
 /*
