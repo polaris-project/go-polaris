@@ -6,6 +6,7 @@ package validator
 import (
 	"bytes"
 
+	"github.com/polaris-project/go-polaris/common"
 	"github.com/polaris-project/go-polaris/config"
 	"github.com/polaris-project/go-polaris/crypto"
 	"github.com/polaris-project/go-polaris/types"
@@ -19,6 +20,14 @@ type BeaconDagValidator struct {
 }
 
 /* BEGIN EXPORTED METHODS */
+
+// NewBeaconDagValidator initializes a new beacon dag with a given config and working dag.
+func NewBeaconDagValidator(config *config.DagConfig, workingDag *types.Dag) *BeaconDagValidator {
+	return &BeaconDagValidator{
+		Config:     config,     // Set config
+		WorkingDag: workingDag, // Set working dag
+	}
+}
 
 // ValidateTransaction validates the given transaction, transaction via the standard beacon dag validator.
 func (validator *BeaconDagValidator) ValidateTransaction(transaction *types.Transaction) bool {
@@ -47,7 +56,13 @@ func (validator *BeaconDagValidator) ValidateTransactionHash(transaction *types.
 		return false // No valid hash
 	}
 
-	return bytes.Equal(transaction.Hash.Bytes(), crypto.Sha3(transaction.Bytes()).Bytes()) // Return hashes equivalent
+	unsignedTx := *transaction // Get unsigned
+
+	unsignedTx.Hash = common.NewHash(nil) // Set hash to nil
+
+	unsignedTx.Signature = transaction.Signature // Reset signature
+
+	return bytes.Equal(transaction.Hash.Bytes(), crypto.Sha3(unsignedTx.Bytes()).Bytes()) // Return hashes equivalent
 }
 
 // ValidateTransactionTimestamp validates the given transaction's timestamp against that of its parents.
