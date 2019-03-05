@@ -142,4 +142,60 @@ func TestGetTransactionByAddress(t *testing.T) {
 	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
 }
 
+// TestCalculateAddressBalance tests the functionality of the CalculateAddressBalance() helper method.
+func TestCalculateAddressBalance(t *testing.T) {
+	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
+
+	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
+
+	dag, err := NewDag(dagConfig) // Initialize dag with dag config
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate ecdsa private key
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	transaction := NewTransaction(
+		0,                                        // Nonce
+		big.NewFloat(1),                          // Amount
+		crypto.AddressFromPrivateKey(privateKey), // Sender
+		nil,                                      // Recipient
+		nil,                                      // Parents
+		1,                                        // Gas limit
+		big.NewInt(1000),                         // Gas price
+		[]byte("test payload"),                   // Payload
+	) // Create new transaction
+
+	err = SignTransaction(transaction, privateKey) // Sign transaction
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	err = dag.forceAddTransaction(transaction) // Add transaction
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	balance, err := dag.CalculateAddressBalance(crypto.AddressFromPrivateKey(privateKey)) // Calculate balance
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	if balance.Cmp(big.NewFloat(-1.0)) != 0 { // Check invalid balance
+		t.Fatal("invalid balance calculation") // Panic
+	}
+
+	WorkingDagDB.Close() // Close working dag db
+
+	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
+}
+
 /* END EXPORTED METHODS TESTS */
