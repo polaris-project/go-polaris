@@ -28,6 +28,9 @@ var (
 
 	// ErrDuplicateTransaction is an error definition representing a transaction of duplicate value in the working dag.
 	ErrDuplicateTransaction = errors.New("transcation already exists in the working dag (duplicate)")
+
+	// ErrInvalidTransactionDepth is an error definition representing a transaction of invalid depth value.
+	ErrInvalidTransactionDepth = errors.New("invalid transaction depth (not best transaction)")
 )
 
 // BeaconDagValidator represents a main dag validator.
@@ -68,6 +71,10 @@ func (validator *BeaconDagValidator) ValidateTransaction(transaction *types.Tran
 
 	if !validator.ValidateTransactionIsNotDuplicate(transaction) { // Check duplicate
 		return ErrDuplicateTransaction // Duplicate
+	}
+
+	if !validator.ValidateTransactionDepth(transaction) { // Check valid depth
+		return ErrInvalidTransactionDepth // Invalid depth
 	}
 
 	return nil // Transaction is valid
@@ -137,6 +144,27 @@ func (validator *BeaconDagValidator) ValidateTransactionIsNotDuplicate(transacti
 	}
 
 	return true // Transaction is unique
+}
+
+// ValidateTransactionDepth checks that a given transaction's parent hash is a member of the last edge.
+func (validator *BeaconDagValidator) ValidateTransactionDepth(transaction *types.Transaction) bool {
+	parentTransactions := []*types.Transaction{} // Initialize parent tx buffer
+
+	for _, parentHash := range transaction.ParentTransactions { // Iterate through parent hashes
+		children, err := validator.WorkingDag.GetTransactionChildren(parentHash) // Get children of transaction
+
+		if err != nil { // Check for errors
+			return false // Invalid
+		}
+
+		if len(children) != 0 { // Check has children
+			return false // Invalid depth
+		}
+
+		parentTransactions = append(parentTransactions, transaction) // Append transaction
+	} // TODO: fix so that doesn't rely on tx child count
+
+	return true // Valid
 }
 
 /* END EXPORTED METHODS */
