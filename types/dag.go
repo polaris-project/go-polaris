@@ -298,8 +298,6 @@ func (dag *Dag) GetTransactionsByAddress(address *common.Address) ([]*Transactio
 		for transactionHash, transactionBytes := c.First(); transactionHash != nil; transactionHash, transactionBytes = c.Next() { // Iterate through tx set
 			transaction := TransactionFromBytes(transactionBytes) // Deserialize transaction
 
-			fmt.Println(address.Bytes())
-
 			if bytes.Equal(transaction.Sender.Bytes(), address.Bytes()) || bytes.Equal(transaction.Recipient.Bytes(), address.Bytes()) { // Check relevant
 				transactions = append(transactions, transaction) // Append transaction
 			}
