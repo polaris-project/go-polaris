@@ -67,4 +67,15 @@ func (validator *BeaconDagValidator) ValidateTransactionSignature(transaction *t
 	return transaction.Signature.Verify(transaction.Sender) // Return signature validity
 }
 
+// ValidateTransactionSenderBalance checks that a given transaction's sender has a balance greater than or equal to the transaction's total value (including gas costs).
+func (validator *BeaconDagValidator) ValidateTransactionSenderBalance(transaction *types.Transaction) bool {
+	balance, err := validator.WorkingDag.CalculateAddressBalance(transaction.Sender) // Calculate balance
+
+	if err != nil { // Check for errors
+		return false // Invalid
+	}
+
+	return balance.Cmp(transaction.CalculateTotalValue()) == 0 || balance.Cmp(transaction.CalculateTotalValue()) == 1 // Return sender balance adequate
+}
+
 /* END EXPORTED METHODS */
