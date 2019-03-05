@@ -22,8 +22,20 @@ type BeaconDagValidator struct {
 
 // ValidateTransaction validates the given transaction, transaction via the standard beacon dag validator.
 func (validator *BeaconDagValidator) ValidateTransaction(transaction *types.Transaction) bool {
+	if !validator.ValidateTransactionHash(transaction) { // Check invalid hash
+		return false // Invalid hash
+	}
+
 	if !validator.ValidateTransactionTimestamp(transaction) { // Check invalid timestamp
 		return false // Invalid timestamp
+	}
+
+	if !validator.ValidateTransactionSignature(transaction) { // Check invalid signature
+		return false // Invalid signature
+	}
+
+	if !validator.ValidateTransactionSenderBalance(transaction) { // Check invalid value
+		return false // Invalid value
 	}
 
 	return true // Transaction is valid
