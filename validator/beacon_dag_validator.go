@@ -155,8 +155,6 @@ func (validator *BeaconDagValidator) ValidateTransactionIsNotDuplicate(transacti
 
 // ValidateTransactionDepth checks that a given transaction's parent hash is a member of the last edge.
 func (validator *BeaconDagValidator) ValidateTransactionDepth(transaction *types.Transaction) bool {
-	parentTransactions := []*types.Transaction{} // Initialize parent tx buffer
-
 	for _, parentHash := range transaction.ParentTransactions { // Iterate through parent hashes
 		children, err := validator.WorkingDag.GetTransactionChildren(parentHash) // Get children of transaction
 
@@ -164,11 +162,17 @@ func (validator *BeaconDagValidator) ValidateTransactionDepth(transaction *types
 			return false // Invalid
 		}
 
-		if len(children) != 0 { // Check has children
-			return false // Invalid depth
-		}
+		for _, child := range children { // Iterate through children
+			currentChildren, err := validator.WorkingDag.GetTransactionChildren(child.Hash) // Get children of current child
 
-		parentTransactions = append(parentTransactions, transaction) // Append transaction
+			if err != nil { // Check for errors
+				return false // Invalid
+			}
+
+			if len(currentChildren) != 0 { // Check child has children
+				return false // Invalid depth
+			}
+		}
 	} // TODO: fix so that doesn't rely on tx child count
 
 	return true // Valid
