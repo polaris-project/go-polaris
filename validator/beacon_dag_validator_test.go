@@ -82,7 +82,7 @@ func TestValidateTransaction(t *testing.T) {
 		t.Fatalf("tx should be valid; got %s error", err.Error()) // Panic
 	}
 
-	err = dag.AddTransaction(transaction) // Add transcation
+	err = dag.AddTransaction(transaction) // Add transaction
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
@@ -99,13 +99,40 @@ func TestValidateTransaction(t *testing.T) {
 		[]byte("test payload"),          // Payload
 	) // Create child transaction
 
+	sibling := types.NewTransaction(
+		2,                               // Nonce
+		big.NewFloat(0),                 // Amount
+		address,                         // Sender
+		nil,                             // Recipient
+		[]common.Hash{transaction.Hash}, // Parents
+		0,                               // Gas limit
+		big.NewInt(0),                   // Gas price
+		[]byte("test payload"),          // Payload
+	) // Create child transaction
+
 	err = types.SignTransaction(child, privateKey) // Sign transaction
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
 	}
 
+	err = types.SignTransaction(sibling, privateKey) // Sign transaction
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
 	if err := validator.ValidateTransaction(child); err != nil { // Validate
+		t.Fatalf("tx should be valid; got %s error", err.Error()) // Panic
+	}
+
+	err = dag.AddTransaction(child) // Add child transaction
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	if err := validator.ValidateTransaction(sibling); err != nil { // Validate
 		t.Fatalf("tx should be valid; got %s error", err.Error()) // Panic
 	}
 

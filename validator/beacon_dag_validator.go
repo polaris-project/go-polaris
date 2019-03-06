@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	// ErrInvalidTransactionHash is an error definition representing a transcation hash of invalid value.
+	// ErrInvalidTransactionHash is an error definition representing a transaction hash of invalid value.
 	ErrInvalidTransactionHash = errors.New("transaction hash is invalid")
 
 	//ErrInvalidTransactionTimestamp is an error definition representing a transaction timestamp of invalid value.
@@ -27,7 +27,7 @@ var (
 	ErrInsufficientSenderBalance = errors.New("insufficient sender balance")
 
 	// ErrDuplicateTransaction is an error definition representing a transaction of duplicate value in the working dag.
-	ErrDuplicateTransaction = errors.New("transcation already exists in the working dag (duplicate)")
+	ErrDuplicateTransaction = errors.New("transaction already exists in the working dag (duplicate)")
 
 	// ErrInvalidTransactionDepth is an error definition representing a transaction of invalid depth value.
 	ErrInvalidTransactionDepth = errors.New("invalid transaction depth (not best transaction)")
