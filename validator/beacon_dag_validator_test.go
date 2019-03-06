@@ -149,4 +149,30 @@ func TestValidateTransaction(t *testing.T) {
 	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
 }
 
+func TestBeaconDagValidationProtocol(t *testing.T) {
+	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
+
+	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
+
+	dag, err := types.NewDag(dagConfig) // Initialize dag with dag config
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	validator := NewBeaconDagValidator(dagConfig, dag) // Initialize validator
+
+	if validator == nil { // Check validator is nil
+		t.Fatal("validator should not be nil") // Panic
+	}
+
+	if protocol := validator.ValidationProtocol(); protocol != BeaconDagValidatorValidationProtocol { // Check invalid validation protocol
+		t.Fatalf("invalid validation protocol: %s", protocol) // Log invalid validation protocol
+	}
+
+	types.WorkingDagDB.Close() // Close dag db
+
+	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
+}
+
 /* END EXPORTED METHODS TESTS */
