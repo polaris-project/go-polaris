@@ -173,7 +173,7 @@ func (validator *BeaconDagValidator) ValidateTransactionDepth(transaction *types
 				return false // Invalid depth
 			}
 		}
-	} // TODO: fix so that doesn't rely on tx child count
+	}
 
 	return true // Valid
 }
