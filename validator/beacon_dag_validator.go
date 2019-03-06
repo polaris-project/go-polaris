@@ -31,6 +31,9 @@ var (
 
 	// ErrInvalidTransactionDepth is an error definition representing a transaction of invalid depth value.
 	ErrInvalidTransactionDepth = errors.New("invalid transaction depth (not best transaction)")
+
+	// ErrInvalidNonce is an error definition representing a transaction of invalid nonce value.
+	ErrInvalidNonce = errors.New("invalid transaction nonce")
 )
 
 // BeaconDagValidator represents a main dag validator.
@@ -75,6 +78,10 @@ func (validator *BeaconDagValidator) ValidateTransaction(transaction *types.Tran
 
 	if !validator.ValidateTransactionDepth(transaction) { // Check valid depth
 		return ErrInvalidTransactionDepth // Invalid depth
+	}
+
+	if !validator.ValidateTransactionNonce(transaction) { // Check valid nonce
+		return ErrInvalidNonce // Invalid nonce
 	}
 
 	return nil // Transaction is valid
@@ -165,6 +172,33 @@ func (validator *BeaconDagValidator) ValidateTransactionDepth(transaction *types
 	} // TODO: fix so that doesn't rely on tx child count
 
 	return true // Valid
+}
+
+// ValidateTransactionNonce checks that a given transaction's nonce is equivalent to the sending account's last nonce + 1.
+func (validator *BeaconDagValidator) ValidateTransactionNonce(transaction *types.Transaction) bool {
+	senderTransactions, err := validator.WorkingDag.GetTransactionsBySender(transaction.Sender) // Get sender txs
+
+	if err != nil { // Check for errors
+		return false // Invalid
+	}
+
+	if len(senderTransactions) == 0 && transaction.AccountNonce != 0 { // Check nonce is not 0
+		return false // Invalid nonce
+	}
+
+	lastNonce := uint64(0) // Init nonce buffer
+
+	for _, currentTransaction := range senderTransactions { // Iterate through sender txs
+		if currentTransaction.AccountNonce > lastNonce { // Check greater than last nonce
+			lastNonce = currentTransaction.AccountNonce // Set last nonce
+		}
+	}
+
+	if transaction.AccountNonce != lastNonce+1 { // Check invalid nonce
+		return false // Invalid nonce
+	}
+
+	return true // Valid nonce
 }
 
 /* END EXPORTED METHODS */
