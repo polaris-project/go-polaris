@@ -340,6 +340,37 @@ func (dag *Dag) GetTransactionsByAddress(address *common.Address) ([]*Transactio
 	}) // Return filtered transactions
 }
 
+// GetTransactionsBySender attempts to filter the dag by a given sending address.
+func (dag *Dag) GetTransactionsBySender(sender *common.Address) ([]*Transaction, error) {
+	if WorkingDagDB == nil { // Check no dag db
+		return []*Transaction{}, ErrDagDbNotOpened // Return found error
+	}
+
+	transactions := []*Transaction{} // Init tx buffer
+
+	err := createTransactionBucketIfNotExist() // Create transaction bucket if not exist
+
+	if err != nil { // Check for errors
+		return []*Transaction{}, err // Return found error
+	}
+
+	return transactions, WorkingDagDB.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket(transactionBucket) // Get transaction bucket
+
+		c := bucket.Cursor() // Get cursor
+
+		for transactionHash, transactionBytes := c.First(); transactionHash != nil; transactionHash, transactionBytes = c.Next() { // Iterate through tx set
+			transaction := TransactionFromBytes(transactionBytes) // Deserialize transaction
+
+			if bytes.Equal(transaction.Sender.Bytes(), sender.Bytes()) { // Check is sender
+				transactions = append(transactions, transaction) // Append transaction
+			}
+		}
+
+		return nil // No error occurred, return nil
+	}) // Return filtered transactions
+}
+
 /*
 	END DB READING HELPER METHODS
 */
