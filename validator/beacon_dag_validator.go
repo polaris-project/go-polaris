@@ -13,6 +13,11 @@ import (
 	"github.com/polaris-project/go-polaris/types"
 )
 
+const (
+	// BeaconDagValidatorValidationProtocol represents the validation protocol of the beacon dag validator.
+	BeaconDagValidatorValidationProtocol = "beacon_simple_sig_ver"
+)
+
 var (
 	// ErrInvalidTransactionHash is an error definition representing a transaction hash of invalid value.
 	ErrInvalidTransactionHash = errors.New("transaction hash is invalid")
@@ -207,6 +212,11 @@ func (validator *BeaconDagValidator) ValidateTransactionNonce(transaction *types
 	}
 
 	return true // Valid nonce
+}
+
+// ValidationProtocol fetches the current validator's validation protocol.
+func (validator *BeaconDagValidator) ValidationProtocol() string {
+	return BeaconDagValidatorValidationProtocol // Return validation protocol
 }
 
 /* END EXPORTED METHODS */
