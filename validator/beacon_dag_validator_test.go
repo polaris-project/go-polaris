@@ -77,8 +77,8 @@ func TestValidateTransaction(t *testing.T) {
 		t.Fatal("validator should not be nil") // Panic
 	}
 
-	if validator.ValidateTransaction(transaction) != nil { // Validate
-		t.Fatal("tx should be valid") // Panic
+	if err := validator.ValidateTransaction(transaction); err != nil { // Validate
+		t.Fatalf("tx should be valid; got %s error", err.Error()) // Panic
 	}
 
 	types.WorkingDagDB.Close() // Close dag db

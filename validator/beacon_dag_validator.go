@@ -182,8 +182,12 @@ func (validator *BeaconDagValidator) ValidateTransactionNonce(transaction *types
 		return false // Invalid
 	}
 
-	if len(senderTransactions) == 0 && transaction.AccountNonce != 0 { // Check nonce is not 0
-		return false // Invalid nonce
+	if len(senderTransactions) == 0 { // Check is genesis
+		if transaction.AccountNonce != 0 { // Check nonce is not 0
+			return false // Invalid nonce
+		}
+
+		return true // Valid nonce
 	}
 
 	lastNonce := uint64(0) // Init nonce buffer
