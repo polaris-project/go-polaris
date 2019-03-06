@@ -8,6 +8,8 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"math/big"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/polaris-project/go-polaris/common"
@@ -20,6 +22,8 @@ import (
 
 // TestNewBeaconDagValidator tests the functionality of the NewBeaconDagValidator() helper method.
 func TestNewBeaconDagValidator(t *testing.T) {
+	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
+
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := types.NewDag(dagConfig) // Initialize dag with dag config
@@ -35,10 +39,14 @@ func TestNewBeaconDagValidator(t *testing.T) {
 	}
 
 	types.WorkingDagDB.Close() // Close dag db
+
+	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
 }
 
 // TestValidateTransaction tests the functionality of the ValidateTransaction() helper method.
 func TestValidateTransaction(t *testing.T) {
+	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
+
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := types.NewDag(dagConfig) // Initialize dag with dag config
@@ -137,6 +145,8 @@ func TestValidateTransaction(t *testing.T) {
 	}
 
 	types.WorkingDagDB.Close() // Close dag db
+
+	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
 }
 
 /* END EXPORTED METHODS TESTS */
