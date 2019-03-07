@@ -10,7 +10,10 @@ import (
 	"testing"
 
 	protocol "github.com/libp2p/go-libp2p-protocol"
+	"github.com/polaris-project/go-polaris/config"
 	"github.com/polaris-project/go-polaris/crypto"
+	"github.com/polaris-project/go-polaris/types"
+	"github.com/polaris-project/go-polaris/validator"
 )
 
 /* BEGIN EXPORTED METHODS TESTS */
@@ -76,7 +79,7 @@ func TestPublish(t *testing.T) {
 
 	address := crypto.AddressFromPrivateKey(privateKey) // Generate address
 
-	transaction := NewTransaction(
+	transaction := types.NewTransaction(
 		0,                      // Nonce
 		big.NewFloat(0),        // Amount
 		address,                // Sender
@@ -87,7 +90,7 @@ func TestPublish(t *testing.T) {
 		[]byte("test payload"), // Payload
 	) // Initialize a new transaction
 
-	err = SignTransaction(transaction, privateKey) // Sign transaction
+	err = types.SignTransaction(transaction, privateKey) // Sign transaction
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
@@ -103,7 +106,23 @@ func TestPublish(t *testing.T) {
 		t.Fatal(err) // Panic
 	}
 
-	err = transaction.Publish(context.Background(), "test_network") // Publish transaction
+	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
+
+	dag, err := types.NewDag(dagConfig) // Initialize dag with dag config
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	validator := validator.Validator(validator.NewBeaconDagValidator(dagConfig, dag)) // Initialize validator
+
+	client := NewClient("test_network", &validator) // Initialize client
+
+	if client == nil { // Check client is nil
+		t.Fatal("client should not be nil") // Panic
+	}
+
+	err = client.PublishTransaction(context.Background(), transaction) // Publish transaction
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic

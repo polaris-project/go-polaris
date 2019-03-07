@@ -32,28 +32,34 @@ func TestNewClient(t *testing.T) {
 		t.Fatal(err) // Panic
 	}
 
-	validator := validator.NewBeaconDagValidator(dagConfig, dag) // Initialize validator
+	validator := validator.Validator(validator.NewBeaconDagValidator(dagConfig, dag)) // Initialize validator
 
-	client := NewClient("test_network", validator.Validator(validator)) // Initialize client
+	client := NewClient("test_network", &validator) // Initialize client
 
 	if client == nil { // Check client is nil
 		t.Fatal("client should not be nil") // Panic
 	}
 
-	WorkingDagDB.Close() // Close dag db
+	types.WorkingDagDB.Close() // Close dag db
 
 	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
 }
 
 // TestStartServingStream tests the functionality of the StartServingStream() helper method.
 func TestStartServingStream(t *testing.T) {
-	_, err := NewHost(context.Background(), 2831) // Initialize host
+	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
+
+	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
+
+	dag, err := types.NewDag(dagConfig) // Initialize dag with dag config
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
 	}
 
-	client := NewClient("test_network") // Initialize client
+	validator := validator.Validator(validator.NewBeaconDagValidator(dagConfig, dag)) // Initialize validator
+
+	client := NewClient("test_network", &validator) // Initialize client
 
 	if client == nil { // Check client is nil
 		t.Fatal("client should not be nil") // Panic
@@ -64,6 +70,8 @@ func TestStartServingStream(t *testing.T) {
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
 	}
+
+	os.RemoveAll(filepath.FromSlash("data/db/test_network.db")) // Remove existing db
 }
 
 /* END EXPORTED METHODS TESTS */
