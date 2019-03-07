@@ -3,14 +3,12 @@
 package types
 
 import (
-	"context"
 	"errors"
 	"math/big"
 	"time"
 
 	"github.com/polaris-project/go-polaris/common"
 	"github.com/polaris-project/go-polaris/crypto"
-	"github.com/polaris-project/go-polaris/p2p"
 )
 
 var (
@@ -62,34 +60,6 @@ func NewTransaction(accountNonce uint64, amount *big.Float, sender, recipient *c
 	(*transaction).Hash = crypto.Sha3(transaction.Bytes()) // Set transaction hash
 
 	return transaction // Return initialized transaction
-}
-
-// Publish attempts to broadcast the given transaction to all available peers.
-// In addition, publish only publishes the given transaction to a specified network.
-// If no working host is found, an ErrNoWorkingHost error is returned.
-// If no peers are available, nil is returned.
-func (transaction *Transaction) Publish(ctx context.Context, network string) error {
-	if p2p.WorkingHost == nil { // Check no host
-		return ErrNoWorkingHost // Return found error
-	}
-
-	if transaction.Hash.IsNil() { // Check no hash
-		return ErrNilHash // Return found error
-	}
-
-	if transaction.Signature == nil { // Check nil signature
-		return ErrNilSignature // Return found error
-	}
-
-	if !transaction.Signature.Verify(transaction.Sender) { // Check invalid signature
-		return ErrInvalidSignature // Return found error
-	}
-
-	context, cancel := context.WithCancel(ctx) // Get context
-
-	defer cancel() // Cancel
-
-	return p2p.BroadcastDht(context, p2p.WorkingHost, transaction.Bytes(), p2p.GetStreamHeaderProtocolPath(network, p2p.PublishTransaction), network) // Broadcast transaction
 }
 
 // CalculateTotalValue calculates the total value of a transaction, including both its amount and total gas.

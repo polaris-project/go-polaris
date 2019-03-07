@@ -4,7 +4,6 @@ package types
 
 import (
 	"bytes"
-	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -107,15 +106,15 @@ func NewDag(config *config.DagConfig) (*Dag, error) {
 
 // MakeGenesis makes the dag's genesis transaction set.
 // If the dag already has a genesis transaction, an ErrDuplicateTransaction error is returned.
-func (dag *Dag) MakeGenesis() error {
+func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 	if !dag.Genesis.IsNil() { // Check genesis already exists
-		return ErrDuplicateTransaction // Return found error
+		return nil, ErrDuplicateTransaction // Return found error
 	}
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate gensis address
 
 	if err != nil { // Check for errors
-		return err // Return found error
+		return nil, err // Return found error
 	}
 
 	totalGenesisValue := 0.0 // Init total value buffer
@@ -124,19 +123,17 @@ func (dag *Dag) MakeGenesis() error {
 		totalGenesisValue += value // Increment value
 	}
 
+	genesisTransactions := []*Transaction{} // Initialize genesis transactions
+
 	genesisTransaction := NewTransaction(0, big.NewFloat(totalGenesisValue), nil, crypto.AddressFromPrivateKey(privateKey), nil, 0, big.NewInt(0), []byte("genesis")) // Initialize genesis transaction
 
 	err = dag.forceAddTransaction(genesisTransaction) // Add genesis transaction
 
 	if err != nil { // Check for errors
-		return err // Return found error
+		return nil, err // Return found error
 	}
 
-	err = genesisTransaction.Publish(context.Background(), dag.DagConfig.Identifier) // Publish genesis
-
-	if err != nil { // Check for errors
-		return err // Return found error
-	}
+	genesisTransactions = append(genesisTransactions, genesisTransaction) // Append genesis
 
 	lastParent := genesisTransaction // Set last parent
 
@@ -146,7 +143,7 @@ func (dag *Dag) MakeGenesis() error {
 		decodedKey, err := hex.DecodeString(key) // Decode key
 
 		if err != nil { // Check for errors
-			return err // Return found error
+			return nil, err // Return found error
 		}
 
 		decodedAddress := common.NewAddress(decodedKey) // Decode address
@@ -156,27 +153,23 @@ func (dag *Dag) MakeGenesis() error {
 		err = SignTransaction(transaction, privateKey) // Sign transaction
 
 		if err != nil { // Check for errors
-			return err // Return found error
+			return nil, err // Return found error
 		}
 
 		err = dag.AddTransaction(transaction) // Add transaction
 
 		if err != nil { // Check for errors
-			return err // Return found error
+			return nil, err // Return found error
 		}
 
-		err = transaction.Publish(context.Background(), dag.DagConfig.Identifier) // Publish transaction
-
-		if err != nil { // Check for errors
-			return err // Return found error
-		}
+		genesisTransactions = append(genesisTransactions, transaction) // Append transaction
 
 		lastParent = transaction // Set last parent
 
 		x++ // Increment nonce
 	}
 
-	return nil // No error occurred, return nil
+	return nil, nil // No error occurred, return nil
 }
 
 // OpenDag attempts to open all dag-related resources.
