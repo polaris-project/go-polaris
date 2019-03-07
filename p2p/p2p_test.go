@@ -3,9 +3,14 @@ package p2p
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"math/big"
 	"testing"
 
 	protocol "github.com/libp2p/go-libp2p-protocol"
+	"github.com/polaris-project/go-polaris/crypto"
 )
 
 /* BEGIN EXPORTED METHODS TESTS */
@@ -55,6 +60,50 @@ func TestBroadcastDht(t *testing.T) {
 	}
 
 	err = BroadcastDht(ctx, host, []byte("test"), "/test/1.0.0", "test_network") // Broadcast
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+}
+
+// TestPublish tests the functionality of the Publish() helper method.
+func TestPublish(t *testing.T) {
+	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate private key
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	address := crypto.AddressFromPrivateKey(privateKey) // Generate address
+
+	transaction := NewTransaction(
+		0,                      // Nonce
+		big.NewFloat(0),        // Amount
+		address,                // Sender
+		nil,                    // Recipient
+		nil,                    // Parents
+		0,                      // Gas limit
+		big.NewInt(0),          // Gas price
+		[]byte("test payload"), // Payload
+	) // Initialize a new transaction
+
+	err = SignTransaction(transaction, privateKey) // Sign transaction
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	ctx, cancel := context.WithCancel(context.Background()) // Get context
+
+	defer cancel() // Cancel
+
+	_, err = NewHost(ctx, 3861) // Initialize host
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	err = transaction.Publish(context.Background(), "test_network") // Publish transaction
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
