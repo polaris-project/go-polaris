@@ -27,7 +27,7 @@ func NewClient(network string) *Client {
 }
 
 // StartServingStream starts serving a stream on a given header protocol path.
-func (client *Client) StartServingStream(streamHeaderProtocolPath string, handler inet.StreamHandler) error {
+func (client *Client) StartServingStream(streamHeaderProtocolPath string, handler func(inet.Stream)) error {
 	if WorkingHost == nil { // Check no host
 		return ErrNoWorkingHost // Return found error
 	}
