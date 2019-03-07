@@ -7,7 +7,7 @@ import "github.com/polaris-project/go-polaris/types"
 
 // Validator represents any generic validator.
 type Validator interface {
-	ValidateTransaction(transaction *types.Transaction) bool // Validate a given transaction
+	ValidateTransaction(transaction *types.Transaction) error // Validate a given transaction
 
 	ValidateTransactionHash(transaction *types.Transaction) bool // Validate a given transaction's hash
 
