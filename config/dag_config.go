@@ -8,6 +8,11 @@ import (
 	"io/ioutil"
 )
 
+var (
+	// DagConfigRequest represents the global dag config request message byte value.
+	DagConfigRequest = []byte("dag_config_req")
+)
+
 // DagConfig represents a DAG configuration.
 type DagConfig struct {
 	Alloc map[string]float64 `json:"alloc"` // Account balances at genesis

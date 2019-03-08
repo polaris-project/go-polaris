@@ -38,6 +38,21 @@ func TestBytes(t *testing.T) {
 	}
 }
 
+// TestDagConfigFromBytes tests the functionality of the dag config FromBytes() helper method.
+func TestDagConfigFromBytes(t *testing.T) {
+	dagConfig, err := NewDagConfigFromGenesis("test_genesis.json") // Initialize new dag config with test genesis file.
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	deserializedDagConfig := DagConfigFromBytes(dagConfig.Bytes()) // Deserialize
+
+	if !bytes.Equal(deserializedDagConfig.Bytes(), dagConfig.Bytes()) { // Check dag configs equivalent
+		t.Fatal("invalid deserialized dag config") // Panic
+	}
+}
+
 // TestWriteToMemory tests the functionality of outbound dag config I/O.
 func TestWriteToMemory(t *testing.T) {
 	dagConfig, err := NewDagConfigFromGenesis("test_genesis.json") // Initialize new dag config with test genesis file.

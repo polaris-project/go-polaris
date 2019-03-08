@@ -28,6 +28,19 @@ func (dagConfig *DagConfig) Bytes() []byte {
 	return marshaledVal // Return marshalled JSON
 }
 
+// DagConfigFromBytes deserializes a dag config from the given byte array b.
+func DagConfigFromBytes(b []byte) *DagConfig {
+	buffer := &DagConfig{} // Init buffer
+
+	err := json.Unmarshal(b, buffer) // Unmarshal into buffer
+
+	if err != nil { // Check for errors
+		return &DagConfig{} // Return nil dag config
+	}
+
+	return buffer // Return deserialized config
+}
+
 // WriteToMemory writes the given dag config to persistent memory.
 func (dagConfig *DagConfig) WriteToMemory() error {
 	err := common.CreateDirIfDoesNotExit(common.ConfigDir) // Create config dir if necessary
