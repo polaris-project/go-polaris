@@ -3,7 +3,10 @@
 // also implemented in the validator package.
 package validator
 
-import "github.com/polaris-project/go-polaris/types"
+import (
+	"github.com/polaris-project/go-polaris/config"
+	"github.com/polaris-project/go-polaris/types"
+)
 
 // Validator represents any generic validator.
 type Validator interface {
@@ -26,4 +29,6 @@ type Validator interface {
 	ValidationProtocol() string // Get the current validator's validation protocol
 
 	GetWorkingDag() *types.Dag // Get current validator's working dag
+
+	GetWorkingConfig() *config.DagConfig // Get current validator's working config
 }

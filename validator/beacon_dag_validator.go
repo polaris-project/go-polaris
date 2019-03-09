@@ -228,4 +228,9 @@ func (validator *BeaconDagValidator) GetWorkingDag() *types.Dag {
 	return validator.WorkingDag // Return working dag
 }
 
+// GetWorkingConfig attempts to fetch the working config instance.
+func (validator *BeaconDagValidator) GetWorkingConfig() *config.DagConfig {
+	return validator.Config // Return working config
+}
+
 /* END EXPORTED METHODS */
