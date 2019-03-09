@@ -223,4 +223,9 @@ func (validator *BeaconDagValidator) ValidationProtocol() string {
 	return BeaconDagValidatorValidationProtocol // Return validation protocol
 }
 
+// GetWorkingDag attempts to fetch the working dag instance.
+func (validator *BeaconDagValidator) GetWorkingDag() *types.Dag {
+	return validator.WorkingDag // Return working dag
+}
+
 /* END EXPORTED METHODS */
