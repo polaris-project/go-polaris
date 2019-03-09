@@ -161,6 +161,10 @@ func (validator *BeaconDagValidator) ValidateTransactionIsNotDuplicate(transacti
 // ValidateTransactionDepth checks that a given transaction's parent hash is a member of the last edge.
 func (validator *BeaconDagValidator) ValidateTransactionDepth(transaction *types.Transaction) bool {
 	for _, parentHash := range transaction.ParentTransactions { // Iterate through parent hashes
+		if bytes.Equal(parentHash.Bytes(), transaction.Hash.Bytes()) { // Check self in parent hashes
+			return false // Invalid
+		}
+
 		children, err := validator.WorkingDag.GetTransactionChildren(parentHash) // Get children of transaction
 
 		if err != nil { // Check for errors
