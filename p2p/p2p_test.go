@@ -27,6 +27,19 @@ func TestNewHost(t *testing.T) {
 	}
 }
 
+// TestGetBestBootstrap tests the functionality of the GetBestBootstrap() helper method.
+func TestGetBestBootstrap(t *testing.T) {
+	host, err := NewHost(context.Background(), 2831) // Initialize host
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
+	}
+
+	bestBootstrap := GetBestBootstrapAddress(context.Background(), host) // Get best bootstrap node
+
+	t.Log(bestBootstrap) // Log best
+}
+
 // TestBootstrapDht tests the functionality of the BootstrapDht() helper method.
 func TestBootstrapDht(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background()) // Get context

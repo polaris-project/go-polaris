@@ -14,27 +14,35 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
+
+	"github.com/libp2p/go-libp2p/p2p/protocol/ping"
 
 	"github.com/libp2p/go-libp2p"
 	crypto "github.com/libp2p/go-libp2p-crypto"
 	host "github.com/libp2p/go-libp2p-host"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
+	peer "github.com/libp2p/go-libp2p-peer"
 	peerstore "github.com/libp2p/go-libp2p-peerstore"
-	"github.com/libp2p/go-libp2p-protocol"
+	protocol "github.com/libp2p/go-libp2p-protocol"
 	routed "github.com/libp2p/go-libp2p/p2p/host/routed"
 	multiaddr "github.com/multiformats/go-multiaddr"
 	"github.com/polaris-project/go-polaris/common"
+	"github.com/polaris-project/go-polaris/config"
 )
 
 // Stream header protocol definitions
 const (
 	PublishTransaction StreamHeaderProtocol = iota
+
+	RequestConfig
 )
 
 var (
 	// StreamHeaderProtocolNames represents all stream header protocol names.
 	StreamHeaderProtocolNames = []string{
 		"pub_transaction",
+		"req_config",
 	}
 	// BootstrapNodes represents all default bootstrap nodes on the given network.
 	BootstrapNodes = []string{
@@ -43,6 +51,9 @@ var (
 
 	// WorkingHost is the current global routed host.
 	WorkingHost *routed.RoutedHost
+
+	// NodePort is the current node port
+	NodePort = 3000
 )
 
 // StreamHeaderProtocol represents the stream protocol type enum.
@@ -117,6 +128,50 @@ func NewHost(ctx context.Context, port int) (*routed.RoutedHost, error) {
 	WorkingHost = routedHost // Set routed host
 
 	return WorkingHost, nil // Return working routed host
+}
+
+// GetBestBootstrapAddress attempts to fetch the best bootstrap node.
+func GetBestBootstrapAddress(ctx context.Context, host *routed.RoutedHost) string {
+	for _, bootstrapAddress := range BootstrapNodes { // Iterate through bootstrap nodes
+		_, err := ping.Ping(ctx, host, peer.ID(strings.Split(bootstrapAddress, "ipfs/")[1])) // Attempt to ping
+
+		if err == nil { // Check no errors
+			return bootstrapAddress // Return bootstrap address
+		}
+	}
+
+	return "localhost" // Return localhost
+}
+
+// BootstrapConfig bootstraps a dag config to the list of bootstrap nodes.
+func BootstrapConfig(ctx context.Context, host *routed.RoutedHost, bootstrapAddress string, network string) (*config.DagConfig, error) {
+	stream, err := (*host).NewStream(ctx, peer.ID(strings.Split(bootstrapAddress, "ipfs/")[1]), protocol.ID(GetStreamHeaderProtocolPath(network, RequestConfig))) // Initialize new stream
+
+	if err != nil { // Check for errors
+		return &config.DagConfig{}, err // Return found error
+	}
+
+	readWriter := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)) // Initialize reader/writer from stream
+
+	_, err = readWriter.Write(config.DagConfigRequest) // Write request
+
+	if err != nil { // Check for errors
+		return &config.DagConfig{}, err // Return found error
+	}
+
+	var dagConfigBytes []byte // Initialize dag config bytes buffer
+
+	for readBytes, err := readWriter.ReadByte(); err != nil; { // Read until EOF
+		dagConfigBytes = append(dagConfigBytes, readBytes) // Append read bytes
+	}
+
+	deserializedConfig := config.DagConfigFromBytes(dagConfigBytes) // Deserialize
+
+	if deserializedConfig == nil { // Check nil
+		return &config.DagConfig{}, config.ErrCouldNotDeserializeConfig // Return error
+	}
+
+	return config.DagConfigFromBytes(dagConfigBytes), nil // Return deserialized dag config
 }
 
 // BootstrapDht bootstraps the WorkingDHT to the list of bootstrap nodes.
