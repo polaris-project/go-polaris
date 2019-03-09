@@ -238,6 +238,47 @@ func BroadcastDht(ctx context.Context, host *routed.RoutedHost, message []byte, 
 	return nil // No error occurred, return nil
 }
 
+// BroadcastDhtResult send a given message to all nodes in a dht, and returns the result from each node.
+func BroadcastDhtResult(ctx context.Context, host *routed.RoutedHost, message []byte, streamProtocol string, dagIdentifier string, nPeers int) ([][]byte, error) {
+	peers := host.Peerstore().Peers() // Get peers
+
+	results := [][]byte{} // Init results buffer
+
+	for x, peer := range peers { // Iterate through peers
+		if x != nPeers { // Check has sent to enough peers
+			break // Break
+		}
+
+		if peer == (*host).ID() { // Check not same node
+			continue // Continue
+		}
+
+		stream, err := (*host).NewStream(ctx, peer, protocol.ID(streamProtocol)) // Connect
+
+		if err != nil { // Check for errors
+			continue // Continue
+		}
+
+		readWriter := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)) // Initialize reader/writer
+
+		_, err = readWriter.Write(message) // Write message
+
+		if err != nil { // Check for errors
+			continue // Continue
+		}
+
+		var responseBytes []byte // Initialize response bytes buffer
+
+		for readByte, err := readWriter.ReadByte(); err != nil; { // Read until EOF
+			responseBytes = append(responseBytes, readByte) // Append read byte
+		}
+
+		results = append(results, responseBytes) // Append response
+	}
+
+	return results, nil // No error occurred, return response
+}
+
 // GetStreamHeaderProtocolPath attempts to determine the libp2p stream header protocol URI from a given stream protocol and network.
 func GetStreamHeaderProtocolPath(network string, streamProtocol StreamHeaderProtocol) string {
 	return fmt.Sprintf("/%s/%s", network, StreamHeaderProtocolNames[streamProtocol]) // Return URI
