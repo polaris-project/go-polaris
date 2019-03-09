@@ -44,6 +44,12 @@ func (client *Client) StartServingStreams(network string) error {
 		return err // Return found error
 	}
 
+	err = client.StartServingStream(GetStreamHeaderProtocolPath(network, RequestConfig), client.HandleReceiveConfigRequest) // Register config request handler
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
 	return nil // No error occurred, return nil
 }
 
@@ -55,6 +61,12 @@ func (client *Client) StartServingStream(streamHeaderProtocolPath string, handle
 
 	WorkingHost.SetStreamHandler(protocol.ID(streamHeaderProtocolPath), handler) // Set handler
 
+	return nil // No error occurred, return nil
+}
+
+// SyncDag syncs the working dag.
+func (client *Client) SyncDag() error {
+	// lastTransactionHashes :=
 	return nil // No error occurred, return nil
 }
 
@@ -98,6 +110,21 @@ func (client *Client) HandleReceiveTransaction(stream inet.Stream) {
 
 /*
 	END TRANSACTION HELPERS
+*/
+
+/*
+	BEGIN CONFIG HELPERS
+*/
+
+// HandleReceiveConfigRequest handles a new stream requesting a
+func (client *Client) HandleReceiveConfigRequest(stream inet.Stream) {
+	writer := bufio.NewWriter(stream) // Initialize writer
+
+	writer.Write((*client.Validator).GetWorkingConfig().Bytes()) // Write config bytes
+}
+
+/*
+	END CONFIG HELPERS
 */
 
 /* END EXPORTED METHODS */
