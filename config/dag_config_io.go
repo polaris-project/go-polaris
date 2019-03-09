@@ -5,11 +5,17 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
 
 	"github.com/polaris-project/go-polaris/common"
+)
+
+var (
+	// ErrCouldNotDeserializeConfig represents an invalidly serialized dag config--that of which cannot be correctly deserialized.
+	ErrCouldNotDeserializeConfig = errors.New("could not deserialize dag config")
 )
 
 /* BEGIN EXPORTED METHODS */
