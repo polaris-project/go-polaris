@@ -1,6 +1,7 @@
 package p2p
 
 import (
+	"bufio"
 	"context"
 	"errors"
 
@@ -35,6 +36,17 @@ func NewClient(network string, validator *validator.Validator) *Client {
 	}
 }
 
+// StartServingStreams attempts to start serving all necessary streams
+func (client *Client) StartServingStreams(network string) error {
+	err := client.StartServingStream(GetStreamHeaderProtocolPath(network, PublishTransaction), client.HandleReceiveTransaction) // Register tx handler
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	return nil // No error occurred, return nil
+}
+
 // StartServingStream starts serving a stream on a given header protocol path.
 func (client *Client) StartServingStream(streamHeaderProtocolPath string, handler func(inet.Stream)) error {
 	if WorkingHost == nil { // Check no host
@@ -45,6 +57,10 @@ func (client *Client) StartServingStream(streamHeaderProtocolPath string, handle
 
 	return nil // No error occurred, return nil
 }
+
+/*
+	BEGIN TRANSACTION HELPERS
+*/
 
 // PublishTransaction publishes a given transaction.
 func (client *Client) PublishTransaction(ctx context.Context, transaction *types.Transaction) error {
@@ -62,5 +78,26 @@ func (client *Client) PublishTransaction(ctx context.Context, transaction *types
 
 	return BroadcastDht(context, WorkingHost, transaction.Bytes(), GetStreamHeaderProtocolPath(client.Network, PublishTransaction), client.Network) // Broadcast transaction
 }
+
+// HandleReceiveTransaction handles a new stream sending a transaction.
+func (client *Client) HandleReceiveTransaction(stream inet.Stream) {
+	reader := bufio.NewReader(stream) // Initialize reader from stream
+
+	var transactionBytes []byte // Initialize transaction bytes buffer
+
+	for readBytes, err := reader.ReadByte(); err != nil; { // Read until EOF
+		transactionBytes = append(transactionBytes, readBytes) // Append read bytes
+	}
+
+	transaction := types.TransactionFromBytes(transactionBytes) // Deserialize transaction
+
+	if err := (*client.Validator).ValidateTransaction(transaction); err == nil { // Check transaction valid
+		(*client.Validator).GetWorkingDag().AddTransaction(transaction) // Add transaction to working dag
+	}
+}
+
+/*
+	END TRANSACTION HELPERS
+*/
 
 /* END EXPORTED METHODS */
