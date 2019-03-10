@@ -17,6 +17,9 @@ var (
 
 	// BestTransactionRequest represents the global best transaction request message byte value.
 	BestTransactionRequest = []byte("best_transaction_request")
+
+	// TransactionRequest represents the global transaction request message byte value.
+	TransactionRequest = []byte("transaction_request")
 )
 
 // Transaction is a data type representing a transfer of monetary value between addresses.
