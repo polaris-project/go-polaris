@@ -174,7 +174,7 @@ func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 		x++ // Increment nonce
 	}
 
-	return nil, nil // No error occurred, return nil
+	return genesisTransactions, nil // No error occurred, return nil
 }
 
 // OpenDag attempts to open all dag-related resources.
