@@ -43,6 +43,9 @@ var (
 	// querying of the working db for an invalid hash.
 	ErrNilTransactionAtHash = errors.New("no transaction exists in the dag with given hash")
 
+	// ErrNilGenesis represents an error describing a genesis value of nil.
+	ErrNilGenesis = errors.New("dag does not have a valid genesis")
+
 	// ErrNilSignature represents an error describing a transaction lacking a signature.
 	ErrNilSignature = errors.New("transaction has no signature")
 
@@ -132,6 +135,8 @@ func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 	if err != nil { // Check for errors
 		return nil, err // Return found error
 	}
+
+	(*dag).Genesis = genesisTransaction.Hash // Set genesis
 
 	genesisTransactions = append(genesisTransactions, genesisTransaction) // Append genesis
 
@@ -362,6 +367,36 @@ func (dag *Dag) GetTransactionsBySender(sender *common.Address) ([]*Transaction,
 
 		return nil // No error occurred, return nil
 	}) // Return filtered transactions
+}
+
+// GetBestTransaction gets the last transaction in the dag. If more than one last child exists, the child with
+// the latest timestamp is returned.
+func (dag *Dag) GetBestTransaction() (*Transaction, error) {
+	lastTransaction, err := dag.GetTransactionByHash(dag.Genesis) // Initialize last transaction buffer
+
+	if err != nil { // Check for errors
+		return &Transaction{}, err // Return found error
+	}
+
+	for { // Do until found parent without children
+		children, _ := dag.GetTransactionChildren(lastTransaction.Hash) // Get children
+
+		if len(children) == 0 { // Check no children
+			break // Break
+		}
+
+		bestTransaction := children[0] // Get first tx pointer
+
+		for _, child := range children { // Iterate through children
+			if child.Timestamp.After(bestTransaction.Timestamp) { // Check latest child
+				bestTransaction = child // Set best transaction
+			}
+		}
+
+		lastTransaction = bestTransaction // Set best transaction
+	}
+
+	return lastTransaction, nil // Return last transaction
 }
 
 /*
