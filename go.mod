@@ -2,6 +2,7 @@ module github.com/polaris-project/go-polaris
 
 require (
 	github.com/boltdb/bolt v1.3.1
+	github.com/juju/loggo v0.0.0-20190212223446-d976af380377
 	github.com/libp2p/go-libp2p v0.0.1
 	github.com/libp2p/go-libp2p-crypto v0.0.1
 	github.com/libp2p/go-libp2p-host v0.0.1
