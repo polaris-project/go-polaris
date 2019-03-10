@@ -41,7 +41,7 @@ const (
 
 	RequestTransaction
 
-	RequestGenesis
+	RequestGenesisHash
 )
 
 var (
@@ -50,7 +50,8 @@ var (
 		"pub_transaction",
 		"req_config",
 		"req_best_transaction",
-		"req_genesis",
+		"req_transaction",
+		"req_genesis_hash",
 	}
 
 	// BootstrapNodes represents all default bootstrap nodes on the given network.

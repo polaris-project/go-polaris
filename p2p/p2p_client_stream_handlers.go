@@ -41,6 +41,12 @@ func (client *Client) StartServingStreams(network string) error {
 		return err // Return found error
 	}
 
+	err = client.StartServingStream(GetStreamHeaderProtocolPath(network, RequestGenesisHash), client.HandleReceiveGenesisHashRequest) // Register genesis hash request handler
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
 	return nil // No error occurred, return nil
 }
 
@@ -104,11 +110,18 @@ func (client *Client) HandleReceiveTransactionRequest(stream inet.Stream) {
 	readWriter.Write(transaction.Bytes()) // Write transaction bytes
 }
 
-// HandleReceiveConfigRequest handles a new stream requesting a
+// HandleReceiveConfigRequest handles a new stream requesting the working dag config.
 func (client *Client) HandleReceiveConfigRequest(stream inet.Stream) {
 	writer := bufio.NewWriter(stream) // Initialize writer
 
 	writer.Write((*client.Validator).GetWorkingConfig().Bytes()) // Write config bytes
+}
+
+// HandleReceiveGenesisHashRequest handles a new stream requesting for the genesis hash of the working dag.
+func (client *Client) HandleReceiveGenesisHashRequest(stream inet.Stream) {
+	writer := bufio.NewWriter(stream) // Initialize writer
+
+	writer.Write((*client.Validator).GetWorkingDag().Genesis.Bytes()) // Write genesis hash
 }
 
 /*
