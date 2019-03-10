@@ -1,6 +1,7 @@
 package p2p
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -31,6 +32,16 @@ func TestStartServingStream(t *testing.T) {
 
 	if client == nil { // Check client is nil
 		t.Fatal("client should not be nil") // Panic
+	}
+
+	ctx, cancel := context.WithCancel(context.Background()) // Initialize context
+
+	defer cancel() // Cancel
+
+	_, err = NewHost(ctx, 3000) // Initialize host
+
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
 	}
 
 	err = client.StartServingStream("test_stream", func(inet.Stream) {}) // Start serving stream
