@@ -40,6 +40,8 @@ const (
 	RequestBestTransaction
 
 	RequestTransaction
+
+	RequestGenesis
 )
 
 var (
@@ -48,7 +50,9 @@ var (
 		"pub_transaction",
 		"req_config",
 		"req_best_transaction",
+		"req_genesis",
 	}
+
 	// BootstrapNodes represents all default bootstrap nodes on the given network.
 	BootstrapNodes = []string{
 		"/ip4/108.41.124.60/tcp/53956/ipfs/QmWy8fZPX4hnTmXtFzgUTa8ZGceHhdhUEj3wonj1r3bMEG",
