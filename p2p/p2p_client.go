@@ -108,6 +108,15 @@ func (client *Client) HandleReceiveTransaction(stream inet.Stream) {
 	}
 }
 
+// HandleReceiveBestTransactionRequest handle a new stream requesting for the best transaction hash.
+func (client *Client) HandleReceiveBestTransactionRequest(stream inet.Stream) {
+	writer := bufio.NewWriter(stream) // Initialize writer from stream
+
+	bestTransaction, _ := (*client.Validator).GetWorkingDag().GetBestTransaction() // Get best transaction
+
+	writer.Write(bestTransaction.Bytes()) // Write best transaction
+}
+
 /*
 	END TRANSACTION HELPERS
 */
