@@ -21,7 +21,7 @@ import (
 
 var (
 	// errNoBootstrap defines an invalid bootstrap value error.
-	errNoBootstrap = errors.New("config bootstrap failed: was expecting a bootstrap peer address, got localhost (must be able to bootstrap dag config if no config already exists locally)")
+	errNoBootstrap = errors.New("bootstrap failed: was expecting a bootstrap peer address, got 'localhost' (must be able to bootstrap dag config if no config exists locally)")
 )
 
 var (
