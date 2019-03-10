@@ -14,6 +14,9 @@ import (
 var (
 	// ErrNoWorkingHost represents an error describing a p2p.WorkingHost value of nil.
 	ErrNoWorkingHost = errors.New("no valid global host was found")
+
+	// BestTransactionRequest represents the global best transaction request message byte value.
+	BestTransactionRequest = []byte("best_transaction_request")
 )
 
 // Transaction is a data type representing a transfer of monetary value between addresses.
