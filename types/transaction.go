@@ -20,6 +20,9 @@ var (
 
 	// TransactionRequest represents the global transaction request message byte value.
 	TransactionRequest = []byte("transaction_request")
+
+	// GenesisRequest represents the global genesis transaction request message byte value.
+	GenesisRequest = []byte("genesis_request")
 )
 
 // Transaction is a data type representing a transfer of monetary value between addresses.
