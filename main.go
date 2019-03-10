@@ -3,8 +3,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
+	"os"
 	"path/filepath"
+
+	"github.com/juju/loggo"
+	"github.com/juju/loggo/loggocolor"
 
 	"github.com/polaris-project/go-polaris/config"
 	"github.com/polaris-project/go-polaris/types"
@@ -15,10 +20,19 @@ import (
 )
 
 var (
-	dataDirFlag          = flag.String("data-dir", common.DataDir, "performs all node I/O operations in a given data directory")                            // Init data dir flag
-	nodePortFlag         = flag.Int("node-port", p2p.NodePort, "run p2p host on given port")                                                                // Init node port flag
-	networkFlag          = flag.String("network", "main_net", "run node on given network")                                                                  // Init network flag
-	bootstrapNodeAddress = flag.String("bootstrap-address", p2p.BootstrapNodes[0], "manually prefer a given bootstrap node for all dht-related operations") // Init bootstrap node flag
+	// errNoBootstrap defines an invalid bootstrap value error.
+	errNoBootstrap = errors.New("config bootstrap failed: was expecting a bootstrap peer address, got localhost (must be able to bootstrap dag config if no config already exists locally)")
+)
+
+var (
+	dataDirFlag              = flag.String("data-dir", common.DataDir, "performs all node I/O operations in a given data directory")                            // Init data dir flag
+	nodePortFlag             = flag.Int("node-port", p2p.NodePort, "run p2p host on given port")                                                                // Init node port flag
+	networkFlag              = flag.String("network", "main_net", "run node on given network")                                                                  // Init network flag
+	bootstrapNodeAddressFlag = flag.String("bootstrap-address", p2p.BootstrapNodes[0], "manually prefer a given bootstrap node for all dht-related operations") // Init bootstrap node flag
+	silencedFlag             = flag.Bool("silence", false, "silence logs")                                                                                      // Init silence logs flag
+	disableColoredOutputFlag = flag.Bool("no-colors", false, "disable colored output")                                                                          // Init disable colored output flag
+
+	logger = loggo.GetLogger("") // Get logger
 )
 
 // Main starts all necessary Polaris services, and parses command line arguments.
@@ -26,6 +40,14 @@ func main() {
 	flag.Parse() // Parse flags
 
 	setUserParams() // Set common params
+
+	err := startNode() // Start node
+
+	if err != nil { // Check for errors
+		logger.Criticalf("main panicked: %s", err.Error()) // Log pending panic
+
+		os.Exit(1) // Panic
+	}
 }
 
 // setUserParams sets the default values in the common, p2p package.
@@ -33,6 +55,14 @@ func setUserParams() {
 	common.DataDir = filepath.FromSlash(*dataDirFlag) // Set data dir
 
 	p2p.NodePort = *nodePortFlag // Set node port
+
+	if !*disableColoredOutputFlag { // Check can log colored output
+		loggo.ReplaceDefaultWriter(loggocolor.NewWriter(os.Stderr)) // Enabled colored output
+	}
+
+	if *silencedFlag { // Check should silence
+		loggo.ResetLogging() // Silence
+	}
 }
 
 // startNode creates a new libp2p host, and connects to the bootstrapped dht.
@@ -47,8 +77,8 @@ func startNode() error {
 		return err // Return found error
 	}
 
-	if *bootstrapNodeAddress == p2p.BootstrapNodes[0] { // Check bootstrap node addr has not been set
-		*bootstrapNodeAddress = p2p.GetBestBootstrapAddress(context.Background(), host) // Get best bootstrap node
+	if *bootstrapNodeAddressFlag == p2p.BootstrapNodes[0] { // Check bootstrap node addr has not been set
+		*bootstrapNodeAddressFlag = p2p.GetBestBootstrapAddress(context.Background(), host) // Get best bootstrap node
 	}
 
 	var dagConfig *config.DagConfig // Initialize dag config buffer
@@ -56,7 +86,11 @@ func startNode() error {
 	dagConfig, err = config.ReadDagConfigFromMemory(*networkFlag) // Read config
 
 	if err != nil || dagConfig == nil { // Check no existing dag config
-		dagConfig, err = p2p.BootstrapConfig(ctx, host, *bootstrapNodeAddress, *networkFlag) // Bootstrap dag config
+		if *bootstrapNodeAddressFlag == "localhost" { // Check no bootstrap node
+			return errNoBootstrap // Return error
+		}
+
+		dagConfig, err = p2p.BootstrapConfig(ctx, host, *bootstrapNodeAddressFlag, *networkFlag) // Bootstrap dag config
 
 		if err != nil { // Check for errors
 			return err // Return found error
@@ -79,7 +113,7 @@ func startNode() error {
 		return err // Return found error
 	}
 
-	err = client.SyncDag() // Sync network
+	err = client.SyncDag(ctx) // Sync network
 
 	if err != nil { // Check for errors
 		return err // Return found error
