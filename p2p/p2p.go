@@ -38,6 +38,8 @@ const (
 	RequestConfig
 
 	RequestBestTransaction
+
+	RequestTransaction
 )
 
 var (
