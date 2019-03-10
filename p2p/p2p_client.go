@@ -2,6 +2,7 @@ package p2p
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"errors"
 
@@ -58,6 +59,12 @@ func (client *Client) StartServingStreams(network string) error {
 		return err // Return found error
 	}
 
+	err = client.StartServingStream(GetStreamHeaderProtocolPath(network, RequestTransaction), client.HandleReceiveTransactionRequest) // Register transaction request handler
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
 	return nil // No error occurred, return nil
 }
 
@@ -96,13 +103,21 @@ func (client *Client) SyncDag(ctx context.Context) error {
 		}
 	}
 
-	bestLastTransaction, err := (*client.Validator).GetWorkingDag().GetTransactionByHash(common.NewHash(bestLastTransactionHash)) // Get tx pointer
+	remoteBestTransaction, err := client.RequestTransactionWithHash(ctx, common.NewHash(bestLastTransactionHash), 16) // Get last transaction
 
 	if err != nil { // Check for errors
 		return err // Return found error
 	}
 
-	if (*client.Validator)bestLastTransaction.Timestamp
+	localBestTransaction, err := (*client.Validator).GetWorkingDag().GetBestTransaction() // Get local best transaction
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	if bytes.Equal(remoteBestTransaction.Hash.Bytes(), localBestTransaction.Hash.Bytes()) { // Check equivalent best last transaction hashes
+		return nil // Nothing to sync!
+	}
 
 	return nil // No error occurred, return nil
 }
@@ -121,11 +136,33 @@ func (client *Client) PublishTransaction(ctx context.Context, transaction *types
 		return err // Return found error
 	}
 
-	context, cancel := context.WithCancel(ctx) // Get context
+	return BroadcastDht(ctx, WorkingHost, transaction.Bytes(), GetStreamHeaderProtocolPath(client.Network, PublishTransaction), client.Network) // Broadcast transaction
+}
 
-	defer cancel() // Cancel
+// RequestTransactionWithHash requests a given transaction with a given hash from the network.
+// Returns best response from peer sampling set nPeers.
+func (client *Client) RequestTransactionWithHash(ctx context.Context, hash common.Hash, nPeers int) (*types.Transaction, error) {
+	transactionBytes, err := BroadcastDhtResult(ctx, WorkingHost, hash.Bytes(), GetStreamHeaderProtocolPath(client.Network, RequestTransaction), client.Network, nPeers) // Request transaction
 
-	return BroadcastDht(context, WorkingHost, transaction.Bytes(), GetStreamHeaderProtocolPath(client.Network, PublishTransaction), client.Network) // Broadcast transaction
+	if err != nil { // Check for errors
+		return &types.Transaction{}, err // Return found error
+	}
+
+	occurrences := make(map[common.Hash]int64) // Occurrences of each transaction hash
+
+	bestTransaction := types.TransactionFromBytes(transactionBytes[0]) // Init best transaction buffer
+
+	for _, currentTransactionBytes := range transactionBytes { // Iterate through transaction bytes
+		currentTransaction := types.TransactionFromBytes(currentTransactionBytes) // Deserialize
+
+		occurrences[currentTransaction.Hash]++ // Increment occurrences
+
+		if occurrences[currentTransaction.Hash] > occurrences[bestTransaction.Hash] { // Check better than last transaction
+			*bestTransaction = *currentTransaction // Set best transaction
+		}
+	}
+
+	return bestTransaction, nil // Return best transaction
 }
 
 // HandleReceiveTransaction handles a new stream sending a transaction.
@@ -152,6 +189,21 @@ func (client *Client) HandleReceiveBestTransactionRequest(stream inet.Stream) {
 	bestTransaction, _ := (*client.Validator).GetWorkingDag().GetBestTransaction() // Get best transaction
 
 	writer.Write(bestTransaction.Bytes()) // Write best transaction
+}
+
+// HandleReceiveTransactionRequest handles a new stream requesting transaction metadata with a given hash.
+func (client *Client) HandleReceiveTransactionRequest(stream inet.Stream) {
+	readWriter := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)) // Init reader/writer for stream
+
+	var targetHashBytes []byte // Initialize tx hash bytes buffer
+
+	for readBytes, err := readWriter.ReadByte(); err != nil; { // Read until EOF
+		targetHashBytes = append(targetHashBytes, readBytes) // Append read bytes
+	}
+
+	transaction, _ := (*client.Validator).GetWorkingDag().GetTransactionByHash(common.NewHash(targetHashBytes)) // Get transaction with hash
+
+	readWriter.Write(transaction.Bytes()) // Write transaction bytes
 }
 
 /*
