@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/polaris-project/go-polaris/common"
+
 	inet "github.com/libp2p/go-libp2p-net"
 	protocol "github.com/libp2p/go-libp2p-protocol"
 	"github.com/polaris-project/go-polaris/types"
@@ -50,6 +52,12 @@ func (client *Client) StartServingStreams(network string) error {
 		return err // Return found error
 	}
 
+	err = client.StartServingStream(GetStreamHeaderProtocolPath(network, RequestBestTransaction), client.HandleReceiveBestTransactionRequest) // Register best tx request handler
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
 	return nil // No error occurred, return nil
 }
 
@@ -65,8 +73,37 @@ func (client *Client) StartServingStream(streamHeaderProtocolPath string, handle
 }
 
 // SyncDag syncs the working dag.
-func (client *Client) SyncDag() error {
-	// lastTransactionHashes :=
+func (client *Client) SyncDag(ctx context.Context) error {
+	if WorkingHost == nil { // Check no host
+		return ErrNoWorkingHost // Return found error
+	}
+
+	lastTransactionHashes, err := BroadcastDhtResult(ctx, WorkingHost, types.BestTransactionRequest, GetStreamHeaderProtocolPath(client.Network, RequestBestTransaction), client.Network, 64) // Get last transaction hashes
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	occurrences := make(map[common.Hash]int64) // Occurrences of each transaction hash
+
+	bestLastTransactionHash := lastTransactionHashes[0] // Init last transaction buffer
+
+	for _, lastTransactionHash := range lastTransactionHashes { // Iterate through last transaction hashes
+		occurrences[common.NewHash(lastTransactionHash)]++ // Increment occurrences of transaction hash
+
+		if occurrences[common.NewHash(lastTransactionHash)] > occurrences[common.NewHash(bestLastTransactionHash)] { // Check better last hash
+			bestLastTransactionHash = lastTransactionHash // Set best last transaction hash
+		}
+	}
+
+	bestLastTransaction, err := (*client.Validator).GetWorkingDag().GetTransactionByHash(common.NewHash(bestLastTransactionHash)) // Get tx pointer
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	if (*client.Validator)bestLastTransaction.Timestamp
+
 	return nil // No error occurred, return nil
 }
 

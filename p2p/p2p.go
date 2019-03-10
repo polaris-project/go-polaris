@@ -36,6 +36,8 @@ const (
 	PublishTransaction StreamHeaderProtocol = iota
 
 	RequestConfig
+
+	RequestBestTransaction
 )
 
 var (
@@ -43,6 +45,7 @@ var (
 	StreamHeaderProtocolNames = []string{
 		"pub_transaction",
 		"req_config",
+		"req_best_transaction",
 	}
 	// BootstrapNodes represents all default bootstrap nodes on the given network.
 	BootstrapNodes = []string{
@@ -245,7 +248,7 @@ func BroadcastDhtResult(ctx context.Context, host *routed.RoutedHost, message []
 	results := [][]byte{} // Init results buffer
 
 	for x, peer := range peers { // Iterate through peers
-		if x != nPeers { // Check has sent to enough peers
+		if x >= nPeers { // Check has sent to enough peers
 			break // Break
 		}
 

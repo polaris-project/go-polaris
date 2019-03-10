@@ -6,6 +6,7 @@ import (
 	"flag"
 	"path/filepath"
 
+	"github.com/polaris-project/go-polaris/config"
 	"github.com/polaris-project/go-polaris/types"
 
 	"github.com/polaris-project/go-polaris/common"
@@ -50,21 +51,39 @@ func startNode() error {
 		*bootstrapNodeAddress = p2p.GetBestBootstrapAddress(context.Background(), host) // Get best bootstrap node
 	}
 
-	config, err := p2p.BootstrapConfig(ctx, host, *bootstrapNodeAddress, *networkFlag) // Bootstrap dag config
+	var dagConfig *config.DagConfig // Initialize dag config buffer
+
+	dagConfig, err = config.ReadDagConfigFromMemory(*networkFlag) // Read config
+
+	if err != nil || dagConfig == nil { // Check no existing dag config
+		dagConfig, err = p2p.BootstrapConfig(ctx, host, *bootstrapNodeAddress, *networkFlag) // Bootstrap dag config
+
+		if err != nil { // Check for errors
+			return err // Return found error
+		}
+	}
+
+	dag, err := types.NewDag(dagConfig) // Init dag
 
 	if err != nil { // Check for errors
 		return err // Return found error
 	}
 
-	dag, err := types.NewDag(config) // Init dag
-
-	if err != nil { // Check for errors
-		return err // Return found error
-	}
-
-	validator := validator.Validator(validator.NewBeaconDagValidator(config, dag)) // Initialize validator
+	validator := validator.Validator(validator.NewBeaconDagValidator(dagConfig, dag)) // Initialize validator
 
 	client := p2p.NewClient(*networkFlag, &validator) // Initialize client
+
+	err = client.StartServingStreams(*networkFlag) // Start handlers
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	err = client.SyncDag() // Sync network
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
 
 	return nil // No error occurred, return nil
 }
