@@ -5,6 +5,9 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"time"
+
+	"github.com/juju/loggo"
 
 	"github.com/polaris-project/go-polaris/common"
 
@@ -20,6 +23,11 @@ var (
 
 	// ErrNilHash defines an error describing a situation in which a message has no hash.
 	ErrNilHash = errors.New("hash not set")
+)
+
+var (
+	// logger is the p2p package logger.
+	logger = loggo.GetLogger("p2p")
 )
 
 // Client represents an active p2p peer, that of which is serving a list of available stream header protocol paths.
@@ -79,6 +87,17 @@ func (client *Client) StartServingStream(streamHeaderProtocolPath string, handle
 	return nil // No error occurred, return nil
 }
 
+// StartIntermittentSync syncs the dag with a given context and duration.
+func (client *Client) StartIntermittentSync(ctx context.Context, duration time.Duration) {
+	for range time.Tick(duration) { // Sync every duration seconds
+		err := client.SyncDag(ctx) // Sync dag
+
+		if err != nil { // Check for errors
+			logger.Errorf("intermittent sync errored: %s", err.Error()) // Log error
+		}
+	}
+}
+
 // SyncDag syncs the working dag.
 func (client *Client) SyncDag(ctx context.Context) error {
 	if WorkingHost == nil { // Check no host
@@ -118,6 +137,8 @@ func (client *Client) SyncDag(ctx context.Context) error {
 	if bytes.Equal(remoteBestTransaction.Hash.Bytes(), localBestTransaction.Hash.Bytes()) { // Check equivalent best last transaction hashes
 		return nil // Nothing to sync!
 	}
+
+	// TODO: Actually sync.
 
 	return nil // No error occurred, return nil
 }
