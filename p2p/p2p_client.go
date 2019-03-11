@@ -85,9 +85,7 @@ func (client *Client) SyncDag(ctx context.Context) error {
 		return err // Return found error
 	}
 
-	localBestTransaction, _ := (*client.Validator).GetWorkingDag().GetBestTransaction() // Get local best transaction
-
-	if localBestTransaction == nil { // Check no genesis
+	if (*client.Validator).GetWorkingDag().Genesis.IsNil() { // Check no genesis
 		genCtx, cancel := context.WithCancel(ctx) // Initialize context
 
 		err = client.SyncGenesis(genCtx)
@@ -99,6 +97,12 @@ func (client *Client) SyncDag(ctx context.Context) error {
 		}
 
 		cancel() // Cancel
+	}
+
+	localBestTransaction, err := (*client.Validator).GetWorkingDag().GetBestTransaction() // Get local best transaction
+
+	if err != nil { // Check for errors
+		return err // Return found error
 	}
 
 	if bytes.Equal(remoteBestTransaction.Hash.Bytes(), localBestTransaction.Hash.Bytes()) { // Check equivalent best last transaction hashes
