@@ -110,6 +110,52 @@ func (client *Client) SyncDag(ctx context.Context) error {
 
 // SyncGenesis syncs the local genesis transaction set for the working dag.
 func (client *Client) SyncGenesis(ctx context.Context) error {
+	if WorkingHost == nil { // Check no host
+		return ErrNoWorkingHost // Return found error
+	}
+
+	getGenHashCtx, cancel := context.WithCancel(ctx) // Get context
+
+	genesisHashes, err := BroadcastDhtResult(getGenHashCtx, WorkingHost, types.GenesisHashRequest, GetStreamHeaderProtocolPath(client.Network, RequestGenesisHash), client.Network, 128) // Get genesis transaction hashes
+
+	if err != nil { // Check for errors
+		cancel() // Cancel
+
+		return err // Return found error
+	}
+
+	cancel() // Cancel
+
+	occurrences := make(map[common.Hash]int64) // Occurrences of each transaction hash
+
+	bestGenesisHash := genesisHashes[0] // Init best genesis hash buffer
+
+	for _, genesisHash := range genesisHashes { // Iterate through genesis hashes
+		occurrences[common.NewHash(genesisHash)]++ // Increment occurrences of genesis hash
+
+		if occurrences[common.NewHash(genesisHash)] > occurrences[common.NewHash(bestGenesisHash)] { // Check better genesis hash
+			bestGenesisHash = genesisHash // Set best genesis hash
+		}
+	}
+
+	getGenCtx, cancel := context.WithCancel(ctx) // Get context
+
+	genesisTransaction, err := client.RequestTransactionWithHash(getGenCtx, common.NewHash(bestGenesisHash), 16) // Get genesis transaction
+
+	if err != nil { // Check for errors
+		cancel() // cancel
+
+		return err // Return found error
+	}
+
+	cancel() // Cancel
+
+	err = (*client.Validator).GetWorkingDag().AddTransaction(genesisTransaction) // Add genesis transaction
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
 	return nil // No error occurred, return nil
 }
 
