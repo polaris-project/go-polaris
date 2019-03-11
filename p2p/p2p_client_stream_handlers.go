@@ -124,6 +124,25 @@ func (client *Client) HandleReceiveGenesisHashRequest(stream inet.Stream) {
 	writer.Write((*client.Validator).GetWorkingDag().Genesis.Bytes()) // Write genesis hash
 }
 
+// HandleReceiveTransactionChildHashesRequest handles a new stream requesting for the child hashes of a given transaction.
+func (client *Client) HandleReceiveTransactionChildHashesRequest(stream inet.Stream) {
+	readWriter := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)) // Initialize reader/writer from stream
+
+	var parentHashBytes []byte // Initialize tx hash bytes buffer
+
+	for readByte, err := readWriter.ReadByte(); err != nil; { // Read until EOF
+		parentHashBytes = append(parentHashBytes, readByte) // Append read byte
+	}
+
+	childHashes, err := (*client.Validator).GetWorkingDag().GetTransactionChildren(common.NewHash(parentHashBytes)) // Get children
+
+	if err == nil { // Check no errors
+		for _, childHash := range childHashes { // Iterate through child hashes
+			readWriter.Write(childHash.Bytes()) // Write child hash
+		}
+	}
+}
+
 /*
 	END HANDLERS
 */
