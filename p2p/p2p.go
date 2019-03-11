@@ -42,6 +42,8 @@ const (
 	RequestTransaction
 
 	RequestGenesisHash
+
+	RequestChildHashes
 )
 
 var (
@@ -52,6 +54,7 @@ var (
 		"req_best_transaction",
 		"req_transaction",
 		"req_genesis_hash",
+		"req_transaction_children_hashes",
 	}
 
 	// BootstrapNodes represents all default bootstrap nodes on the given network.
