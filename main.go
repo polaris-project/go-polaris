@@ -32,6 +32,7 @@ var (
 	bootstrapNodeAddressFlag = flag.String("bootstrap-address", p2p.BootstrapNodes[0], "manually prefer a given bootstrap node for all dht-related operations") // Init bootstrap node flag
 	silencedFlag             = flag.Bool("silence", false, "silence logs")                                                                                      // Init silence logs flag
 	disableColoredOutputFlag = flag.Bool("no-colors", false, "disable colored output")                                                                          // Init disable colored output flag
+	debugFlag                = flag.Bool("debug", false, "force node to log in debug mode")                                                                     // Init debug flag
 
 	logger = loggo.GetLogger("") // Get logger
 
