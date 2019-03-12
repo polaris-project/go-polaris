@@ -66,7 +66,7 @@ var (
 	WorkingHost *routed.RoutedHost
 
 	// NodePort is the current node port
-	NodePort = 3000
+	NodePort = 3030
 )
 
 // StreamHeaderProtocol represents the stream protocol type enum.
