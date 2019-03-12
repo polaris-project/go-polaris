@@ -72,11 +72,13 @@ func (client *Client) SyncDag(ctx context.Context) error {
 
 	bestLastTransactionHash := lastTransactionHashes[0] // Init last transaction buffer
 
-	for _, lastTransactionHash := range lastTransactionHashes { // Iterate through last transaction hashes
-		occurrences[common.NewHash(lastTransactionHash)]++ // Increment occurrences of transaction hash
+	if bestLastTransactionHash != nil && len(lastTransactionHashes) > 0 { // Check is able to filter
+		for _, lastTransactionHash := range lastTransactionHashes { // Iterate through last transaction hashes
+			occurrences[common.NewHash(lastTransactionHash)]++ // Increment occurrences of transaction hash
 
-		if occurrences[common.NewHash(lastTransactionHash)] > occurrences[common.NewHash(bestLastTransactionHash)] { // Check better last hash
-			bestLastTransactionHash = lastTransactionHash // Set best last transaction hash
+			if occurrences[common.NewHash(lastTransactionHash)] > occurrences[common.NewHash(bestLastTransactionHash)] { // Check better last hash
+				bestLastTransactionHash = lastTransactionHash // Set best last transaction hash
+			}
 		}
 	}
 
