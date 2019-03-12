@@ -134,12 +134,20 @@ func (client *Client) HandleReceiveTransactionChildHashesRequest(stream inet.Str
 		parentHashBytes = append(parentHashBytes, readByte) // Append read byte
 	}
 
-	childHashes, err := (*client.Validator).GetWorkingDag().GetTransactionChildren(common.NewHash(parentHashBytes)) // Get children
+	children, err := (*client.Validator).GetWorkingDag().GetTransactionChildren(common.NewHash(parentHashBytes)) // Get children
 
-	if err == nil { // Check no errors
-		for _, childHash := range childHashes { // Iterate through child hashes
-			readWriter.Write(childHash.Bytes()) // Write child hash
+	if err == nil { // Check no error
+		var summarizedChildHashes []byte // Init summarized child hashes buffer
+
+		for x, child := range children { // Iterate through children
+			if x == len(children)-1 { // Check is last
+				summarizedChildHashes = append(summarizedChildHashes, child.Hash[:]...) // Append hash
+			}
+
+			summarizedChildHashes = append(summarizedChildHashes, append(child.Hash[:], []byte("end_hash")...)...) // Append hash
 		}
+
+		readWriter.Write(summarizedChildHashes) // Write child hashes
 	}
 }
 
