@@ -21,6 +21,9 @@ var (
 
 	// ErrNilHash defines an error describing a situation in which a message has no hash.
 	ErrNilHash = errors.New("hash not set")
+
+	// ErrNoAvailablePeers defines an error describing an available peer sampling set with a length of 0.
+	ErrNoAvailablePeers = errors.New("no available peers")
 )
 
 var (
@@ -70,15 +73,17 @@ func (client *Client) SyncDag(ctx context.Context) error {
 
 	occurrences := make(map[common.Hash]int64) // Occurrences of each transaction hash
 
+	if len(lastTransactionHashes) == 0 { // Check no peers
+		return ErrNoAvailablePeers // Return error
+	}
+
 	bestLastTransactionHash := lastTransactionHashes[0] // Init last transaction buffer
 
-	if bestLastTransactionHash != nil && len(lastTransactionHashes) > 0 { // Check is able to filter
-		for _, lastTransactionHash := range lastTransactionHashes { // Iterate through last transaction hashes
-			occurrences[common.NewHash(lastTransactionHash)]++ // Increment occurrences of transaction hash
+	for _, lastTransactionHash := range lastTransactionHashes { // Iterate through last transaction hashes
+		occurrences[common.NewHash(lastTransactionHash)]++ // Increment occurrences of transaction hash
 
-			if occurrences[common.NewHash(lastTransactionHash)] > occurrences[common.NewHash(bestLastTransactionHash)] { // Check better last hash
-				bestLastTransactionHash = lastTransactionHash // Set best last transaction hash
-			}
+		if occurrences[common.NewHash(lastTransactionHash)] > occurrences[common.NewHash(bestLastTransactionHash)] { // Check better last hash
+			bestLastTransactionHash = lastTransactionHash // Set best last transaction hash
 		}
 	}
 
