@@ -54,7 +54,7 @@ func (client *Client) StartIntermittentSync(ctx context.Context, duration time.D
 		err := client.SyncDag(ctx) // Sync dag
 
 		if err != nil { // Check for errors
-			logger.Errorf("intermittent sync errored: %s", err.Error()) // Log error
+			logger.Errorf("intermittent sync errored (if private net, this is expected): %s", err.Error()) // Log error
 		}
 	}
 }

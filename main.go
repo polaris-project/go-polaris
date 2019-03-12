@@ -7,6 +7,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/juju/loggo"
 	"github.com/juju/loggo/loggocolor"
@@ -33,6 +34,8 @@ var (
 	disableColoredOutputFlag = flag.Bool("no-colors", false, "disable colored output")                                                                          // Init disable colored output flag
 
 	logger = loggo.GetLogger("") // Get logger
+
+	intermittentSyncContext, cancel = context.WithCancel(context.Background()) // Get background sync context
 )
 
 // Main starts all necessary Polaris services, and parses command line arguments.
@@ -40,6 +43,8 @@ func main() {
 	flag.Parse() // Parse flags
 
 	setUserParams() // Set common params
+
+	defer cancel() // Cancel
 
 	err := startNode() // Start node
 
@@ -81,9 +86,9 @@ func startNode() error {
 		*bootstrapNodeAddressFlag = p2p.GetBestBootstrapAddress(context.Background(), host) // Get best bootstrap node
 	}
 
-	var dagConfig *config.DagConfig // Initialize dag config buffer
+	dagConfig, err := config.ReadDagConfigFromMemory(*networkFlag) // Read config
 
-	dagConfig, err = config.ReadDagConfigFromMemory(*networkFlag) // Read config
+	needsSync := false // Assume doesn't need sync
 
 	if err != nil || dagConfig == nil { // Check no existing dag config
 		if *bootstrapNodeAddressFlag == "localhost" { // Check no bootstrap node
@@ -95,6 +100,8 @@ func startNode() error {
 		if err != nil { // Check for errors
 			return err // Return found error
 		}
+
+		needsSync = true // Set does need sync
 	}
 
 	dag, err := types.NewDag(dagConfig) // Init dag
@@ -113,11 +120,15 @@ func startNode() error {
 		return err // Return found error
 	}
 
-	err = client.SyncDag(ctx) // Sync network
+	if needsSync { // Check must sync
+		err = client.SyncDag(ctx) // Sync network
 
-	if err != nil { // Check for errors
-		return err // Return found error
+		if err != nil { // Check for errors
+			return err // Return found error
+		}
 	}
+
+	client.StartIntermittentSync(intermittentSyncContext, 120*time.Second) // Sync every 120 seconds
 
 	return nil // No error occurred, return nil
 }
