@@ -9,6 +9,7 @@ import (
 	"github.com/juju/loggo"
 
 	"github.com/polaris-project/go-polaris/common"
+	"github.com/polaris-project/go-polaris/crypto"
 
 	"github.com/polaris-project/go-polaris/types"
 	"github.com/polaris-project/go-polaris/validator"
@@ -105,8 +106,42 @@ func (client *Client) SyncDag(ctx context.Context) error {
 		return err // Return found error
 	}
 
-	if bytes.Equal(remoteBestTransaction.Hash.Bytes(), localBestTransaction.Hash.Bytes()) { // Check equivalent best last transaction hashes
-		return nil // Nothing to sync!
+	for !bytes.Equal(remoteBestTransaction.Hash.Bytes(), localBestTransaction.Hash.Bytes()) { // Do until valid best last transaction hash
+		getChildrenCtx, cancel := context.WithCancel(ctx) // Initialize context
+
+		childHashes, err := client.RequestTransactionChildren(getChildrenCtx, localBestTransaction.Hash, 16) // Get child hashes
+
+		if err != nil { // Check for errors
+			cancel() // Cancel
+
+			return err // Return found error
+		}
+
+		cancel() // Cancel
+
+		for _, childHash := range childHashes { // Iterate through child hashes
+			requestTransactionCtx, cancel := context.WithCancel(ctx) // Initialize context
+
+			destinationTransaction, err := client.RequestTransactionWithHash(requestTransactionCtx, childHash, 16) // Get transaction
+
+			if err != nil { // Check for errors
+				cancel() // Cancel
+
+				return err // Return found error
+			}
+
+			cancel() // Cancel
+
+			if err := (*client.Validator).ValidateTransaction(destinationTransaction); err == nil { // Check valid transaction
+				err = (*client.Validator).GetWorkingDag().AddTransaction(destinationTransaction) // Add transaction to local dag
+
+				if err != nil { // Check for errors
+					return err // Return found error
+				}
+			}
+		}
+
+		localBestTransaction, _ = (*client.Validator).GetWorkingDag().GetBestTransaction() // Get local best transaction
 	}
 
 	return nil // No error occurred, return nil
@@ -204,6 +239,43 @@ func (client *Client) RequestTransactionWithHash(ctx context.Context, hash commo
 	}
 
 	return bestTransaction, nil // Return best transaction
+}
+
+// RequestTransactionChildren requests the children of a transaction from a sampling set of nPeers size.
+func (client *Client) RequestTransactionChildren(ctx context.Context, parentHash common.Hash, nPeers int) ([]common.Hash, error) {
+	if WorkingHost == nil { // Check no host
+		return []common.Hash{}, ErrNoWorkingHost // Return error
+	}
+
+	childHashesAllResponses, err := BroadcastDhtResult(ctx, WorkingHost, parentHash.Bytes(), GetStreamHeaderProtocolPath(client.Network, RequestChildHashes), client.Network, nPeers) // Request child hashes
+
+	if err != nil { // Check for errors
+		return nil, err // Return found error
+	}
+
+	occurrences := make(map[common.Hash]int64) // Occurrences of each transaction hash
+
+	bestChildHashSet := []common.Hash{}      // Init best hash set buffer
+	bestChildHashSetHashSum := common.Hash{} // Init best hash set hash sum buffer
+
+	for _, childHashes := range childHashesAllResponses { // Iterate through children
+		hashes := bytes.Split(childHashes, []byte("end_hash")) // Separate hashes by delimiter
+
+		var castedHashes []common.Hash // Init casted buffer
+
+		for _, childHash := range hashes { // Iterate through hashes
+			castedHashes = append(castedHashes, common.NewHash(childHash)) // Append casted hash
+		}
+
+		occurrences[crypto.Sha3(bytes.Join(hashes, []byte{}))]++ // Increment occurrences
+
+		if occurrences[crypto.Sha3(bytes.Join(hashes, []byte{}))] > occurrences[bestChildHashSetHashSum] { // Check new best hash set
+			bestChildHashSet = castedHashes                                     // Set best hash set
+			bestChildHashSetHashSum = crypto.Sha3(bytes.Join(hashes, []byte{})) // Set best hash set hash sum
+		}
+	}
+
+	return bestChildHashSet, nil // No error occurred, return children
 }
 
 /*
