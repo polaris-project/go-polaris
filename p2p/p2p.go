@@ -153,9 +153,15 @@ func GetBestBootstrapAddress(ctx context.Context, host *routed.RoutedHost) strin
 			continue // Continue
 		}
 
-		host.Peerstore().AddAddr(peer.ID(strings.Split(bootstrapAddress, "ipfs/")[1]), multiaddr, 10*time.Second) // Add bootstrap peer
+		peerID, err := peer.IDB58Decode(strings.Split(bootstrapAddress, "ipfs/")[1]) // Get peer ID
 
-		_, err = ping.Ping(ctx, host, peer.ID(strings.Split(bootstrapAddress, "ipfs/")[1])) // Attempt to ping
+		if err != nil { // Check for errors
+			continue // Continue
+		}
+
+		host.Peerstore().AddAddr(peerID, multiaddr, 10*time.Second) // Add bootstrap peer
+
+		_, err = ping.Ping(ctx, host, peerID) // Attempt to ping
 
 		if err == nil { // Check no errors
 			return bootstrapAddress // Return bootstrap address
