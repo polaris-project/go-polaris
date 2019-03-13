@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -82,6 +83,8 @@ func startNode() error {
 	if err != nil { // Check for errors
 		return err // Return found error
 	}
+
+	fmt.Println(host.Addrs())
 
 	if *bootstrapNodeAddressFlag == p2p.BootstrapNodes[0] { // Check bootstrap node addr has not been set
 		*bootstrapNodeAddressFlag = p2p.GetBestBootstrapAddress(context.Background(), host) // Get best bootstrap node
