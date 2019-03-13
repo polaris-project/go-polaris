@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/libp2p/go-libp2p/p2p/protocol/ping"
 
@@ -146,7 +147,15 @@ func NewHost(ctx context.Context, port int) (*routed.RoutedHost, error) {
 // GetBestBootstrapAddress attempts to fetch the best bootstrap node.
 func GetBestBootstrapAddress(ctx context.Context, host *routed.RoutedHost) string {
 	for _, bootstrapAddress := range BootstrapNodes { // Iterate through bootstrap nodes
-		_, err := ping.Ping(ctx, host, peer.ID(strings.Split(bootstrapAddress, "ipfs/")[1])) // Attempt to ping
+		multiaddr, err := multiaddr.NewMultiaddr(bootstrapAddress) // Parse address
+
+		if err != nil { // Check for errors
+			continue // Continue
+		}
+
+		host.Peerstore().AddAddr(peer.ID(strings.Split(bootstrapAddress, "ipfs/")[1]), multiaddr, 10*time.Second) // Add bootstrap peer
+
+		_, err = ping.Ping(ctx, host, peer.ID(strings.Split(bootstrapAddress, "ipfs/")[1])) // Attempt to ping
 
 		if err == nil { // Check no errors
 			return bootstrapAddress // Return bootstrap address
