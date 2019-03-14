@@ -3,13 +3,16 @@ package p2p
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -68,6 +71,9 @@ var (
 
 	// NodePort is the current node port
 	NodePort = 3030
+
+	// ErrTimedOut is an error definition representing a timeout.
+	ErrTimedOut = errors.New("timed out")
 )
 
 // StreamHeaderProtocol represents the stream protocol type enum.
@@ -209,21 +215,31 @@ func BootstrapConfig(ctx context.Context, host *routed.RoutedHost, bootstrapAddr
 
 	reader := bufio.NewReader(stream) // Initialize reader from stream
 
-	var dagConfigBytes []byte // Initialize dag config bytes buffer
+	var dagConfigBytes bytes.Buffer // Initialize dag config bytes buffer
 
 	readStartTime := time.Now() // Get start time
 
-	for dagConfigBytes == nil || len(dagConfigBytes) == 0 { // Read while nil
-		dagConfigBytes, err = ioutil.ReadAll(reader) // Read entire stream contents
+	finished := false // Init finished bool
 
-		if err != nil && time.Now().Sub(readStartTime) > 10*time.Second { // Check for errors
+	finishedChan := &finished // Get finished ref
+
+	for dagConfigBytes.Bytes() == nil || len(dagConfigBytes.Bytes()) == 0 { // Read while nil
+		go func() {
+			if *finishedChan != true { // Check not finished
+				io.Copy(&dagConfigBytes, reader) // Non-blocking read
+			}
+		}()
+
+		if time.Now().Sub(readStartTime) > 10*time.Second { // Check for timeout
 			cancel() // Cancel
 
-			return &config.DagConfig{}, err // Return found error
+			return &config.DagConfig{}, ErrTimedOut // Return found error
 		}
 	}
 
-	deserializedConfig := config.DagConfigFromBytes(dagConfigBytes) // Deserialize
+	*finishedChan = true // Set finished
+
+	deserializedConfig := config.DagConfigFromBytes(dagConfigBytes.Bytes()) // Deserialize
 
 	if deserializedConfig == nil { // Check nil
 		cancel() // Cancel
@@ -233,7 +249,7 @@ func BootstrapConfig(ctx context.Context, host *routed.RoutedHost, bootstrapAddr
 
 	cancel() // Cancel
 
-	return config.DagConfigFromBytes(dagConfigBytes), nil // Return deserialized dag config
+	return deserializedConfig, nil // Return deserialized dag config
 }
 
 // BootstrapDht bootstraps the WorkingDHT to the list of bootstrap nodes.
