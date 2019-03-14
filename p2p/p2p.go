@@ -207,22 +207,16 @@ func BootstrapConfig(ctx context.Context, host *routed.RoutedHost, bootstrapAddr
 		return &config.DagConfig{}, err // Return found error
 	}
 
-	readWriter := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)) // Initialize reader/writer from stream
-
-	_, err = readWriter.Write(config.DagConfigRequest) // Write request
-
-	if err != nil { // Check for errors
-		cancel() // Cancel
-
-		return &config.DagConfig{}, err // Return found error
-	}
+	reader := bufio.NewReader(stream) // Initialize reader from stream
 
 	var dagConfigBytes []byte // Initialize dag config bytes buffer
 
 	readStartTime := time.Now() // Get start time
 
 	for dagConfigBytes == nil || len(dagConfigBytes) == 0 { // Read while nil
-		dagConfigBytes, err = ioutil.ReadAll(readWriter) // Read entire stream contents
+		dagConfigBytes, err = ioutil.ReadAll(reader) // Read entire stream contents
+
+		fmt.Println(dagConfigBytes)
 
 		if err != nil && time.Now().Sub(readStartTime) > 10*time.Second { // Check for errors
 			cancel() // Cancel
