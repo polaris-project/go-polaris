@@ -219,8 +219,12 @@ func BootstrapConfig(ctx context.Context, host *routed.RoutedHost, bootstrapAddr
 
 	var dagConfigBytes []byte // Initialize dag config bytes buffer
 
-	for bytesRead, err := readWriter.Read(dagConfigBytes); bytesRead == 0; { // Read into buffer
-		if err != nil { // Check for errors
+	readStartTime := time.Now() // Get start time
+
+	for dagConfigBytes == nil || len(dagConfigBytes) == 0 { // Read while nil
+		dagConfigBytes, err = ioutil.ReadAll(readWriter) // Read entire stream contents
+
+		if err != nil && time.Now().Sub(readStartTime) > 10*time.Second { // Check for errors
 			cancel() // Cancel
 
 			return &config.DagConfig{}, err // Return found error
