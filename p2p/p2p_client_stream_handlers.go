@@ -2,6 +2,7 @@ package p2p
 
 import (
 	"bufio"
+	"fmt"
 
 	inet "github.com/libp2p/go-libp2p-net"
 	protocol "github.com/libp2p/go-libp2p-protocol"
@@ -112,6 +113,7 @@ func (client *Client) HandleReceiveTransactionRequest(stream inet.Stream) {
 
 // HandleReceiveConfigRequest handles a new stream requesting the working dag config.
 func (client *Client) HandleReceiveConfigRequest(stream inet.Stream) {
+	fmt.Println("test")
 	writer := bufio.NewWriter(stream) // Initialize writer
 
 	writer.Write((*client.Validator).GetWorkingConfig().Bytes()) // Write config bytes
