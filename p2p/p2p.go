@@ -161,11 +161,29 @@ func GetBestBootstrapAddress(ctx context.Context, host *routed.RoutedHost) strin
 
 		host.Peerstore().AddAddr(peerID, multiaddr, 10*time.Second) // Add bootstrap peer
 
-		_, err = ping.Ping(ctx, host, peerID) // Attempt to ping
+		peerInfo, err := peerstore.InfoFromP2pAddr(multiaddr) // Get peer info
+
+		if err != nil { // Check for errors
+			continue // Continue
+		}
+
+		bootstrapCheckCtx, cancel := context.WithCancel(ctx) // Get context
+
+		err = host.Connect(bootstrapCheckCtx, *peerInfo) // Connect to peer
+
+		if err != nil { // Check for errors
+			cancel() // Cancel
+			continue // Continue
+		}
+
+		_, err = ping.Ping(bootstrapCheckCtx, host, peerID) // Attempt to ping
 
 		if err == nil { // Check no errors
+			cancel()                // Cancel
 			return bootstrapAddress // Return bootstrap address
 		}
+
+		cancel() // Cancel
 	}
 
 	return "localhost" // Return localhost
