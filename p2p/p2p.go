@@ -197,9 +197,13 @@ func BootstrapConfig(ctx context.Context, host *routed.RoutedHost, bootstrapAddr
 		return &config.DagConfig{}, err // Return found error
 	}
 
-	stream, err := (*host).NewStream(ctx, peerID, protocol.ID(GetStreamHeaderProtocolPath(network, RequestConfig))) // Initialize new stream
+	readCtx, cancel := context.WithCancel(ctx) // Get context
+
+	stream, err := (*host).NewStream(readCtx, peerID, protocol.ID(GetStreamHeaderProtocolPath(network, RequestConfig))) // Initialize new stream
 
 	if err != nil { // Check for errors
+		cancel() // Cancel
+
 		return &config.DagConfig{}, err // Return found error
 	}
 
@@ -208,20 +212,30 @@ func BootstrapConfig(ctx context.Context, host *routed.RoutedHost, bootstrapAddr
 	_, err = readWriter.Write(config.DagConfigRequest) // Write request
 
 	if err != nil { // Check for errors
+		cancel() // Cancel
+
 		return &config.DagConfig{}, err // Return found error
 	}
 
 	var dagConfigBytes []byte // Initialize dag config bytes buffer
 
-	for readBytes, err := readWriter.ReadByte(); err != nil; { // Read until EOF
-		dagConfigBytes = append(dagConfigBytes, readBytes) // Append read bytes
+	for bytesRead, err := readWriter.Read(dagConfigBytes); bytesRead == 0; { // Read into buffer
+		if err != nil { // Check for errors
+			cancel() // Cancel
+
+			return &config.DagConfig{}, err // Return found error
+		}
 	}
 
 	deserializedConfig := config.DagConfigFromBytes(dagConfigBytes) // Deserialize
 
 	if deserializedConfig == nil { // Check nil
+		cancel() // Cancel
+
 		return &config.DagConfig{}, config.ErrCouldNotDeserializeConfig // Return error
 	}
+
+	cancel() // Cancel
 
 	return config.DagConfigFromBytes(dagConfigBytes), nil // Return deserialized dag config
 }
