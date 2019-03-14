@@ -191,7 +191,13 @@ func GetBestBootstrapAddress(ctx context.Context, host *routed.RoutedHost) strin
 
 // BootstrapConfig bootstraps a dag config to the list of bootstrap nodes.
 func BootstrapConfig(ctx context.Context, host *routed.RoutedHost, bootstrapAddress string, network string) (*config.DagConfig, error) {
-	stream, err := (*host).NewStream(ctx, peer.ID(strings.Split(bootstrapAddress, "ipfs/")[1]), protocol.ID(GetStreamHeaderProtocolPath(network, RequestConfig))) // Initialize new stream
+	peerID, err := peer.IDB58Decode(strings.Split(bootstrapAddress, "ipfs/")[1]) // Get peer ID
+
+	if err != nil { // Check for errors
+		return &config.DagConfig{}, err // Return found error
+	}
+
+	stream, err := (*host).NewStream(ctx, peerID, protocol.ID(GetStreamHeaderProtocolPath(network, RequestConfig))) // Initialize new stream
 
 	if err != nil { // Check for errors
 		return &config.DagConfig{}, err // Return found error

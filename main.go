@@ -87,9 +87,9 @@ func startNode() error {
 		*bootstrapNodeAddressFlag = p2p.GetBestBootstrapAddress(context.Background(), host) // Get best bootstrap node
 	}
 
-	dagConfig, err := config.ReadDagConfigFromMemory(*networkFlag) // Read config
-
 	needsSync := false // Assume doesn't need sync
+
+	dagConfig, err := config.ReadDagConfigFromMemory(*networkFlag) // Read config
 
 	if err != nil || dagConfig == nil { // Check no existing dag config
 		if *bootstrapNodeAddressFlag == "localhost" { // Check no bootstrap node
