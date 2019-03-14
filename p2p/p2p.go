@@ -125,7 +125,7 @@ func NewHost(ctx context.Context, port int) (*routed.RoutedHost, error) {
 		return nil, err // Return found error
 	}
 
-	host, err := libp2p.New(ctx, libp2p.NATPortMap(), libp2p.ListenAddrStrings("/ip4/127.0.0.1/tcp/"+strconv.Itoa(port), "/ip6/::1/tcp/"+strconv.Itoa(port)), libp2p.Identity(privateKey)) // Initialize libp2p host
+	host, err := libp2p.New(ctx, libp2p.NATPortMap(), libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/"+strconv.Itoa(port), "/ip6/::1/tcp/"+strconv.Itoa(port)), libp2p.Identity(privateKey)) // Initialize libp2p host
 
 	if err != nil { // Check for errors
 		return nil, err // Return found error
