@@ -109,7 +109,6 @@ func NewDag(config *config.DagConfig) (*Dag, error) {
 
 // Close closes the working dag.
 func (dag *Dag) Close() error {
-	fmt.Println("test")
 	if WorkingDagDB == nil { // Check no working dag db
 		return ErrDagDbNotOpened // Return error
 	}
@@ -382,6 +381,10 @@ func (dag *Dag) GetTransactionsBySender(sender *common.Address) ([]*Transaction,
 // GetBestTransaction gets the last transaction in the dag. If more than one last child exists, the child with
 // the latest timestamp is returned.
 func (dag *Dag) GetBestTransaction() (*Transaction, error) {
+	if dag.Genesis.IsNil() { // Check no genesis
+		return &Transaction{}, nil // No best tx
+	}
+
 	lastTransaction, err := dag.GetTransactionByHash(dag.Genesis) // Initialize last transaction buffer
 
 	if err != nil { // Check for errors
