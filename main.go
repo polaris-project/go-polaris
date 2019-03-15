@@ -6,8 +6,8 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"time"
 
@@ -114,7 +114,17 @@ func startNode() error {
 		return err // Return found error
 	}
 
-	defer dag.Close() // Close on success
+	c := make(chan os.Signal, 1) // Get control c
+
+	signal.Notify(c, os.Interrupt) // Notify
+
+	go func() {
+		for range c {
+			dag.Close() // Close dag
+		}
+	}()
+
+	defer dag.Close() // Close dag
 
 	validator := validator.Validator(validator.NewBeaconDagValidator(dagConfig, dag)) // Initialize validator
 
@@ -125,11 +135,8 @@ func startNode() error {
 	remoteBestTransactionHash, _ := client.RequestBestTransactionHash(ctx, 64) // Request best tx hash
 
 	if !bytes.Equal(localBestTransaction.Hash.Bytes(), remoteBestTransactionHash.Bytes()) && !localBestTransaction.Hash.IsNil() && !remoteBestTransactionHash.IsNil() { // Check up to date
-		fmt.Println("test")
 		needsSync = true // Set does need sync
 	}
-
-	fmt.Println("double test")
 
 	err = client.StartServingStreams(*networkFlag) // Start handlers
 
