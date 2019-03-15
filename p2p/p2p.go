@@ -3,7 +3,6 @@ package p2p
 
 import (
 	"bufio"
-	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -12,7 +11,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -290,7 +288,7 @@ func BroadcastDht(ctx context.Context, host *routed.RoutedHost, message []byte, 
 
 		writer := bufio.NewWriter(stream) // Initialize writer
 
-		_, err = writer.Write(append(message, []byte(";DELIM")...)) // Write message
+		_, err = writer.Write(message) // Write message
 
 		if err != nil { // Check for errors
 			continue // Continue
@@ -323,7 +321,7 @@ func BroadcastDhtResult(ctx context.Context, host *routed.RoutedHost, message []
 
 		readWriter := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)) // Initialize reader/writer
 
-		_, err = readWriter.Write(append(message, []byte(";DELIM")...)) // Write message
+		_, err = readWriter.Write(message) // Write message
 
 		if err != nil { // Check for errors
 			continue // Continue
@@ -352,33 +350,7 @@ func GetStreamHeaderProtocolPath(network string, streamProtocol StreamHeaderProt
 
 // readAsync asynchronously reads from a given reader.
 func readAsync(reader *bufio.Reader) ([]byte, error) {
-	var buffer []byte // Initialize buffer
-
-	readStartTime := time.Now() // Get read start time
-
-	for time.Now().Sub(readStartTime) < 10*time.Second { // Do until timeout
-		tempBuffer := make([]byte, 512) // Make 512-bit buffer
-
-		nRead, err := io.ReadFull(reader, tempBuffer) // Read into temporary buffer
-
-		if err != nil { // Check for errors
-			return nil, err // Return found error
-		}
-
-		tempBuffer = bytes.Trim(tempBuffer, "\x00") // Trim nil bytes
-
-		if len(tempBuffer) == 0 && len(buffer) > 0 { // Check nil
-			return buffer, nil // Return read bytes
-		}
-
-		if nRead > 0 { // Check actually read something
-			buffer = append(buffer, tempBuffer...) // Append read bytes
-		}
-	}
-
-	fmt.Println("test")
-
-	return buffer, nil // Return read bytes
+	return ioutil.ReadAll(reader) // Return read bytes
 }
 
 /* END INTERNAL METHODS */
