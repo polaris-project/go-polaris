@@ -288,7 +288,7 @@ func BroadcastDht(ctx context.Context, host *routed.RoutedHost, message []byte, 
 
 		writer := bufio.NewWriter(stream) // Initialize writer
 
-		_, err = writer.Write(message) // Write message
+		_, err = writer.Write(append(message, '\f')) // Write message
 
 		if err != nil { // Check for errors
 			continue // Continue
@@ -321,7 +321,7 @@ func BroadcastDhtResult(ctx context.Context, host *routed.RoutedHost, message []
 
 		readWriter := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)) // Initialize reader/writer
 
-		_, err = readWriter.Write(message) // Write message
+		_, err = readWriter.Write(append(message, byte('\f'))) // Write message
 
 		if err != nil { // Check for errors
 			continue // Continue
@@ -350,7 +350,7 @@ func GetStreamHeaderProtocolPath(network string, streamProtocol StreamHeaderProt
 
 // readAsync asynchronously reads from a given reader.
 func readAsync(reader *bufio.Reader) ([]byte, error) {
-	return ioutil.ReadAll(reader) // Return read bytes
+	return reader.ReadBytes('\f') // Return read bytes
 }
 
 /* END INTERNAL METHODS */

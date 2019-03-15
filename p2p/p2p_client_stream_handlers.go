@@ -92,7 +92,7 @@ func (client *Client) HandleReceiveBestTransactionRequest(stream inet.Stream) {
 
 	bestTransaction, _ := (*client.Validator).GetWorkingDag().GetBestTransaction() // Get best transaction
 
-	writer.Write(bestTransaction.Bytes()) // Write best transaction
+	writer.Write(append(bestTransaction.Bytes(), byte('\f'))) // Write best transaction
 }
 
 // HandleReceiveTransactionRequest handles a new stream requesting transaction metadata with a given hash.
@@ -107,21 +107,21 @@ func (client *Client) HandleReceiveTransactionRequest(stream inet.Stream) {
 
 	transaction, _ := (*client.Validator).GetWorkingDag().GetTransactionByHash(common.NewHash(targetHashBytes)) // Get transaction with hash
 
-	readWriter.Write(transaction.Bytes()) // Write transaction bytes
+	readWriter.Write(append(transaction.Bytes(), byte('\f'))) // Write transaction bytes
 }
 
 // HandleReceiveConfigRequest handles a new stream requesting the working dag config.
 func (client *Client) HandleReceiveConfigRequest(stream inet.Stream) {
 	writer := bufio.NewWriter(stream) // Initialize writer
 
-	writer.Write((*client.Validator).GetWorkingConfig().Bytes()) // Write config bytes
+	writer.Write(append((*client.Validator).GetWorkingConfig().Bytes(), byte('\f'))) // Write config bytes
 }
 
 // HandleReceiveGenesisHashRequest handles a new stream requesting for the genesis hash of the working dag.
 func (client *Client) HandleReceiveGenesisHashRequest(stream inet.Stream) {
 	writer := bufio.NewWriter(stream) // Initialize writer
 
-	writer.Write((*client.Validator).GetWorkingDag().Genesis.Bytes()) // Write genesis hash
+	writer.Write(append((*client.Validator).GetWorkingDag().Genesis.Bytes(), byte('\f'))) // Write genesis hash
 }
 
 // HandleReceiveTransactionChildHashesRequest handles a new stream requesting for the child hashes of a given transaction.
@@ -147,7 +147,7 @@ func (client *Client) HandleReceiveTransactionChildHashesRequest(stream inet.Str
 			summarizedChildHashes = append(summarizedChildHashes, append(child.Hash[:], []byte("end_hash")...)...) // Append hash
 		}
 
-		readWriter.Write(summarizedChildHashes) // Write child hashes
+		readWriter.Write(append(summarizedChildHashes, byte('\f'))) // Write child hashes
 	}
 }
 
