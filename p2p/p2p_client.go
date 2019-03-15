@@ -65,29 +65,13 @@ func (client *Client) SyncDag(ctx context.Context) error {
 		return ErrNoWorkingHost // Return found error
 	}
 
-	lastTransactionHashes, err := BroadcastDhtResult(ctx, WorkingHost, types.BestTransactionRequest, GetStreamHeaderProtocolPath(client.Network, RequestBestTransaction), client.Network, 64) // Get last transaction hashes
+	bestLastTransactionHash, err := client.RequestBestTransactionHash(ctx, 64) // Request best tx hash
 
 	if err != nil { // Check for errors
 		return err // Return found error
 	}
 
-	occurrences := make(map[common.Hash]int64) // Occurrences of each transaction hash
-
-	if len(lastTransactionHashes) == 0 { // Check no peers
-		return ErrNoAvailablePeers // Return error
-	}
-
-	bestLastTransactionHash := lastTransactionHashes[0] // Init last transaction buffer
-
-	for _, lastTransactionHash := range lastTransactionHashes { // Iterate through last transaction hashes
-		occurrences[common.NewHash(lastTransactionHash)]++ // Increment occurrences of transaction hash
-
-		if occurrences[common.NewHash(lastTransactionHash)] > occurrences[common.NewHash(bestLastTransactionHash)] { // Check better last hash
-			bestLastTransactionHash = lastTransactionHash // Set best last transaction hash
-		}
-	}
-
-	remoteBestTransaction, err := client.RequestTransactionWithHash(ctx, common.NewHash(bestLastTransactionHash), 16) // Get last transaction
+	remoteBestTransaction, err := client.RequestTransactionWithHash(ctx, bestLastTransactionHash, 16) // Get last transaction
 
 	if err != nil { // Check for errors
 		return err // Return found error
@@ -288,6 +272,33 @@ func (client *Client) RequestTransactionChildren(ctx context.Context, parentHash
 	}
 
 	return bestChildHashSet, nil // No error occurred, return children
+}
+
+// RequestBestTransactionHash returns the average best tx hash between nPeers.
+func (client *Client) RequestBestTransactionHash(ctx context.Context, nPeers int) (common.Hash, error) {
+	lastTransactionHashes, err := BroadcastDhtResult(ctx, WorkingHost, types.BestTransactionRequest, GetStreamHeaderProtocolPath(client.Network, RequestBestTransaction), client.Network, nPeers) // Get last transaction hashes
+
+	if err != nil { // Check for errors
+		return common.Hash{}, err // Return found error
+	}
+
+	occurrences := make(map[common.Hash]int64) // Occurrences of each transaction hash
+
+	if len(lastTransactionHashes) == 0 { // Check no peers
+		return common.Hash{}, ErrNoAvailablePeers // Return error
+	}
+
+	bestLastTransactionHash := lastTransactionHashes[0] // Init last transaction buffer
+
+	for _, lastTransactionHash := range lastTransactionHashes { // Iterate through last transaction hashes
+		occurrences[common.NewHash(lastTransactionHash)]++ // Increment occurrences of transaction hash
+
+		if occurrences[common.NewHash(lastTransactionHash)] > occurrences[common.NewHash(bestLastTransactionHash)] { // Check better last hash
+			bestLastTransactionHash = lastTransactionHash // Set best last transaction hash
+		}
+	}
+
+	return common.NewHash(bestLastTransactionHash), nil // Return best hash
 }
 
 /*
