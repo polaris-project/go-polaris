@@ -2,6 +2,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"flag"
@@ -33,6 +34,7 @@ var (
 	silencedFlag             = flag.Bool("silence", false, "silence logs")                                                                                      // Init silence logs flag
 	disableColoredOutputFlag = flag.Bool("no-colors", false, "disable colored output")                                                                          // Init disable colored output flag
 	debugFlag                = flag.Bool("debug", false, "force node to log in debug mode")                                                                     // Init debug flag
+	disableAutoGenesisFlag   = flag.Bool("no-genesis", false, "disables the automatic creation of a genesis transaction set if no dag can be bootstrapped")     // Init disable auto genesis flag
 
 	logger = loggo.GetLogger("") // Get logger
 
@@ -114,6 +116,14 @@ func startNode() error {
 	validator := validator.Validator(validator.NewBeaconDagValidator(dagConfig, dag)) // Initialize validator
 
 	client := p2p.NewClient(*networkFlag, &validator) // Initialize client
+
+	localBestTransaction, _ := (*client.Validator).GetWorkingDag().GetBestTransaction() // Get local best transaction
+
+	remoteBestTransactionHash, _ := client.RequestBestTransactionHash(ctx, 64) // Request best tx hash
+
+	if !bytes.Equal(localBestTransaction.Hash.Bytes(), remoteBestTransactionHash.Bytes()) && !localBestTransaction.Hash.IsNil() && !remoteBestTransactionHash.IsNil() { // Check up to date
+		needsSync = true // Set does need sync
+	}
 
 	err = client.StartServingStreams(*networkFlag) // Start handlers
 
