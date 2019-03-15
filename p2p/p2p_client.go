@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/boltdb/bolt"
 	"github.com/juju/loggo"
 
 	"github.com/polaris-project/go-polaris/common"
@@ -185,10 +186,24 @@ func (client *Client) SyncGenesis(ctx context.Context) error {
 
 	cancel() // Cancel
 
-	err = (*client.Validator).GetWorkingDag().AddTransaction(genesisTransaction) // Add genesis transaction
+	if !genesisTransaction.Hash.IsNil() { // Ensure is not nil genesis
+		_, err = (*client.Validator).GetWorkingDag().GetTransactionByHash(genesisTransaction.Hash) // Get transaction by hash
 
-	if err != nil { // Check for errors
-		return err // Return found error
+		if err == nil { // Check tx already exists
+			return validator.ErrDuplicateTransaction // Return found error
+		}
+
+		return types.WorkingDagDB.Update(func(tx *bolt.Tx) error {
+			_, err := tx.CreateBucketIfNotExists([]byte("transaction-bucket")) // Create tx bucket if it doesn't already exist
+
+			if err != nil { // Check for errors
+				return err // Return found error
+			}
+
+			workingTransactionBucket := tx.Bucket([]byte("transaction-bucket")) // Get transaction bucket
+
+			return workingTransactionBucket.Put(genesisTransaction.Hash.Bytes(), genesisTransaction.Bytes()) // Put transaction
+		}) // Write genesis transaction
 	}
 
 	return nil // No error occurred, return nil
