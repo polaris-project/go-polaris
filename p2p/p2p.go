@@ -293,6 +293,8 @@ func BroadcastDht(ctx context.Context, host *routed.RoutedHost, message []byte, 
 		if err != nil { // Check for errors
 			continue // Continue
 		}
+
+		writer.Flush() // Flush
 	}
 
 	return nil // No error occurred, return nil
@@ -327,6 +329,8 @@ func BroadcastDhtResult(ctx context.Context, host *routed.RoutedHost, message []
 			continue // Continue
 		}
 
+		readWriter.Flush() // Flush
+
 		responseBytes, err := readAsync(readWriter.Reader) // Read async
 
 		if err != nil { // Check for errors
@@ -334,6 +338,8 @@ func BroadcastDhtResult(ctx context.Context, host *routed.RoutedHost, message []
 		}
 
 		results = append(results, responseBytes) // Append response
+
+		readWriter.Flush() // Flush
 	}
 
 	return results, nil // No error occurred, return response

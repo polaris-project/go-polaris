@@ -90,6 +90,8 @@ func (client *Client) HandleReceiveTransaction(stream inet.Stream) {
 func (client *Client) HandleReceiveBestTransactionRequest(stream inet.Stream) {
 	writer := bufio.NewWriter(stream) // Initialize writer from stream
 
+	defer writer.Flush() // Flush
+
 	bestTransaction, _ := (*client.Validator).GetWorkingDag().GetBestTransaction() // Get best transaction
 
 	writer.Write(append(bestTransaction.Bytes(), byte('\f'))) // Write best transaction
@@ -98,6 +100,8 @@ func (client *Client) HandleReceiveBestTransactionRequest(stream inet.Stream) {
 // HandleReceiveTransactionRequest handles a new stream requesting transaction metadata with a given hash.
 func (client *Client) HandleReceiveTransactionRequest(stream inet.Stream) {
 	readWriter := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)) // Init reader/writer for stream
+
+	defer readWriter.Flush() // Flush
 
 	targetHashBytes, err := readAsync(readWriter.Reader) // Read async
 
@@ -114,13 +118,16 @@ func (client *Client) HandleReceiveTransactionRequest(stream inet.Stream) {
 func (client *Client) HandleReceiveConfigRequest(stream inet.Stream) {
 	writer := bufio.NewWriter(stream) // Initialize writer
 
+	defer writer.Flush() // Flush
+
 	writer.Write(append((*client.Validator).GetWorkingConfig().Bytes(), byte('\f'))) // Write config bytes
-	writer.Flush()                                                                   // Flush
 }
 
 // HandleReceiveGenesisHashRequest handles a new stream requesting for the genesis hash of the working dag.
 func (client *Client) HandleReceiveGenesisHashRequest(stream inet.Stream) {
 	writer := bufio.NewWriter(stream) // Initialize writer
+
+	defer writer.Flush() // Flush
 
 	writer.Write(append((*client.Validator).GetWorkingDag().Genesis.Bytes(), byte('\f'))) // Write genesis hash
 }
@@ -128,6 +135,8 @@ func (client *Client) HandleReceiveGenesisHashRequest(stream inet.Stream) {
 // HandleReceiveTransactionChildHashesRequest handles a new stream requesting for the child hashes of a given transaction.
 func (client *Client) HandleReceiveTransactionChildHashesRequest(stream inet.Stream) {
 	readWriter := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)) // Initialize reader/writer from stream
+
+	defer readWriter.Flush() // Flush
 
 	parentHashBytes, err := readAsync(readWriter.Reader) // Read async
 
@@ -149,6 +158,8 @@ func (client *Client) HandleReceiveTransactionChildHashesRequest(stream inet.Str
 		}
 
 		readWriter.Write(append(summarizedChildHashes, byte('\f'))) // Write child hashes
+
+		readWriter.Flush() // Flush
 	}
 }
 
