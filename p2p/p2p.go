@@ -3,6 +3,7 @@ package p2p
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -356,7 +357,15 @@ func GetStreamHeaderProtocolPath(network string, streamProtocol StreamHeaderProt
 
 // readAsync asynchronously reads from a given reader.
 func readAsync(reader *bufio.Reader) ([]byte, error) {
-	return reader.ReadBytes('\f') // Return read bytes
+	readBytes, err := reader.ReadBytes('\f') // Read bytes up to and including delimiter
+
+	if err != nil { // Check for errors
+		return nil, err // Return found error
+	}
+
+	readBytes = bytes.Trim(readBytes, "\f") // Trim delimiter
+
+	return readBytes, nil // Return read bytes
 }
 
 /* END INTERNAL METHODS */
