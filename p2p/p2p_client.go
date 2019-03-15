@@ -107,13 +107,18 @@ func (client *Client) SyncDag(ctx context.Context) error {
 		cancel() // Cancel
 	}
 
+	return client.SyncBestTransaction(ctx, remoteBestTransaction.Hash) // No error occurred, return nil
+}
+
+// SyncBestTransaction syncs the best local and remote transactions.
+func (client *Client) SyncBestTransaction(ctx context.Context, remoteBestTransactionHash common.Hash) error {
 	localBestTransaction, err := (*client.Validator).GetWorkingDag().GetBestTransaction() // Get local best transaction
 
 	if err != nil { // Check for errors
 		return err // Return found error
 	}
 
-	for !bytes.Equal(remoteBestTransaction.Hash.Bytes(), localBestTransaction.Hash.Bytes()) { // Do until valid best last transaction hash
+	for !bytes.Equal(remoteBestTransactionHash.Bytes(), localBestTransaction.Hash.Bytes()) { // Do until valid best last transaction hash
 		getChildrenCtx, cancel := context.WithCancel(ctx) // Initialize context
 
 		childHashes, err := client.RequestTransactionChildren(getChildrenCtx, localBestTransaction.Hash, 16) // Get child hashes
