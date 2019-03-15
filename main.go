@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -113,6 +114,8 @@ func startNode() error {
 		return err // Return found error
 	}
 
+	defer dag.Close() // Close on success
+
 	validator := validator.Validator(validator.NewBeaconDagValidator(dagConfig, dag)) // Initialize validator
 
 	client := p2p.NewClient(*networkFlag, &validator) // Initialize client
@@ -122,6 +125,7 @@ func startNode() error {
 	remoteBestTransactionHash, _ := client.RequestBestTransactionHash(ctx, 64) // Request best tx hash
 
 	if !bytes.Equal(localBestTransaction.Hash.Bytes(), remoteBestTransactionHash.Bytes()) && !localBestTransaction.Hash.IsNil() && !remoteBestTransactionHash.IsNil() { // Check up to date
+		fmt.Println("test")
 		needsSync = true // Set does need sync
 	}
 

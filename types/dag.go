@@ -107,6 +107,16 @@ func NewDag(config *config.DagConfig) (*Dag, error) {
 	return dag, nil // Return initialized dag
 }
 
+// Close closes the working dag.
+func (dag *Dag) Close() error {
+	fmt.Println("test")
+	if WorkingDagDB == nil { // Check no working dag db
+		return ErrDagDbNotOpened // Return error
+	}
+
+	return WorkingDagDB.Close() // Close
+}
+
 // MakeGenesis makes the dag's genesis transaction set.
 // If the dag already has a genesis transaction, an ErrDuplicateTransaction error is returned.
 func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
