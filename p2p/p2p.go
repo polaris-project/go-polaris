@@ -215,31 +215,15 @@ func BootstrapConfig(ctx context.Context, host *routed.RoutedHost, bootstrapAddr
 
 	reader := bufio.NewReader(stream) // Initialize reader from stream
 
-	var dagConfigBytes bytes.Buffer // Initialize dag config bytes buffer
+	dagConfigBytes, err := readAsync(reader) // Read async
 
-	readStartTime := time.Now() // Get start time
+	if err != nil { // Check for errors
+		cancel() // Cancel
 
-	finished := false // Init finished bool
-
-	finishedChan := &finished // Get finished ref
-
-	for dagConfigBytes.Bytes() == nil || len(dagConfigBytes.Bytes()) == 0 { // Read while nil
-		go func() {
-			if *finishedChan != true { // Check not finished
-				io.Copy(&dagConfigBytes, reader) // Non-blocking read
-			}
-		}()
-
-		if time.Now().Sub(readStartTime) > 10*time.Second { // Check for timeout
-			cancel() // Cancel
-
-			return &config.DagConfig{}, ErrTimedOut // Return found error
-		}
+		return &config.DagConfig{}, err // Return found error
 	}
 
-	*finishedChan = true // Set finished
-
-	deserializedConfig := config.DagConfigFromBytes(dagConfigBytes.Bytes()) // Deserialize
+	deserializedConfig := config.DagConfigFromBytes(dagConfigBytes) // Deserialize
 
 	if deserializedConfig == nil { // Check nil
 		cancel() // Cancel
@@ -345,10 +329,10 @@ func BroadcastDhtResult(ctx context.Context, host *routed.RoutedHost, message []
 			continue // Continue
 		}
 
-		var responseBytes []byte // Initialize response bytes buffer
+		responseBytes, err := readAsync(readWriter.Reader) // Read async
 
-		for readByte, err := readWriter.ReadByte(); err != nil; { // Read until EOF
-			responseBytes = append(responseBytes, readByte) // Append read byte
+		if err != nil { // Check for errors
+			continue // Continue
 		}
 
 		results = append(results, responseBytes) // Append response
@@ -363,3 +347,34 @@ func GetStreamHeaderProtocolPath(network string, streamProtocol StreamHeaderProt
 }
 
 /* END EXPORTED METHODS */
+
+/* BEGIN INTERNAL METHODS */
+
+// readAsync asynchronously reads from a given reader.
+func readAsync(reader *bufio.Reader) ([]byte, error) {
+	var buffer bytes.Buffer // Initialize dag config bytes buffer
+
+	readStartTime := time.Now() // Get start time
+
+	finished := false // Init finished bool
+
+	finishedChan := &finished // Get finished ref
+
+	for emptyComparator := make([]byte, len(buffer.Bytes())); buffer.Bytes() == nil || len(buffer.Bytes()) == 0 || bytes.Contains(buffer.Bytes(), emptyComparator); { // Read while nil
+		go func() {
+			if *finishedChan != true { // Check not finished
+				io.Copy(&buffer, reader) // Non-blocking read
+			}
+		}()
+
+		if time.Now().Sub(readStartTime) > 10*time.Second { // Check for timeout
+			return nil, ErrTimedOut // Return nil
+		}
+	}
+
+	*finishedChan = true // Set finished
+
+	return buffer.Bytes(), nil // Return read bytes
+}
+
+/* END INTERNAL METHODS */

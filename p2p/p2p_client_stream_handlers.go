@@ -73,10 +73,10 @@ func (client *Client) StartServingStream(streamHeaderProtocolPath string, handle
 func (client *Client) HandleReceiveTransaction(stream inet.Stream) {
 	reader := bufio.NewReader(stream) // Initialize reader from stream
 
-	var transactionBytes []byte // Initialize transaction bytes buffer
+	transactionBytes, err := readAsync(reader) // Read async
 
-	for readBytes, err := reader.ReadByte(); err != nil; { // Read until EOF
-		transactionBytes = append(transactionBytes, readBytes) // Append read bytes
+	if err != nil { // Check for errors
+		return // Return
 	}
 
 	transaction := types.TransactionFromBytes(transactionBytes) // Deserialize transaction
@@ -99,10 +99,10 @@ func (client *Client) HandleReceiveBestTransactionRequest(stream inet.Stream) {
 func (client *Client) HandleReceiveTransactionRequest(stream inet.Stream) {
 	readWriter := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)) // Init reader/writer for stream
 
-	var targetHashBytes []byte // Initialize tx hash bytes buffer
+	targetHashBytes, err := readAsync(readWriter.Reader) // Read async
 
-	for readBytes, err := readWriter.ReadByte(); err != nil; { // Read until EOF
-		targetHashBytes = append(targetHashBytes, readBytes) // Append read bytes
+	if err != nil { // Check for errors
+		return // Return
 	}
 
 	transaction, _ := (*client.Validator).GetWorkingDag().GetTransactionByHash(common.NewHash(targetHashBytes)) // Get transaction with hash
@@ -128,10 +128,10 @@ func (client *Client) HandleReceiveGenesisHashRequest(stream inet.Stream) {
 func (client *Client) HandleReceiveTransactionChildHashesRequest(stream inet.Stream) {
 	readWriter := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream)) // Initialize reader/writer from stream
 
-	var parentHashBytes []byte // Initialize tx hash bytes buffer
+	parentHashBytes, err := readAsync(readWriter.Reader) // Read async
 
-	for readByte, err := readWriter.ReadByte(); err != nil; { // Read until EOF
-		parentHashBytes = append(parentHashBytes, readByte) // Append read byte
+	if err != nil { // Check for errors
+		return // Return
 	}
 
 	children, err := (*client.Validator).GetWorkingDag().GetTransactionChildren(common.NewHash(parentHashBytes)) // Get children
