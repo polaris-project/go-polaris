@@ -129,6 +129,8 @@ func startNode() error {
 		needsSync = true // Set does need sync
 	}
 
+	fmt.Println("double test")
+
 	err = client.StartServingStreams(*networkFlag) // Start handlers
 
 	if err != nil { // Check for errors
