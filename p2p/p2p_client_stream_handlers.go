@@ -115,6 +115,7 @@ func (client *Client) HandleReceiveConfigRequest(stream inet.Stream) {
 	writer := bufio.NewWriter(stream) // Initialize writer
 
 	writer.Write(append((*client.Validator).GetWorkingConfig().Bytes(), byte('\f'))) // Write config bytes
+	writer.Flush()                                                                   // Flush
 }
 
 // HandleReceiveGenesisHashRequest handles a new stream requesting for the genesis hash of the working dag.
