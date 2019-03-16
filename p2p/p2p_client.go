@@ -29,7 +29,7 @@ var (
 
 var (
 	// logger is the p2p package logger.
-	logger = loggo.GetLogger("p2p")
+	logger = getLogger()
 )
 
 // Client represents an active p2p peer, that of which is serving a list of available stream header protocol paths.
@@ -329,3 +329,16 @@ func (client *Client) RequestBestTransactionHash(ctx context.Context, nPeers int
 */
 
 /* END EXPORTED METHODS */
+
+/* BEGIN INTERNAL METHODS */
+
+// getLogger gets the p2p package logger, and sets the levels of said logger.
+func getLogger() loggo.Logger {
+	logger := loggo.GetLogger("p2p") // Get logger
+
+	loggo.ConfigureLoggers("p2p=INFO; p2p=ERROR") // Configure loggers
+
+	return logger // Return logger
+}
+
+/* END INTERNAL METHODS */
