@@ -186,6 +186,10 @@ func (client *Client) SyncGenesis(ctx context.Context) error {
 	bestGenesisHash := genesisHashes[0] // Init best genesis hash buffer
 
 	for _, genesisHash := range genesisHashes { // Iterate through genesis hashes
+		if bytes.Equal(genesisHash, make([]byte, len(genesisHash))) { // Check is nil
+			continue // Continue
+		}
+
 		occurrences[common.NewHash(genesisHash)]++ // Increment occurrences of genesis hash
 
 		if occurrences[common.NewHash(genesisHash)] > occurrences[common.NewHash(bestGenesisHash)] { // Check better genesis hash
@@ -267,6 +271,10 @@ func (client *Client) RequestTransactionWithHash(ctx context.Context, hash commo
 	bestTransaction := types.TransactionFromBytes(transactionBytes[0]) // Init best transaction buffer
 
 	for _, currentTransactionBytes := range transactionBytes { // Iterate through transaction bytes
+		if bytes.Equal(currentTransactionBytes, make([]byte, len(currentTransactionBytes))) { // Check is nil
+			continue // Continue
+		}
+
 		currentTransaction := types.TransactionFromBytes(currentTransactionBytes) // Deserialize
 
 		occurrences[currentTransaction.Hash]++ // Increment occurrences
@@ -305,6 +313,10 @@ func (client *Client) RequestTransactionChildren(ctx context.Context, parentHash
 			castedHashes = append(castedHashes, common.NewHash(childHash)) // Append casted hash
 		}
 
+		if bytes.Equal(bytes.Join(hashes, []byte{}), make([]byte, len(hashes[0])*len(hashes))) { // Check is nil
+			continue // Continue
+		}
+
 		occurrences[crypto.Sha3(bytes.Join(hashes, []byte{}))]++ // Increment occurrences
 
 		if occurrences[crypto.Sha3(bytes.Join(hashes, []byte{}))] > occurrences[bestChildHashSetHashSum] { // Check new best hash set
@@ -333,6 +345,10 @@ func (client *Client) RequestBestTransactionHash(ctx context.Context, nPeers int
 	bestLastTransactionHash := lastTransactionHashes[0] // Init last transaction buffer
 
 	for _, lastTransactionHash := range lastTransactionHashes { // Iterate through last transaction hashes
+		if bytes.Equal(lastTransactionHash, make([]byte, len(lastTransactionHash))) { // Check nil
+			continue // Continue
+		}
+
 		occurrences[common.NewHash(lastTransactionHash)]++ // Increment occurrences of transaction hash
 
 		if occurrences[common.NewHash(lastTransactionHash)] > occurrences[common.NewHash(bestLastTransactionHash)] { // Check better last hash
