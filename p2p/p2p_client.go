@@ -3,6 +3,7 @@ package p2p
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"errors"
 	"time"
 
@@ -62,6 +63,8 @@ func (client *Client) StartIntermittentSync(ctx context.Context, duration time.D
 
 // SyncDag syncs the working dag.
 func (client *Client) SyncDag(ctx context.Context) error {
+	logger.Infof("starting dag sync") // Log start dag sync
+
 	if WorkingHost == nil { // Check no host
 		return ErrNoWorkingHost // Return found error
 	}
@@ -78,10 +81,14 @@ func (client *Client) SyncDag(ctx context.Context) error {
 		return err // Return found error
 	}
 
+	logger.Infof("dag sync: determined must sync up to transaction with hash %s", hex.EncodeToString(remoteBestTransaction.Hash.Bytes())) // Log must sync up to
+
 	if (*client.Validator).GetWorkingDag().Genesis.IsNil() { // Check no genesis
+		logger.Infof("couldn't find a valid genesis transaction; syncing") // Log sync genesis
+
 		genCtx, cancel := context.WithCancel(ctx) // Initialize context
 
-		err = client.SyncGenesis(genCtx)
+		err = client.SyncGenesis(genCtx) // Sync genesis
 
 		if err != nil { // Check for errors
 			cancel()
@@ -89,8 +96,12 @@ func (client *Client) SyncDag(ctx context.Context) error {
 			return err // Return found error
 		}
 
+		logger.Infof("finished syncing gensis") // Log finish syncing genesis
+
 		cancel() // Cancel
 	}
+
+	logger.Infof("syncing best transaction") // Log sync best transaction
 
 	return client.SyncBestTransaction(ctx, remoteBestTransaction.Hash) // No error occurred, return nil
 }
@@ -103,8 +114,12 @@ func (client *Client) SyncBestTransaction(ctx context.Context, remoteBestTransac
 		return err // Return found error
 	}
 
+	logger.Infof("syncing best transaction from local best transaction: %s and remote transaction: %s", hex.EncodeToString(localBestTransaction.Hash.Bytes()), hex.EncodeToString(remoteBestTransactionHash.Bytes())) // Log sync best transaction
+
 	for !bytes.Equal(remoteBestTransactionHash.Bytes(), localBestTransaction.Hash.Bytes()) { // Do until valid best last transaction hash
 		getChildrenCtx, cancel := context.WithCancel(ctx) // Initialize context
+
+		logger.Infof("requesting children for current best transaction: %s", hex.EncodeToString(localBestTransaction.Hash.Bytes())) // Log request children
 
 		childHashes, err := client.RequestTransactionChildren(getChildrenCtx, localBestTransaction.Hash, 16) // Get child hashes
 
@@ -113,6 +128,8 @@ func (client *Client) SyncBestTransaction(ctx context.Context, remoteBestTransac
 
 			return err // Return found error
 		}
+
+		logger.Infof("found %d children for current best transaction: %s", len(childHashes), hex.EncodeToString(localBestTransaction.Hash.Bytes())) // Log children
 
 		cancel() // Cancel
 
@@ -130,6 +147,8 @@ func (client *Client) SyncBestTransaction(ctx context.Context, remoteBestTransac
 			cancel() // Cancel
 
 			if err := (*client.Validator).ValidateTransaction(destinationTransaction); err == nil { // Check valid transaction
+				logger.Infof("adding child: %s", hex.EncodeToString(destinationTransaction.Hash.Bytes())) // Log add children
+
 				err = (*client.Validator).GetWorkingDag().AddTransaction(destinationTransaction) // Add transaction to local dag
 
 				if err != nil { // Check for errors
