@@ -20,6 +20,17 @@ func (dag *Dag) Bytes() []byte {
 	return marshaledVal // Return bytes
 }
 
+// WriteToMemory writes the dag header to persistent memory.
+func (dag *Dag) WriteToMemory() error {
+	err := common.CreateDirIfDoesNotExit(common.DbDir) // Create db dir if necessary
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	return ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/db_header_%s.json", common.DbDir, dag.DagConfig.Identifier)), dag.Bytes(), 0644) // Write dag header to persistent memory
+}
+
 /* END EXPORTED METHODS */
 
 /* BEGIN INTERNAL METHODS */
@@ -41,17 +52,6 @@ func readDagDbHeaderFromMemory(identifier string) (*Dag, error) {
 	}
 
 	return buffer, nil // No error occurred, retrun nil
-}
-
-// writeToMemory writes the dag header to persistent memory.
-func (dag *Dag) writeToMemory() error {
-	err := common.CreateDirIfDoesNotExit(common.DbDir) // Create db dir if necessary
-
-	if err != nil { // Check for errors
-		return err // Return found error
-	}
-
-	return ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/db_header_%s.json", common.DbDir, dag.DagConfig.Identifier)), dag.Bytes(), 0644) // Write dag header to persistent memory
 }
 
 /* END INTERNAL METHODS */

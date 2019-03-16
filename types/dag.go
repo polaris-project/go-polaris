@@ -98,7 +98,7 @@ func NewDag(config *config.DagConfig) (*Dag, error) {
 		DagConfig: config, // Set config
 	} // Initialize dag db header
 
-	err = dag.writeToMemory() // Write dag db header to persistent memory
+	err = dag.WriteToMemory() // Write dag db header to persistent memory
 
 	if err != nil { // Check for errors
 		return &Dag{}, err // Return found error
@@ -147,7 +147,7 @@ func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 
 	(*dag).Genesis = genesisTransaction.Hash // Set genesis
 
-	err = (*dag).writeToMemory() // Write dag header to persistent memory
+	err = (*dag).WriteToMemory() // Write dag header to persistent memory
 
 	if err != nil { // Check for errors
 		return nil, err // Return found error

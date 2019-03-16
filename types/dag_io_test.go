@@ -40,7 +40,7 @@ func TestReadDagDbHeaderFromMemory(t *testing.T) {
 		t.Fatal(err) // Panic
 	}
 
-	err = dag.writeToMemory() // Write dag db header to persistent memory
+	err = dag.WriteToMemory() // Write dag db header to persistent memory
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
@@ -69,7 +69,7 @@ func TestWriteToMemoryDagDbHeader(t *testing.T) {
 		t.Fatal(err) // Panic
 	}
 
-	err = dag.writeToMemory() // Write dag db header to persistent memory
+	err = dag.WriteToMemory() // Write dag db header to persistent memory
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic
