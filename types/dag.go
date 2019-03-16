@@ -61,6 +61,8 @@ type Dag struct {
 	DagConfig *config.DagConfig `json:"config"` // Dag config
 
 	Genesis common.Hash `json:"genesis"` // Dag genesis
+
+	LastTransaction common.Hash `json:"last_tx"` // Last transaction hash
 }
 
 /* BEGIN EXPORTED METHODS */
@@ -391,7 +393,17 @@ func (dag *Dag) GetBestTransaction() (*Transaction, error) {
 		return &Transaction{}, nil // No best tx
 	}
 
-	lastTransaction, err := dag.GetTransactionByHash(dag.Genesis) // Initialize last transaction buffer
+	if dag.LastTransaction.IsNil() { // Check no best transaction
+		dag.LastTransaction = dag.Genesis // Set last transaction
+	}
+
+	err := dag.WriteToMemory() // Write to persistent memory
+
+	if err != nil { // Check for errors
+		return &Transaction{}, err // Return found error
+	}
+
+	lastTransaction, err := dag.GetTransactionByHash(dag.LastTransaction) // Initialize last transaction buffer
 
 	if err != nil { // Check for errors
 		return &Transaction{}, err // Return found error
@@ -415,7 +427,9 @@ func (dag *Dag) GetBestTransaction() (*Transaction, error) {
 		lastTransaction = bestTransaction // Set best transaction
 	}
 
-	return lastTransaction, nil // Return last transaction
+	dag.LastTransaction = lastTransaction.Hash // Set last transaction
+
+	return lastTransaction, dag.WriteToMemory() // Return last transaction
 }
 
 /*
