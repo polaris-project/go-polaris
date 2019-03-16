@@ -39,7 +39,7 @@ var (
 
 	logger = loggo.GetLogger("") // Get logger
 
-	intermittentSyncContext, cancel = context.WithCancel(context.Background()) // Get background sync context
+	intermittentSyncContext, cancelIntermittent = context.WithCancel(context.Background()) // Get background sync context
 )
 
 // Main starts all necessary Polaris services, and parses command line arguments.
@@ -48,7 +48,7 @@ func main() {
 
 	setUserParams() // Set common params
 
-	defer cancel() // Cancel
+	defer cancelIntermittent() // Cancel
 
 	err := startNode() // Start node
 
@@ -121,6 +121,9 @@ func startNode() error {
 	go func() {
 		for range c {
 			dag.Close() // Close dag
+
+			cancelIntermittent() // Cancel intermittent sync
+			cancel()             // Cancel
 		}
 	}()
 
