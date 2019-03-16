@@ -147,6 +147,12 @@ func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 
 	(*dag).Genesis = genesisTransaction.Hash // Set genesis
 
+	err = (*dag).writeToMemory() // Write dag header to persistent memory
+
+	if err != nil { // Check for errors
+		return nil, err // Return found error
+	}
+
 	genesisTransactions = append(genesisTransactions, genesisTransaction) // Append genesis
 
 	lastParent := genesisTransaction // Set last parent
