@@ -14,6 +14,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/juju/loggo"
+
 	"github.com/boltdb/bolt"
 	"github.com/polaris-project/go-polaris/common"
 	"github.com/polaris-project/go-polaris/config"
@@ -56,6 +58,11 @@ var (
 	ErrInvalidSignature = errors.New("signature invalid")
 )
 
+var (
+	// logger is the dag package logger.
+	logger = getDagLogger()
+)
+
 // Dag is a simple struct used to abstract db reading and writing methods.
 type Dag struct {
 	DagConfig *config.DagConfig `json:"config"` // Dag config
@@ -70,6 +77,8 @@ type Dag struct {
 // NewDag creates a new dag with the given config, and writes the dag db to memory.
 // The newly opened dag db is stored in the WorkingDagDB variable.
 func NewDag(config *config.DagConfig) (*Dag, error) {
+	logger.Infof("initializing dag instance") // Log init dag
+
 	err := config.WriteToMemory() // Write dag config to persistent memory
 
 	if err != nil { // Check for errors
@@ -81,6 +90,8 @@ func NewDag(config *config.DagConfig) (*Dag, error) {
 	if err != nil { // Check for errors
 		return &Dag{}, err // Return found error
 	}
+
+	logger.Infof("opening dag db") // Log open db
 
 	dagDB, err := bolt.Open(filepath.FromSlash(fmt.Sprintf("%s/%s.db", common.DbDir, config.Identifier)), 0644, &bolt.Options{Timeout: 5 * time.Second}) // Open DB with timeout
 
@@ -96,12 +107,18 @@ func NewDag(config *config.DagConfig) (*Dag, error) {
 		return &Dag{}, err // Return found error
 	}
 
+	logger.Infof("attempting to open dag db header") // Log open dag db header
+
 	dagHeader, err := readDagDbHeaderFromMemory(config.Identifier) // Read dag db
 
 	if err != nil || dagHeader == nil { // Check no existing dag
+		logger.Infof("could not load local dag db header; initializing one instead") // Log initialize
+
 		dagHeader = &Dag{
 			DagConfig: config, // Set config
 		} // Initialize dag db header
+
+		logger.Infof("initialized dag db header, writing to memory") // Log write
 
 		err = dagHeader.WriteToMemory() // Write dag db header to persistent memory
 
@@ -110,11 +127,15 @@ func NewDag(config *config.DagConfig) (*Dag, error) {
 		}
 	}
 
+	logger.Infof("finished setting up dag") // Log setup dag
+
 	return dagHeader, nil // Return initialized dag
 }
 
 // Close closes the working dag.
 func (dag *Dag) Close() error {
+	logger.Infof("closing dag db") // Log close
+
 	if WorkingDagDB == nil { // Check no working dag db
 		return ErrDagDbNotOpened // Return error
 	}
@@ -125,6 +146,8 @@ func (dag *Dag) Close() error {
 // MakeGenesis makes the dag's genesis transaction set.
 // If the dag already has a genesis transaction, an ErrDuplicateTransaction error is returned.
 func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
+	logger.Infof("making genesis transaction set") // Log make genesis
+
 	if !dag.Genesis.IsNil() { // Check genesis already exists
 		return nil, ErrDuplicateTransaction // Return found error
 	}
@@ -135,6 +158,8 @@ func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 		return nil, err // Return found error
 	}
 
+	logger.Infof("created genesis private key") // Log init private key
+
 	totalGenesisValue := 0.0 // Init total value buffer
 
 	for _, value := range dag.DagConfig.Alloc { // Iterate through alloc
@@ -143,6 +168,8 @@ func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 
 	genesisTransactions := []*Transaction{} // Initialize genesis transactions
 
+	logger.Infof("creating genesis transaction") // Log init genesis
+
 	genesisTransaction := NewTransaction(0, big.NewFloat(totalGenesisValue), nil, crypto.AddressFromPrivateKey(privateKey), nil, 0, big.NewInt(0), []byte("genesis")) // Initialize genesis transaction
 
 	err = dag.forceAddTransaction(genesisTransaction) // Add genesis transaction
@@ -150,6 +177,8 @@ func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 	if err != nil { // Check for errors
 		return nil, err // Return found error
 	}
+
+	logger.Infof("added genesis transaction to dag") // Log add genesis
 
 	(*dag).Genesis = genesisTransaction.Hash // Set genesis
 
@@ -166,6 +195,8 @@ func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 	x := uint64(1) // Init nonce
 
 	for key, value := range dag.DagConfig.Alloc { // Iterate through alloc
+		logger.Infof("creating genesis child transaction for allocation address: %s", key) // Log create genesis child
+
 		decodedKey, err := hex.DecodeString(key) // Decode key
 
 		if err != nil { // Check for errors
@@ -188,6 +219,8 @@ func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 			return nil, err // Return found error
 		}
 
+		logger.Infof("added genesis child transaction with hash: %s and alloc address: %s", hex.EncodeToString(transaction.Hash.Bytes()), key) // Log add genesis child
+
 		genesisTransactions = append(genesisTransactions, transaction) // Append transaction
 
 		lastParent = transaction // Set last parent
@@ -200,17 +233,23 @@ func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 
 // OpenDag attempts to open all dag-related resources.
 func OpenDag(identifier string) (*Dag, error) {
+	logger.Infof("opening dag db header with identifier: %s", identifier) // Log open dag
+
 	dagDbHeader, err := readDagDbHeaderFromMemory(identifier) // Read dag db header
 
 	if err != nil { // Check for errors
 		return &Dag{}, err // Return found error
 	}
 
+	logger.Infof("finished opening dag db header with identifier: %s", identifier) // Log opened dag
+
 	WorkingDagDB, err = bolt.Open(filepath.FromSlash(fmt.Sprintf("%s/%s.db", common.DbDir, identifier)), 0644, &bolt.Options{Timeout: 5 * time.Second}) // Open DB with timeout
 
 	if err != nil { // Check for errors
 		return &Dag{}, err // Return found error
 	}
+
+	logger.Infof("opened dag db with identifier: %s", identifier) // Log opened dag db
 
 	return dagDbHeader, nil // Return dag db header
 }
@@ -222,6 +261,8 @@ func OpenDag(identifier string) (*Dag, error) {
 // Returns an ErrNilSignature error if the transaction has not been signed.
 // Return an ErrInvalidSignature error if the transaction's signature is invalid.
 func (dag *Dag) AddTransaction(transaction *Transaction) error {
+	logger.Infof("adding transaction with hash: %s", hex.EncodeToString(transaction.Hash.Bytes())) // Log add transaction
+
 	if WorkingDagDB == nil { // Check dag db not opened
 		return ErrDagDbNotOpened // Return found error
 	}
@@ -240,18 +281,26 @@ func (dag *Dag) AddTransaction(transaction *Transaction) error {
 		return err // Return found error
 	}
 
+	logger.Infof("checking transaction with hash: %s already exists in dag", hex.EncodeToString(transaction.Hash.Bytes())) // Log check tx already exists
+
 	_, err = dag.GetTransactionByHash(transaction.Hash) // Get transaction by hash
 
 	if err == nil { // Check tx already exists
 		return ErrDuplicateTransaction // Return found error
 	}
 
+	logger.Infof("verifying transaction signature with hash: %s", hex.EncodeToString(transaction.Hash.Bytes())) // Log verify tx signature
+
 	if !transaction.Signature.Verify(transaction.Sender) { // Check transaction signature invalid
 		return ErrInvalidSignature // Return found error
 	}
 
+	logger.Infof("transaction signature with hash: %s verified", hex.EncodeToString(transaction.Hash.Bytes())) // Log verified signature
+
 	return WorkingDagDB.Update(func(tx *bolt.Tx) error {
 		workingTransactionBucket := tx.Bucket(transactionBucket) // Get transaction bucket
+
+		logger.Infof("adding transaction with hash: %s to dag db", hex.EncodeToString(transaction.Hash.Bytes())) // Log add tx to dag db
 
 		return workingTransactionBucket.Put(transaction.Hash.Bytes(), transaction.Bytes()) // Put transaction
 	}) // Write transaction
@@ -264,6 +313,8 @@ func (dag *Dag) AddTransaction(transaction *Transaction) error {
 // GetTransactionByHash attempts to query the working dag db by the given transaction hash.
 // If no transaction exists at this hash, an
 func (dag *Dag) GetTransactionByHash(transactionHash common.Hash) (*Transaction, error) {
+	logger.Infof("attempting to query transaction by hash: %s", hex.EncodeToString(transactionHash.Bytes())) // Log get tx
+
 	var txBytes []byte // Init buffer
 
 	if WorkingDagDB == nil { // Check no working db
@@ -291,6 +342,8 @@ func (dag *Dag) GetTransactionByHash(transactionHash common.Hash) (*Transaction,
 	if err != nil { // Check for errors
 		return &Transaction{}, err // Return found error
 	}
+
+	logger.Infof("found requested transaction") // Log found tx
 
 	return TransactionFromBytes(txBytes), nil // Return deserialized tx
 }
@@ -513,6 +566,15 @@ func createTransactionBucketIfNotExist() error {
 	}) // Create tx bucket if it doesn't already exist
 
 	return err // Return error
+}
+
+// getDagLogger gets the dag package logger, and sets the levels of said logger.
+func getDagLogger() loggo.Logger {
+	logger := loggo.GetLogger("dag") // Get logger
+
+	loggo.ConfigureLoggers("dag=INFO") // Configure loggers
+
+	return logger // Return logger
 }
 
 /*
