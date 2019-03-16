@@ -271,11 +271,11 @@ func (client *Client) RequestTransactionWithHash(ctx context.Context, hash commo
 	bestTransaction := types.TransactionFromBytes(transactionBytes[0]) // Init best transaction buffer
 
 	for _, currentTransactionBytes := range transactionBytes { // Iterate through transaction bytes
-		if bytes.Equal(currentTransactionBytes, make([]byte, len(currentTransactionBytes))) { // Check is nil
+		currentTransaction := types.TransactionFromBytes(currentTransactionBytes) // Deserialize
+
+		if currentTransaction.Hash.IsNil() { // Check hash is nil
 			continue // Continue
 		}
-
-		currentTransaction := types.TransactionFromBytes(currentTransactionBytes) // Deserialize
 
 		occurrences[currentTransaction.Hash]++ // Increment occurrences
 
