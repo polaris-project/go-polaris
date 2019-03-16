@@ -519,11 +519,15 @@ func (dag *Dag) GetBestTransaction() (*Transaction, error) {
 
 // CalculateAddressBalance calculates the total balance of an address from genesis to latest tx.
 func (dag *Dag) CalculateAddressBalance(address *common.Address) (*big.Float, error) {
+	logger.Infof("calculating balance for address: %s", hex.EncodeToString(address.Bytes())) // Log calculate balance
+
 	transactionsRegardingAddress, err := dag.GetTransactionsByAddress(address) // Filter by pertaining to
 
 	if err != nil { // Check for errors
 		return &big.Float{}, err // Return found error
 	}
+
+	logger.Infof("found %d transactions related to address %s", len(transactionsRegardingAddress), hex.EncodeToString(address.Bytes())) // Log found related
 
 	balance := big.NewFloat(0) // Init balance buffer
 
@@ -536,6 +540,8 @@ func (dag *Dag) CalculateAddressBalance(address *common.Address) (*big.Float, er
 			balance.Add(balance, transaction.Amount) // Add transaction amount
 		}
 	}
+
+	logger.Infof("calculated balance of address %s: %d", hex.EncodeToString(address.Bytes()), balance) // Log calculated balance
 
 	return balance, nil // Return balance
 }
