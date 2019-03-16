@@ -202,7 +202,15 @@ func (client *Client) SyncGenesis(ctx context.Context) error {
 
 			workingTransactionBucket := tx.Bucket([]byte("transaction-bucket")) // Get transaction bucket
 
-			return workingTransactionBucket.Put(genesisTransaction.Hash.Bytes(), genesisTransaction.Bytes()) // Put transaction
+			err = workingTransactionBucket.Put(genesisTransaction.Hash.Bytes(), genesisTransaction.Bytes()) // Put transaction
+
+			if err != nil { // Check for errors
+				return err // Return found error
+			}
+
+			(*client.Validator).GetWorkingDag().Genesis = genesisTransaction.Hash // Set genesis hash
+
+			return (*client.Validator).GetWorkingDag().WriteToMemory() // Write genesis to db header
 		}) // Write genesis transaction
 	}
 
