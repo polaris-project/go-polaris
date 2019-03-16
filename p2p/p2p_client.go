@@ -336,7 +336,7 @@ func (client *Client) RequestBestTransactionHash(ctx context.Context, nPeers int
 func getLogger() loggo.Logger {
 	logger := loggo.GetLogger("p2p") // Get logger
 
-	loggo.ConfigureLoggers("p2p=INFO; p2p=ERROR") // Configure loggers
+	loggo.ConfigureLoggers("p2p=INFO") // Configure loggers
 
 	return logger // Return logger
 }

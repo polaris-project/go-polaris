@@ -148,8 +148,6 @@ func NewHost(ctx context.Context, port int) (*routed.RoutedHost, error) {
 
 	logger.Infof("initialized host with ID: %s on listening port: %s with multiaddr: %s", host.ID().Pretty(), strconv.Itoa(port), host.Addrs()[0].String()) // Log init host
 
-	panic("tesT")
-
 	return WorkingHost, nil // Return working routed host
 }
 
