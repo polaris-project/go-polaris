@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"github.com/juju/loggo"
@@ -114,17 +115,23 @@ func startNode() error {
 		return err // Return found error
 	}
 
-	c := make(chan os.Signal, 1) // Get control c
+	c := make(chan os.Signal) // Get control c
 
-	signal.Notify(c, os.Interrupt) // Notify
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM) // Notify
 
 	go func() {
-		for range c {
-			dag.Close() // Close dag
+		<-c // Wait for ^c
 
-			cancelIntermittent() // Cancel intermittent sync
-			cancel()             // Cancel
+		cancelIntermittent() // Cancel intermittent sync
+		cancel()             // Cancel
+
+		err = dag.Close() // Close dag
+
+		if err != nil { // Check for errors
+			logger.Criticalf("dag close errored: %s", err.Error()) // Return found error
 		}
+
+		os.Exit(1) // Exit
 	}()
 
 	defer dag.Close() // Close dag
