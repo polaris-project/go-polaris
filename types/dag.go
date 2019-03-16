@@ -96,17 +96,21 @@ func NewDag(config *config.DagConfig) (*Dag, error) {
 		return &Dag{}, err // Return found error
 	}
 
-	dag := &Dag{
-		DagConfig: config, // Set config
-	} // Initialize dag db header
+	dagHeader, err := readDagDbHeaderFromMemory(config.Identifier) // Read dag db
 
-	err = dag.WriteToMemory() // Write dag db header to persistent memory
+	if err != nil || dagHeader == nil { // Check no existing dag
+		dagHeader = &Dag{
+			DagConfig: config, // Set config
+		} // Initialize dag db header
 
-	if err != nil { // Check for errors
-		return &Dag{}, err // Return found error
+		err = dagHeader.WriteToMemory() // Write dag db header to persistent memory
+
+		if err != nil { // Check for errors
+			return &Dag{}, err // Return found error
+		}
 	}
 
-	return dag, nil // Return initialized dag
+	return dagHeader, nil // Return initialized dag
 }
 
 // Close closes the working dag.
