@@ -350,6 +350,8 @@ func (dag *Dag) GetTransactionByHash(transactionHash common.Hash) (*Transaction,
 
 // GetTransactionChildren iterates through the dag's transactions, and finds transactions with the given hash as a parent.
 func (dag *Dag) GetTransactionChildren(transactionHash common.Hash) ([]*Transaction, error) {
+	logger.Infof("attempting to query transaction children for tx with hash: %s", hex.EncodeToString(transactionHash.Bytes())) // Log query tx children
+
 	if WorkingDagDB == nil { // Check no dag db
 		return []*Transaction{}, ErrDagDbNotOpened // Return found error
 	}
@@ -372,6 +374,8 @@ func (dag *Dag) GetTransactionChildren(transactionHash common.Hash) ([]*Transact
 
 			for _, parentHash := range transaction.ParentTransactions { // Iterate through tx parents
 				if bytes.Equal(parentHash.Bytes(), transactionHash.Bytes()) { // Check matching parent
+					logger.Infof("found child with hash: %s and parent hash: %s", hex.EncodeToString(transaction.Hash.Bytes()), hex.EncodeToString(transactionHash.Bytes())) // Log found child
+
 					transactions = append(transactions, transaction) // Append to transactions
 				}
 			}
@@ -383,6 +387,8 @@ func (dag *Dag) GetTransactionChildren(transactionHash common.Hash) ([]*Transact
 
 // GetTransactionsByAddress attempts to filter the dag by a given sending or receiving address.
 func (dag *Dag) GetTransactionsByAddress(address *common.Address) ([]*Transaction, error) {
+	logger.Infof("attempting to query transactions by sender or recipient: %s", hex.EncodeToString(address.Bytes())) // Log query tx
+
 	if WorkingDagDB == nil { // Check no dag db
 		return []*Transaction{}, ErrDagDbNotOpened // Return found error
 	}
@@ -404,6 +410,8 @@ func (dag *Dag) GetTransactionsByAddress(address *common.Address) ([]*Transactio
 			transaction := TransactionFromBytes(transactionBytes) // Deserialize transaction
 
 			if bytes.Equal(transaction.Sender.Bytes(), address.Bytes()) || bytes.Equal(transaction.Recipient.Bytes(), address.Bytes()) { // Check relevant
+				logger.Infof("found transaction with recipient/sender: %s", hex.EncodeToString(transaction.Hash.Bytes())) // Log found tx
+
 				transactions = append(transactions, transaction) // Append transaction
 			}
 		}
@@ -414,6 +422,8 @@ func (dag *Dag) GetTransactionsByAddress(address *common.Address) ([]*Transactio
 
 // GetTransactionsBySender attempts to filter the dag by a given sending address.
 func (dag *Dag) GetTransactionsBySender(sender *common.Address) ([]*Transaction, error) {
+	logger.Infof("attempting to query transactions by sender: %s", hex.EncodeToString(sender.Bytes())) // Log query tx
+
 	if WorkingDagDB == nil { // Check no dag db
 		return []*Transaction{}, ErrDagDbNotOpened // Return found error
 	}
@@ -435,6 +445,8 @@ func (dag *Dag) GetTransactionsBySender(sender *common.Address) ([]*Transaction,
 			transaction := TransactionFromBytes(transactionBytes) // Deserialize transaction
 
 			if bytes.Equal(transaction.Sender.Bytes(), sender.Bytes()) { // Check is sender
+				logger.Infof("found transaction with sender: %s", hex.EncodeToString(transaction.Hash.Bytes())) // Log found tx
+
 				transactions = append(transactions, transaction) // Append transaction
 			}
 		}
@@ -446,11 +458,15 @@ func (dag *Dag) GetTransactionsBySender(sender *common.Address) ([]*Transaction,
 // GetBestTransaction gets the last transaction in the dag. If more than one last child exists, the child with
 // the latest timestamp is returned.
 func (dag *Dag) GetBestTransaction() (*Transaction, error) {
+	logger.Infof("attempting to find best transaction in working dag") // Log query tx
+
 	if dag.Genesis.IsNil() { // Check no genesis
 		return &Transaction{}, nil // No best tx
 	}
 
 	if dag.LastTransaction.IsNil() { // Check no best transaction
+		logger.Infof("dag db header does not have last tx; setting to genesis") // Log set last tx
+
 		dag.LastTransaction = dag.Genesis // Set last transaction
 	}
 
@@ -465,6 +481,8 @@ func (dag *Dag) GetBestTransaction() (*Transaction, error) {
 	if err != nil { // Check for errors
 		return &Transaction{}, err // Return found error
 	}
+
+	logger.Infof("starting get best job from root tx: %s", hex.EncodeToString(lastTransaction.Hash.Bytes())) // Log starting tx
 
 	for { // Do until found parent without children
 		children, _ := dag.GetTransactionChildren(lastTransaction.Hash) // Get children
@@ -485,6 +503,8 @@ func (dag *Dag) GetBestTransaction() (*Transaction, error) {
 	}
 
 	dag.LastTransaction = lastTransaction.Hash // Set last transaction
+
+	logger.Infof("found last transaction: %s", hex.EncodeToString(lastTransaction.Hash.Bytes())) // Log found best tx
 
 	return lastTransaction, dag.WriteToMemory() // Return last transaction
 }
