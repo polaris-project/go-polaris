@@ -138,6 +138,14 @@ func startNode() error {
 		needsSync = true // Set does need sync
 	}
 
+	if localBestTransaction.Hash.IsNil() && remoteBestTransactionHash.IsNil() { // Check nil genesis
+		_, err = (*client.Validator).GetWorkingDag().MakeGenesis() // Make genesis
+
+		if err != nil { // Check for errors
+			return err // Return found error
+		}
+	}
+
 	err = client.StartServingStreams(*networkFlag) // Start handlers
 
 	if err != nil { // Check for errors
