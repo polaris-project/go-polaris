@@ -131,7 +131,7 @@ func startNode() error {
 			logger.Criticalf("dag close errored: %s", err.Error()) // Return found error
 		}
 
-		os.Exit(1) // Exit
+		os.Exit(0) // Exit
 	}()
 
 	defer dag.Close() // Close dag
