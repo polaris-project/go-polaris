@@ -2,6 +2,7 @@ package p2p
 
 import (
 	"bufio"
+	"encoding/hex"
 
 	inet "github.com/libp2p/go-libp2p-net"
 	protocol "github.com/libp2p/go-libp2p-protocol"
@@ -108,6 +109,8 @@ func (client *Client) HandleReceiveTransactionRequest(stream inet.Stream) {
 	if err != nil { // Check for errors
 		return // Return
 	}
+
+	logger.Infof("handling request for transaction with hash: %s", hex.EncodeToString(targetHashBytes)) // Log handl request
 
 	transaction, _ := (*client.Validator).GetWorkingDag().GetTransactionByHash(common.NewHash(targetHashBytes)) // Get transaction with hash
 
