@@ -105,9 +105,9 @@ func (client *Client) HandleReceiveBestTransactionRequest(stream inet.Stream) {
 
 	bestTransaction, _ := (*client.Validator).GetWorkingDag().GetBestTransaction() // Get best transaction
 
-	logger.Infof("responding with best transaction %s", hex.EncodeToString(bestTransaction.Hash.Bytes())) // Log handle stream
+	logger.Infof("responding with best transaction hash %s", hex.EncodeToString(bestTransaction.Hash.Bytes())) // Log handle stream
 
-	writer.Write(append(bestTransaction.Bytes(), byte('\f'))) // Write best transaction
+	writer.Write(append(bestTransaction.Hash.Bytes(), byte('\f'))) // Write best transaction hash
 }
 
 // HandleReceiveTransactionRequest handles a new stream requesting transaction metadata with a given hash.
