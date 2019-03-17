@@ -114,7 +114,7 @@ func (client *Client) HandleReceiveTransactionRequest(stream inet.Stream) {
 
 	transaction, _ := (*client.Validator).GetWorkingDag().GetTransactionByHash(common.NewHash(targetHashBytes)) // Get transaction with hash
 
-	logger.Infof("responding with bytes: %s", hex.EncodeToString(transaction.Bytes())[:20]) // Log respond
+	logger.Infof("responding with bytes: %s", hex.EncodeToString(transaction.Bytes())[:36]) // Log respond
 
 	readWriter.Write(append(transaction.Bytes(), byte('\f'))) // Write transaction bytes
 }
