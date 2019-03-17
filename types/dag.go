@@ -343,8 +343,6 @@ func (dag *Dag) GetTransactionByHash(transactionHash common.Hash) (*Transaction,
 		return &Transaction{}, err // Return found error
 	}
 
-	logger.Infof("found requested transaction") // Log found tx
-
 	return TransactionFromBytes(txBytes), nil // Return deserialized tx
 }
 
