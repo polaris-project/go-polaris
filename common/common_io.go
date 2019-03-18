@@ -17,8 +17,11 @@ var (
 	// DbDir is the global database directory definition.
 	DbDir = filepath.FromSlash(fmt.Sprintf("%s/db", DataDir))
 
-	// PeerIdentityDir is the global p2p identity definition.
+	// PeerIdentityDir is the global p2p identity directory definition.
 	PeerIdentityDir = filepath.FromSlash(fmt.Sprintf("%s/p2p", DataDir))
+
+	// LogsDir is the global logs directory definition.
+	LogsDir = filepath.FromSlash(fmt.Sprintf("%s/logs", DataDir))
 )
 
 /* BEGIN EXPORTED METHODS */
