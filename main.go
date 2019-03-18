@@ -2,10 +2,13 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"errors"
 	"flag"
+	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -35,6 +38,7 @@ var (
 	bootstrapNodeAddressFlag = flag.String("bootstrap-address", p2p.BootstrapNodes[0], "manually prefer a given bootstrap node for all dht-related operations") // Init bootstrap node flag
 	silencedFlag             = flag.Bool("silence", false, "silence logs")                                                                                      // Init silence logs flag
 	disableColoredOutputFlag = flag.Bool("no-colors", false, "disable colored output")                                                                          // Init disable colored output flag
+	disableLogFileFlag       = flag.Bool("no-logs", false, "disable writing logs to a logs.txt file")                                                           // Init disable logs file flag
 	debugFlag                = flag.Bool("debug", false, "force node to log in debug mode")                                                                     // Init debug flag
 	disableAutoGenesisFlag   = flag.Bool("no-genesis", false, "disables the automatic creation of a genesis transaction set if no dag can be bootstrapped")     // Init disable auto genesis flag
 
@@ -47,11 +51,17 @@ var (
 func main() {
 	flag.Parse() // Parse flags
 
-	setUserParams() // Set common params
+	err := setUserParams() // Set common params
+
+	if err != nil { // Check for errors
+		logger.Criticalf("main panicked: %s", err.Error()) // Log pending panic
+
+		os.Exit(1) // Panic
+	}
 
 	defer cancelIntermittent() // Cancel
 
-	err := startNode() // Start node
+	err = startNode() // Start node
 
 	if err != nil { // Check for errors
 		logger.Criticalf("main panicked: %s", err.Error()) // Log pending panic
@@ -61,18 +71,44 @@ func main() {
 }
 
 // setUserParams sets the default values in the common, p2p package.
-func setUserParams() {
+func setUserParams() error {
 	common.DataDir = filepath.FromSlash(*dataDirFlag) // Set data dir
 
 	p2p.NodePort = *nodePortFlag // Set node port
 
 	if !*disableColoredOutputFlag { // Check can log colored output
-		loggo.ReplaceDefaultWriter(loggocolor.NewWriter(os.Stderr)) // Enabled colored output
+		if !*disableLogFileFlag { // Check can have log files
+			logFile, err := os.Open(filepath.FromSlash(fmt.Sprintf("%s/logs_%d_%s_%d.txt", common.LogsDir, time.Now().Year(), time.Now().Month().String(), time.Now().Day()))) // Open log file
+
+			if err != nil { // Check for errors
+				err = common.CreateDirIfDoesNotExit(filepath.FromSlash(fmt.Sprintf("%s/logs_%d_%s_%d.txt", common.LogsDir, time.Now().Year(), time.Now().Month().String(), time.Now().Day()))) // Create log dir
+
+				if err != nil { // Check for errors
+					return err // Return found error
+				}
+
+				logFile, err = os.Create(filepath.FromSlash(fmt.Sprintf("%s/logs_%d_%s_%d.txt", common.LogsDir, time.Now().Year(), time.Now().Month().String(), time.Now().Day()))) // Create log file
+
+				if err != nil { // Check for errors
+					return err // Return found error
+				}
+			}
+
+			writer := bufio.NewWriter(logFile) // Create log file writer
+
+			multiWriter := io.MultiWriter(writer, os.Stderr) // Init multiwriter
+
+			loggo.ReplaceDefaultWriter(loggocolor.NewWriter(multiWriter)) // Enabled colored output and log files
+		} else {
+			loggo.ReplaceDefaultWriter(loggocolor.NewWriter(os.Stderr)) // Enabled colored output
+		}
 	}
 
 	if *silencedFlag { // Check should silence
 		loggo.ResetLogging() // Silence
 	}
+
+	return nil // No error occurred, return nil.
 }
 
 // startNode creates a new libp2p host, and connects to the bootstrapped dht.
