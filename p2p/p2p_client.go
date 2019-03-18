@@ -129,7 +129,11 @@ func (client *Client) SyncBestTransaction(ctx context.Context, remoteBestTransac
 			return err // Return found error
 		}
 
-		logger.Infof("found %d children for current best transaction: %s", len(childHashes), hex.EncodeToString(localBestTransaction.Hash.Bytes())) // Log children
+		if len(childHashes) == 1 { // Check singular
+			logger.Infof("found %d child for current best transaction: %s", len(childHashes), hex.EncodeToString(localBestTransaction.Hash.Bytes())) // Log child
+		} else {
+			logger.Infof("found %d children for current best transaction: %s", len(childHashes), hex.EncodeToString(localBestTransaction.Hash.Bytes())) // Log children
+		}
 
 		cancel() // Cancel
 
