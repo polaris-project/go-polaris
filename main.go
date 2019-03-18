@@ -84,7 +84,7 @@ func setUserParams() error {
 				return err // Return found error
 			}
 
-			logFile, err := os.Create(filepath.FromSlash(fmt.Sprintf("%s/logs_%s.txt", common.LogsDir, time.Now().Format("2006-01-02_15:04:05")))) // Create log file
+			logFile, err := os.Create(filepath.FromSlash(fmt.Sprintf("%s/logs_%s.txt", common.LogsDir, time.Now().Format("2006-01-02_15-04-05")))) // Create log file
 
 			if err != nil { // Check for errors
 				return err // Return found error
