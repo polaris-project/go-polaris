@@ -17,14 +17,6 @@ go install github.com/polaris-project/go-polaris
 
 ### Source Code
 
-Go >= 1.11:
-
-```zsh
-go gopath-get -u github.com/polaris-project/go-polaris
-```
-
-Legacy Versions:
-
 ```zsh
 go get -u github.com/polaris-project/go-polaris
 ```
