@@ -2,13 +2,11 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -44,6 +42,8 @@ var (
 
 	logger = loggo.GetLogger("") // Get logger
 
+	logFile *os.File // Log file
+
 	intermittentSyncContext, cancelIntermittent = context.WithCancel(context.Background()) // Get background sync context
 )
 
@@ -60,6 +60,7 @@ func main() {
 	}
 
 	defer cancelIntermittent() // Cancel
+	defer logFile.Close()      // Close log file
 
 	err = startNode() // Start node
 
@@ -84,17 +85,15 @@ func setUserParams() error {
 				return err // Return found error
 			}
 
-			logFile, err := os.Create(filepath.FromSlash(fmt.Sprintf("%s/logs_%s.txt", common.LogsDir, time.Now().Format("2006-01-02_15-04-05")))) // Create log file
+			logFile, err = os.OpenFile(filepath.FromSlash(fmt.Sprintf("%s/logs_%s.txt", common.LogsDir, time.Now().Format("2006-01-02_15-04-05"))), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666) // Create log file
 
 			if err != nil { // Check for errors
 				return err // Return found error
 			}
 
-			writer := bufio.NewWriter(logFile) // Create log file writer
+			loggo.ReplaceDefaultWriter(loggocolor.NewWriter(os.Stderr)) // Enabled colored output
 
-			multiWriter := io.MultiWriter(writer, os.Stderr) // Init multiwriter
-
-			loggo.ReplaceDefaultWriter(loggocolor.NewWriter(multiWriter)) // Enabled colored output and log files
+			loggo.RegisterWriter("logs", loggo.NewSimpleWriter(logFile, loggo.DefaultFormatter)) // Register file writer
 		} else {
 			loggo.ReplaceDefaultWriter(loggocolor.NewWriter(os.Stderr)) // Enabled colored output
 		}
@@ -163,10 +162,13 @@ func startNode() error {
 			logger.Criticalf("dag close errored: %s", err.Error()) // Return found error
 		}
 
+		logFile.Close() // Close log file
+
 		os.Exit(0) // Exit
 	}()
 
-	defer dag.Close() // Close dag
+	defer logFile.Close() // Close log file
+	defer dag.Close()     // Close dag
 
 	validator := validator.Validator(validator.NewBeaconDagValidator(dagConfig, dag)) // Initialize validator
 
