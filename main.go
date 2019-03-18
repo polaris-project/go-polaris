@@ -78,20 +78,16 @@ func setUserParams() error {
 
 	if !*disableColoredOutputFlag { // Check can log colored output
 		if !*disableLogFileFlag { // Check can have log files
-			logFile, err := os.Open(filepath.FromSlash(fmt.Sprintf("%s/logs_%d_%s_%d.txt", common.LogsDir, time.Now().Year(), time.Now().Month().String(), time.Now().Day()))) // Open log file
+			err := common.CreateDirIfDoesNotExit(filepath.FromSlash(common.LogsDir)) // Create log dir
 
 			if err != nil { // Check for errors
-				err = common.CreateDirIfDoesNotExit(filepath.FromSlash(fmt.Sprintf("%s/logs_%d_%s_%d.txt", common.LogsDir, time.Now().Year(), time.Now().Month().String(), time.Now().Day()))) // Create log dir
+				return err // Return found error
+			}
 
-				if err != nil { // Check for errors
-					return err // Return found error
-				}
+			logFile, err := os.Create(filepath.FromSlash(fmt.Sprintf("%s/logs_%s.txt", common.LogsDir, time.Now().Format("2006-01-02_15:04:05")))) // Create log file
 
-				logFile, err = os.Create(filepath.FromSlash(fmt.Sprintf("%s/logs_%d_%s_%d.txt", common.LogsDir, time.Now().Year(), time.Now().Month().String(), time.Now().Day()))) // Create log file
-
-				if err != nil { // Check for errors
-					return err // Return found error
-				}
+			if err != nil { // Check for errors
+				return err // Return found error
 			}
 
 			writer := bufio.NewWriter(logFile) // Create log file writer
