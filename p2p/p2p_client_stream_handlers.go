@@ -50,7 +50,7 @@ func (client *Client) StartServingStreams(network string) error {
 		return err // Return found error
 	}
 
-	err = client.StartServingStream(GetStreamHeaderProtocolPath(network, RequestChildHashes), client.HandleReceiveTransactionChildHashesRequest) // Register child hashes reqeust handler
+	err = client.StartServingStream(GetStreamHeaderProtocolPath(network, RequestChildHashes), client.HandleReceiveTransactionChildHashesRequest) // Register child hashes request handler
 
 	if err != nil { // Check for errors
 		return err // Return found error
