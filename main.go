@@ -60,7 +60,6 @@ func main() {
 	}
 
 	defer cancelIntermittent() // Cancel
-	defer logFile.Close()      // Close log file
 
 	err = startNode() // Start node
 
