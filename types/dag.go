@@ -192,7 +192,7 @@ func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 
 	lastParent := genesisTransaction // Set last parent
 
-	x := uint64(1) // Init nonce
+	x := uint64(0) // Init nonce
 
 	for key, value := range dag.DagConfig.Alloc { // Iterate through alloc
 		logger.Infof("creating genesis child transaction for allocation address: %s", key) // Log create genesis child
