@@ -310,6 +310,10 @@ func (client *Client) RequestTransactionChildren(ctx context.Context, parentHash
 		var castedHashes []common.Hash // Init casted buffer
 
 		for _, childHash := range hashes { // Iterate through hashes
+			if childHash == nil || len(childHash) == 0 || common.NewHash(childHash).IsNil() { // Check nil hash
+				continue // Continue
+			}
+
 			castedHashes = append(castedHashes, common.NewHash(childHash)) // Append casted hash
 		}
 
