@@ -11,12 +11,17 @@ type RPCAPI struct {
 /* BEGIN EXPORTED METHODS */
 
 // NewRPCAPI initializes a new RPCAPI instance.
-func NewRPCAPI(network string, protocols []string) *RPCAPI {
-	// TODO: Generate certs
+func NewRPCAPI(network string, protocols []string) (*RPCAPI, error) {
+	err := generateCert("rpc", []string{"localhost", "127.0.0.1"}) // Generate tls certs
+
+	if err != nil { // Check for errors
+		return nil, err // Return found error
+	}
+
 	return &RPCAPI{
 		Network:            network,   // Set network
 		SupportedProtocols: protocols, // Set protocols
-	} // Return initialized API
+	}, nil // Return initialized API
 }
 
 /* END EXPORTED METHODS */

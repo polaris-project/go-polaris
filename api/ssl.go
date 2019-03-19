@@ -49,7 +49,7 @@ func generateCert(certName string, hosts []string) error {
 	rootTemplate := x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
-			Organization: []string{"Acme Co"},
+			Organization: []string{"Polaris Node"},
 			CommonName:   "Root CA",
 		},
 		NotBefore:             notBefore,
@@ -87,8 +87,8 @@ func generateCert(certName string, hosts []string) error {
 	leafTemplate := x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
-			Organization: []string{"Acme Co"},
-			CommonName:   "test_cert_1",
+			Organization: []string{"Polaris Node"},
+			CommonName:   "leaf_cert_1",
 		},
 		NotBefore:             notBefore,
 		NotAfter:              notAfter,
@@ -133,8 +133,8 @@ func generateCert(certName string, hosts []string) error {
 	clientTemplate := x509.Certificate{
 		SerialNumber: new(big.Int).SetInt64(4),
 		Subject: pkix.Name{
-			Organization: []string{"Acme Co"},
-			CommonName:   "client_auth_test_cert",
+			Organization: []string{"Polaris Node"},
+			CommonName:   "client_cert",
 		},
 		NotBefore:             notBefore,
 		NotAfter:              notAfter,
