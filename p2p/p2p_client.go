@@ -103,7 +103,15 @@ func (client *Client) SyncDag(ctx context.Context) error {
 
 	logger.Infof("syncing best transaction") // Log sync best transaction
 
-	return client.SyncBestTransaction(ctx, remoteBestTransaction.Hash) // No error occurred, return nil
+	err = client.SyncBestTransaction(ctx, remoteBestTransaction.Hash) // Sync up to best remote tx
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	logger.Infof("sync finished successfully!") // Log finished
+
+	return nil // No error occurred, return nil
 }
 
 // SyncBestTransaction syncs the best local and remote transactions.
