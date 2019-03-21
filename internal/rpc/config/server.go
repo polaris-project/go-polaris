@@ -50,4 +50,15 @@ func (server *Server) GetAllConfigs(ctx context.Context, request *configProto.Ge
 	return &configProto.GeneralResponse{Message: strings.Join(networkNames, ", ")}, nil // Return network names
 }
 
+// GetConfig handles the GetConfig request method.
+func (server *Server) GetConfig(ctx context.Context, request *configProto.GeneralRequest) (*configProto.GeneralResponse, error) {
+	config, err := config.ReadDagConfigFromMemory(request.Network) // Read config from persistent memory
+
+	if err != nil { // Check for errors
+		return &configProto.GeneralResponse{}, err // Return found error
+	}
+
+	return &configProto.GeneralResponse{Message: config.String()}, nil // Return config
+}
+
 /* END EXPORTED METHODS */
