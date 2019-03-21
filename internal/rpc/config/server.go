@@ -2,6 +2,10 @@ package config
 
 import (
 	"context"
+	"io/ioutil"
+	"strings"
+
+	"github.com/polaris-project/go-polaris/common"
 
 	"github.com/polaris-project/go-polaris/config"
 	configProto "github.com/polaris-project/go-polaris/internal/proto/config"
@@ -27,6 +31,23 @@ func (server *Server) NewDagConfig(ctx context.Context, request *configProto.Gen
 	}
 
 	return &configProto.GeneralResponse{Message: config.String()}, nil // Return config
+}
+
+// GetAllConfigs handles the GetAllConfigs request method.
+func (server *Server) GetAllConfigs(ctx context.Context, request *configProto.GeneralRequest) (*configProto.GeneralResponse, error) {
+	files, err := ioutil.ReadDir(common.ConfigDir) // Read all files in config dir
+
+	if err != nil { // Check for errors
+		return &configProto.GeneralResponse{}, err // Return found error
+	}
+
+	networkNames := []string{} // Init network name buffer
+
+	for _, file := range files { // Iterate through files
+		networkNames = append(networkNames, strings.Split(strings.Split(file.Name(), "config_")[1], ".json")[0]) // Append network name
+	}
+
+	return &configProto.GeneralResponse{Message: strings.Join(networkNames, ", ")}, nil // Return network names
 }
 
 /* END EXPORTED METHODS */
