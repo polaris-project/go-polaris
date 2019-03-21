@@ -20,7 +20,7 @@ type RPCAPI struct {
 /* BEGIN EXPORTED METHODS */
 
 // NewRPCAPI initializes a new RPCAPI instance.
-func NewRPCAPI(network string, protocols []string, uri string) (*RPCAPI, error) {
+func NewRPCAPI(network string, uri string) (*RPCAPI, error) {
 	err := generateCert("rpc", []string{"localhost", "127.0.0.1"}) // Generate tls certs
 
 	if err != nil { // Check for errors
@@ -28,19 +28,17 @@ func NewRPCAPI(network string, protocols []string, uri string) (*RPCAPI, error) 
 	}
 
 	return &RPCAPI{
-		Network:            network,   // Set network
-		SupportedProtocols: protocols, // Set protocols
-		URI:                uri,       // Set URI
+		Network: network, // Set network
+		URI:     uri,     // Set URI
 	}, nil // Return initialized API
 }
 
 // NewRPCAPINoTLS initializes a new RPCAPI instance without enabling TLS.
-func NewRPCAPINoTLS(network string, protocols []string, uri string) *RPCAPI {
+func NewRPCAPINoTLS(network string, uri string) *RPCAPI {
 	return &RPCAPI{
-		Network:            network,   // Set network
-		SupportedProtocols: protocols, // Set protocols
-		URI:                uri,       // Set URI
-	}, nil // Return initialized API
+		Network: network, // Set network
+		URI:     uri,     // Set URI
+	} // Return initialized API
 }
 
 // GetAPIProtocol gets the working rpc api protocol.
@@ -55,7 +53,7 @@ func (rpcAPI *RPCAPI) GetAPIURI() string {
 
 // GetSupportedFormats gets the formats supported by the current rpc api.
 func (rpcAPI *RPCAPI) GetSupportedFormats() []string {
-	return rpcAPI.SupportedProtocols // Return protocols
+	return []string{"protobuf"} // Return format
 }
 
 // GetIsServing returns whether or not the api is currently serving.
@@ -65,9 +63,9 @@ func (rpcAPI *RPCAPI) GetIsServing() bool {
 
 // StartServing starts serving the API.
 func (rpcAPI *RPCAPI) StartServing(ctx context.Context) error {
-	server := &http.Server{
-		Addr: 
-	}
+	// TODO: Serve
+
+	return nil // No error occurred, return nil
 }
 
 /* END EXPORTED METHODS */
