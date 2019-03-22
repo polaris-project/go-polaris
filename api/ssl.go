@@ -40,11 +40,7 @@ func generateCert(certName string, hosts []string) error {
 
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128) // Get limit
 
-	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit) // Generate serial number
-
-	if err != nil { // Check for errors
-		return err // Return found error
-	}
+	serialNumber, _ := rand.Int(rand.Reader, serialNumberLimit) // Generate serial number
 
 	rootTemplate := x509.Certificate{
 		SerialNumber: serialNumber,
@@ -84,11 +80,7 @@ func generateCert(certName string, hosts []string) error {
 		return err // Return found error
 	}
 
-	serialNumber, err = rand.Int(rand.Reader, serialNumberLimit) // Seed rand
-
-	if err != nil {
-		return err // Return found error
-	}
+	serialNumber, _ = rand.Int(rand.Reader, serialNumberLimit) // Seed rand
 
 	leafTemplate := x509.Certificate{
 		SerialNumber: serialNumber,
