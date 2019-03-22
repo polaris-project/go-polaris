@@ -38,6 +38,10 @@ type Crypto interface {
 	AddressFromPublicKey(context.Context, *GeneralRequest) (*GeneralResponse, error)
 
 	Sha3(context.Context, *GeneralRequest) (*GeneralResponse, error)
+
+	Sha3N(context.Context, *GeneralRequest) (*GeneralResponse, error)
+
+	Sha3D(context.Context, *GeneralRequest) (*GeneralResponse, error)
 }
 
 // ======================
@@ -46,17 +50,19 @@ type Crypto interface {
 
 type cryptoProtobufClient struct {
 	client HTTPClient
-	urls   [3]string
+	urls   [5]string
 }
 
 // NewCryptoProtobufClient creates a Protobuf client that implements the Crypto interface.
 // It communicates using Protobuf and can be configured with a custom HTTPClient.
 func NewCryptoProtobufClient(addr string, client HTTPClient) Crypto {
 	prefix := urlBase(addr) + CryptoPathPrefix
-	urls := [3]string{
+	urls := [5]string{
 		prefix + "AddressFromPrivateKey",
 		prefix + "AddressFromPublicKey",
 		prefix + "Sha3",
+		prefix + "Sha3N",
+		prefix + "Sha3D",
 	}
 	if httpClient, ok := client.(*http.Client); ok {
 		return &cryptoProtobufClient{
@@ -106,23 +112,49 @@ func (c *cryptoProtobufClient) Sha3(ctx context.Context, in *GeneralRequest) (*G
 	return out, nil
 }
 
+func (c *cryptoProtobufClient) Sha3N(ctx context.Context, in *GeneralRequest) (*GeneralResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "crypto")
+	ctx = ctxsetters.WithServiceName(ctx, "Crypto")
+	ctx = ctxsetters.WithMethodName(ctx, "Sha3N")
+	out := new(GeneralResponse)
+	err := doProtobufRequest(ctx, c.client, c.urls[3], in, out)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cryptoProtobufClient) Sha3D(ctx context.Context, in *GeneralRequest) (*GeneralResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "crypto")
+	ctx = ctxsetters.WithServiceName(ctx, "Crypto")
+	ctx = ctxsetters.WithMethodName(ctx, "Sha3D")
+	out := new(GeneralResponse)
+	err := doProtobufRequest(ctx, c.client, c.urls[4], in, out)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ==================
 // Crypto JSON Client
 // ==================
 
 type cryptoJSONClient struct {
 	client HTTPClient
-	urls   [3]string
+	urls   [5]string
 }
 
 // NewCryptoJSONClient creates a JSON client that implements the Crypto interface.
 // It communicates using JSON and can be configured with a custom HTTPClient.
 func NewCryptoJSONClient(addr string, client HTTPClient) Crypto {
 	prefix := urlBase(addr) + CryptoPathPrefix
-	urls := [3]string{
+	urls := [5]string{
 		prefix + "AddressFromPrivateKey",
 		prefix + "AddressFromPublicKey",
 		prefix + "Sha3",
+		prefix + "Sha3N",
+		prefix + "Sha3D",
 	}
 	if httpClient, ok := client.(*http.Client); ok {
 		return &cryptoJSONClient{
@@ -166,6 +198,30 @@ func (c *cryptoJSONClient) Sha3(ctx context.Context, in *GeneralRequest) (*Gener
 	ctx = ctxsetters.WithMethodName(ctx, "Sha3")
 	out := new(GeneralResponse)
 	err := doJSONRequest(ctx, c.client, c.urls[2], in, out)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cryptoJSONClient) Sha3N(ctx context.Context, in *GeneralRequest) (*GeneralResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "crypto")
+	ctx = ctxsetters.WithServiceName(ctx, "Crypto")
+	ctx = ctxsetters.WithMethodName(ctx, "Sha3N")
+	out := new(GeneralResponse)
+	err := doJSONRequest(ctx, c.client, c.urls[3], in, out)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cryptoJSONClient) Sha3D(ctx context.Context, in *GeneralRequest) (*GeneralResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "crypto")
+	ctx = ctxsetters.WithServiceName(ctx, "Crypto")
+	ctx = ctxsetters.WithMethodName(ctx, "Sha3D")
+	out := new(GeneralResponse)
+	err := doJSONRequest(ctx, c.client, c.urls[4], in, out)
 	if err != nil {
 		return nil, err
 	}
@@ -228,6 +284,12 @@ func (s *cryptoServer) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		return
 	case "/twirp/crypto.Crypto/Sha3":
 		s.serveSha3(ctx, resp, req)
+		return
+	case "/twirp/crypto.Crypto/Sha3N":
+		s.serveSha3N(ctx, resp, req)
+		return
+	case "/twirp/crypto.Crypto/Sha3D":
+		s.serveSha3D(ctx, resp, req)
 		return
 	default:
 		msg := fmt.Sprintf("no handler for path %q", req.URL.Path)
@@ -646,6 +708,294 @@ func (s *cryptoServer) serveSha3Protobuf(ctx context.Context, resp http.Response
 	}
 	if respContent == nil {
 		s.writeError(ctx, resp, twirp.InternalError("received a nil *GeneralResponse and nil error while calling Sha3. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto.Marshal(respContent)
+	if err != nil {
+		err = wrapErr(err, "failed to marshal proto response")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *cryptoServer) serveSha3N(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveSha3NJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveSha3NProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *cryptoServer) serveSha3NJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "Sha3N")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	reqContent := new(GeneralRequest)
+	unmarshaler := jsonpb.Unmarshaler{AllowUnknownFields: true}
+	if err = unmarshaler.Unmarshal(req.Body, reqContent); err != nil {
+		err = wrapErr(err, "failed to parse request json")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+
+	// Call service method
+	var respContent *GeneralResponse
+	func() {
+		defer func() {
+			// In case of a panic, serve a 500 error and then panic.
+			if r := recover(); r != nil {
+				s.writeError(ctx, resp, twirp.InternalError("Internal service panic"))
+				panic(r)
+			}
+		}()
+		respContent, err = s.Crypto.Sha3N(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *GeneralResponse and nil error while calling Sha3N. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	var buf bytes.Buffer
+	marshaler := &jsonpb.Marshaler{OrigName: true}
+	if err = marshaler.Marshal(&buf, respContent); err != nil {
+		err = wrapErr(err, "failed to marshal json response")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.WriteHeader(http.StatusOK)
+
+	respBytes := buf.Bytes()
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *cryptoServer) serveSha3NProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "Sha3N")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		err = wrapErr(err, "failed to read request body")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+	reqContent := new(GeneralRequest)
+	if err = proto.Unmarshal(buf, reqContent); err != nil {
+		err = wrapErr(err, "failed to parse request proto")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+
+	// Call service method
+	var respContent *GeneralResponse
+	func() {
+		defer func() {
+			// In case of a panic, serve a 500 error and then panic.
+			if r := recover(); r != nil {
+				s.writeError(ctx, resp, twirp.InternalError("Internal service panic"))
+				panic(r)
+			}
+		}()
+		respContent, err = s.Crypto.Sha3N(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *GeneralResponse and nil error while calling Sha3N. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto.Marshal(respContent)
+	if err != nil {
+		err = wrapErr(err, "failed to marshal proto response")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *cryptoServer) serveSha3D(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveSha3DJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveSha3DProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *cryptoServer) serveSha3DJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "Sha3D")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	reqContent := new(GeneralRequest)
+	unmarshaler := jsonpb.Unmarshaler{AllowUnknownFields: true}
+	if err = unmarshaler.Unmarshal(req.Body, reqContent); err != nil {
+		err = wrapErr(err, "failed to parse request json")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+
+	// Call service method
+	var respContent *GeneralResponse
+	func() {
+		defer func() {
+			// In case of a panic, serve a 500 error and then panic.
+			if r := recover(); r != nil {
+				s.writeError(ctx, resp, twirp.InternalError("Internal service panic"))
+				panic(r)
+			}
+		}()
+		respContent, err = s.Crypto.Sha3D(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *GeneralResponse and nil error while calling Sha3D. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	var buf bytes.Buffer
+	marshaler := &jsonpb.Marshaler{OrigName: true}
+	if err = marshaler.Marshal(&buf, respContent); err != nil {
+		err = wrapErr(err, "failed to marshal json response")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.WriteHeader(http.StatusOK)
+
+	respBytes := buf.Bytes()
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *cryptoServer) serveSha3DProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "Sha3D")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		err = wrapErr(err, "failed to read request body")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+	reqContent := new(GeneralRequest)
+	if err = proto.Unmarshal(buf, reqContent); err != nil {
+		err = wrapErr(err, "failed to parse request proto")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+
+	// Call service method
+	var respContent *GeneralResponse
+	func() {
+		defer func() {
+			// In case of a panic, serve a 500 error and then panic.
+			if r := recover(); r != nil {
+				s.writeError(ctx, resp, twirp.InternalError("Internal service panic"))
+				panic(r)
+			}
+		}()
+		respContent, err = s.Crypto.Sha3D(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *GeneralResponse and nil error while calling Sha3D. nil responses are not supported"))
 		return
 	}
 
@@ -1098,7 +1448,7 @@ func callError(ctx context.Context, h *twirp.ServerHooks, err twirp.Error) conte
 }
 
 var twirpFileDescriptor0 = []byte{
-	// 211 bytes of a gzipped FileDescriptorProto
+	// 222 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x49, 0x2e, 0xaa, 0x2c,
 	0x28, 0xc9, 0xd7, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x83, 0xf0, 0x94, 0x22, 0xb8, 0xf8,
 	0xdc, 0x53, 0xf3, 0x52, 0x8b, 0x12, 0x73, 0x82, 0x52, 0x0b, 0x4b, 0x53, 0x8b, 0x4b, 0x84, 0xb4,
@@ -1107,10 +1457,10 @@ var twirpFileDescriptor0 = []byte{
 	0x24, 0x98, 0x14, 0x18, 0x35, 0x78, 0x82, 0x18, 0x93, 0x40, 0xbc, 0x3c, 0x09, 0x66, 0x05, 0x46,
 	0x0d, 0xc6, 0x20, 0xc6, 0x3c, 0x25, 0x6d, 0x2e, 0x7e, 0xb8, 0xc9, 0xc5, 0x05, 0xf9, 0x79, 0xc5,
 	0xa9, 0x42, 0x12, 0x5c, 0xec, 0xb9, 0xa9, 0xc5, 0xc5, 0x89, 0xe9, 0xa9, 0x50, 0x13, 0x61, 0x5c,
-	0xa3, 0x5b, 0x8c, 0x5c, 0x6c, 0xce, 0x60, 0x17, 0x09, 0x79, 0x71, 0x89, 0x3a, 0xa6, 0xa4, 0x14,
+	0xa3, 0x4b, 0x4c, 0x5c, 0x6c, 0xce, 0x60, 0x17, 0x09, 0x79, 0x71, 0x89, 0x3a, 0xa6, 0xa4, 0x14,
 	0xa5, 0x16, 0x17, 0xbb, 0x15, 0xe5, 0xe7, 0x06, 0x40, 0xac, 0x04, 0x59, 0x26, 0xa6, 0x07, 0xf5,
 	0x01, 0xaa, 0x83, 0xa5, 0xc4, 0x31, 0xc4, 0x21, 0xd6, 0x29, 0x31, 0x08, 0x79, 0x72, 0x89, 0x20,
-	0x9b, 0x05, 0x77, 0x37, 0x19, 0x46, 0x59, 0x72, 0xb1, 0x04, 0x67, 0x24, 0x1a, 0x93, 0xa1, 0x35,
-	0x89, 0x0d, 0x1c, 0xe4, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0x80, 0xfc, 0x7c, 0x3f, 0x82,
-	0x01, 0x00, 0x00,
+	0x9b, 0x05, 0x77, 0x37, 0x19, 0x46, 0x59, 0x72, 0xb1, 0x04, 0x67, 0x24, 0x1a, 0x93, 0xa3, 0xd5,
+	0x8a, 0x8b, 0x15, 0xa4, 0x35, 0x8f, 0x02, 0xbd, 0x29, 0x64, 0xe8, 0x4d, 0x62, 0x03, 0x47, 0xb5,
+	0x31, 0x20, 0x00, 0x00, 0xff, 0xff, 0xc0, 0x8c, 0x85, 0xc6, 0xfa, 0x01, 0x00, 0x00,
 }
