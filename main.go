@@ -24,6 +24,8 @@ import (
 	"github.com/polaris-project/go-polaris/common"
 	"github.com/polaris-project/go-polaris/p2p"
 	"github.com/polaris-project/go-polaris/validator"
+
+	"github.com/polaris-project/go-polaris/api"
 )
 
 var (
@@ -41,6 +43,8 @@ var (
 	disableLogFileFlag       = flag.Bool("no-logs", false, "disable writing logs to a logs.txt file")                                                           // Init disable logs file flag
 	debugFlag                = flag.Bool("debug", false, "force node to log in debug mode")                                                                     // Init debug flag
 	disableAutoGenesisFlag   = flag.Bool("no-genesis", false, "disables the automatic creation of a genesis transaction set if no dag can be bootstrapped")     // Init disable auto genesis flag
+	apiPortFlag              = flag.Int("api-port", 8000, "incrementally start APIs on given port (i.e. RPC = 8080, HTTP = 8081, etc...)")                      // Init API port flag
+	disableAPIFlag           = flag.Bool("disable-api", false, "disable API")                                                                                   // Init disable API flag
 
 	logger = loggo.GetLogger("") // Get logger
 
@@ -175,6 +179,14 @@ func startNode() error {
 		return err // Return found error
 	}
 
+	if !*disableAPIFlag { // Check API enabled
+		err = startServingRPC(ctx, dagConfig.Identifier) // Start serving RPC
+
+		if err != nil { // Check for errors
+			return err // Return found error
+		}
+	}
+
 	if needsSync { // Check must sync
 		err = client.SyncDag(ctx) // Sync network
 
@@ -207,6 +219,23 @@ func startInitialSync(ctx context.Context, needsSync bool, client *p2p.Client) (
 	}
 
 	return needsSync, nil // No error occurred, return nil
+}
+
+// startServingRPC starts the RPC node interface.
+func startServingRPC(ctx context.Context, network string) error {
+	rpcAPI, err := api.NewRPCAPI(network, fmt.Sprintf(":%d", *apiPortFlag)) // Initialize API
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	err = rpcAPI.StartServing(ctx) // Start serving
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	return nil // No error occurred, return nil
 }
 
 // getDagConfig attempts to read an existing dag config, or bootstrap one.
