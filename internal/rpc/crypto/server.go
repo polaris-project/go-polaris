@@ -3,6 +3,8 @@ package crypto
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/x509"
 	"encoding/hex"
 	"encoding/pem"
@@ -33,6 +35,25 @@ func (server *Server) AddressFromPrivateKey(ctx context.Context, request *crypto
 	}
 
 	return &cryptoProto.GeneralResponse{Message: hex.EncodeToString(crypto.AddressFromPrivateKey(privateKey).Bytes())}, nil // Return address value
+}
+
+// AddressFromPublicKey handles the AddressFromPublicKey request method.
+func (server *Server) AddressFromPublicKey(ctx context.Context, request *cryptoProto.GeneralRequest) (*cryptoProto.GeneralResponse, error) {
+	decodedBytes, err := hex.DecodeString(request.PrivatePublicKey) // Decode hex-encoded private key string
+
+	if err != nil { // Check for errors
+		return &cryptoProto.GeneralResponse{}, err // Return found error
+	}
+
+	x, y := elliptic.Unmarshal(elliptic.P521(), decodedBytes) // Unmarshal public key
+
+	publicKey := &ecdsa.PublicKey{
+		Curve: elliptic.P521(), // Set curve
+		X:     x,               // Set x
+		Y:     y,               // Set Y
+	} // Init public key instance
+
+	return &cryptoProto.GeneralResponse{Message: hex.EncodeToString(crypto.AddressFromPublicKey(publicKey).Bytes())}, nil // Return address value
 }
 
 /* END EXPORTED METHODS */
