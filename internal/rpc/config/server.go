@@ -1,3 +1,4 @@
+// Package config represents the config RPC server.
 package config
 
 import (
