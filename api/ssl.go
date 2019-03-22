@@ -66,6 +66,12 @@ func generateCert(certName string, hosts []string) error {
 		return err // Return found error
 	}
 
+	err = certToFile(fmt.Sprintf("%sRootCert.pem", derBytes), derBytes) // Write root cert
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
 	leafKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader) // Generate leaf key
 
 	if err != nil { // Check for errors
