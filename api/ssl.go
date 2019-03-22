@@ -31,7 +31,7 @@ func generateCert(certName string, hosts []string) error {
 		return err // Return found error
 	}
 
-	err = generateTLSCert(privateKey, certName) // Generate cert
+	err = generateTLSCert(privateKey, certName, hosts) // Generate cert
 
 	if err != nil { // Check for errors
 		return err // Return found error
@@ -66,7 +66,7 @@ func generateTLSKey(keyName string) (*ecdsa.PrivateKey, error) {
 }
 
 // generateTLSCert generates necessary TLS certs.
-func generateTLSCert(privateKey *ecdsa.PrivateKey, certName string) error {
+func generateTLSCert(privateKey *ecdsa.PrivateKey, certName string, hosts []string) error {
 	notBefore := time.Now() // Fetch current time
 
 	notAfter := notBefore.Add(2 * 24 * time.Hour) // Fetch 'deadline'
@@ -81,7 +81,7 @@ func generateTLSCert(privateKey *ecdsa.PrivateKey, certName string) error {
 	template := x509.Certificate{ // Init template
 		SerialNumber: serialNumber, // Generate w/serial number
 		Subject: pkix.Name{ // Generate w/subject
-			Organization: []string{"localhost"}, // Generate w/org
+			Organization: hosts, // Generate w/org
 		},
 		NotBefore: notBefore, // Generate w/not before
 		NotAfter:  notAfter,  // Generate w/not after

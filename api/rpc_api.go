@@ -66,7 +66,7 @@ func (rpcAPI *RPCAPI) GetIsServing() bool {
 
 // StartServing starts serving the API.
 func (rpcAPI *RPCAPI) StartServing(ctx context.Context) error {
-	err := generateCert("rpc", []string{"127.0.0.1", "localhost"}) // Generate cert
+	err := generateCert("rpc", []string{"localhost"}) // Generate cert
 
 	if err != nil { // Check for errors
 		return err // Return found error
@@ -78,7 +78,7 @@ func (rpcAPI *RPCAPI) StartServing(ctx context.Context) error {
 
 	mux.Handle(configProto.ConfigPathPrefix, configHandler) // Set route handler
 
-	return http.ListenAndServeTLS(rpcAPI.URI, "rpcClient.pem", "rpcClient.key", mux) // Start serving
+	return http.ListenAndServeTLS(rpcAPI.URI, "rpcCert.pem", "rpcKey.pem", mux) // Start serving
 }
 
 /* END EXPORTED METHODS */
