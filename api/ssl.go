@@ -9,8 +9,8 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
+	"io/ioutil"
 	"math/big"
-	"net"
 	"os"
 	"path/filepath"
 	"time"
@@ -22,135 +22,87 @@ import (
 
 // generateCert generates an ssl cert.
 func generateCert(certName string, hosts []string) error {
-	notBefore := time.Now() // Get not before time
+	os.Remove(fmt.Sprintf("%sKey.pem", certName))  // Remove existent key
+	os.Remove(fmt.Sprintf("%sCert.pem", certName)) // Remove existent cert
 
-	notAfter := notBefore.Add(2 * (356 * (24 * time.Hour))) // Get not after
-
-	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader) // Generate key
-
-	if err != nil { // Check for errors
-		return err // Return found error
-	}
-
-	err = keyToFile(fmt.Sprintf("%sRootKey.pem", certName), key) // Write key to file
+	privateKey, err := generateTLSKey(certName) // Generate key
 
 	if err != nil { // Check for errors
 		return err // Return found error
 	}
 
-	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128) // Get limit
+	err = generateTLSCert(privateKey, certName) // Generate cert
 
-	serialNumber, _ := rand.Int(rand.Reader, serialNumberLimit) // Generate serial number
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
 
-	rootTemplate := x509.Certificate{
-		SerialNumber: serialNumber,
-		Subject: pkix.Name{
-			Organization: []string{"Polaris Node"},
-			CommonName:   "Root CA",
+	return nil // No error occurred, return nil
+}
+
+// generateTLSKey generates necessary TLS keys.
+func generateTLSKey(keyName string) (*ecdsa.PrivateKey, error) {
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader) // Generate private key
+
+	if err != nil { // Check for errors
+		return nil, err // Return found error
+	}
+
+	marshaledPrivateKey, err := x509.MarshalECPrivateKey(privateKey) // Marshal private key
+
+	if err != nil { // Check for errors
+		return nil, err // Return found error
+	}
+
+	pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: marshaledPrivateKey}) // Encode to memory
+
+	err = ioutil.WriteFile(fmt.Sprintf("%sKey.pem", keyName), pemEncoded, 0644) // Write pem
+
+	if err != nil { // Check for errors
+		return nil, err // Return found error
+	}
+
+	return privateKey, nil // No error occurred, return nil
+}
+
+// generateTLSCert generates necessary TLS certs.
+func generateTLSCert(privateKey *ecdsa.PrivateKey, certName string) error {
+	notBefore := time.Now() // Fetch current time
+
+	notAfter := notBefore.Add(2 * 24 * time.Hour) // Fetch 'deadline'
+
+	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)     // Init limit
+	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit) // Init serial number
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	template := x509.Certificate{ // Init template
+		SerialNumber: serialNumber, // Generate w/serial number
+		Subject: pkix.Name{ // Generate w/subject
+			Organization: []string{"localhost"}, // Generate w/org
 		},
-		NotBefore:             notBefore,
-		NotAfter:              notAfter,
-		KeyUsage:              x509.KeyUsageCertSign,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		BasicConstraintsValid: true,
-		IsCA:                  true,
-	} // Create template
+		NotBefore: notBefore, // Generate w/not before
+		NotAfter:  notAfter,  // Generate w/not after
 
-	derBytes, err := x509.CreateCertificate(rand.Reader, &rootTemplate, &rootTemplate, &key.PublicKey, key) // Generate root bytes
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature, // Generate w/key usage
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},               // Generate w/ext key
+		BasicConstraintsValid: true,                                                         // Generate w/basic constraints
+		IsCA:                  true,                                                         // Force is CA
+	}
+
+	cert, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey) // Generate certificate
 
 	if err != nil { // Check for errors
 		return err // Return found error
 	}
 
-	err = certToFile(fmt.Sprintf("%sRootCert.pem", derBytes), derBytes) // Write root cert
+	pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert}) // Encode pem
+
+	err = ioutil.WriteFile(fmt.Sprintf("%sCert.pem", certName), pemEncoded, 0644) // Write cert file
 
 	if err != nil { // Check for errors
-		return err // Return found error
-	}
-
-	leafKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader) // Generate leaf key
-
-	if err != nil { // Check for errors
-		return err // Return found error
-	}
-
-	err = keyToFile(fmt.Sprintf("%sLeafKey.pem", certName), leafKey) // Write leaf key to file
-
-	if err != nil { // Check for errors
-		return err // Return found error
-	}
-
-	serialNumber, _ = rand.Int(rand.Reader, serialNumberLimit) // Seed rand
-
-	leafTemplate := x509.Certificate{
-		SerialNumber: serialNumber,
-		Subject: pkix.Name{
-			Organization: []string{"Polaris Node"},
-			CommonName:   "leaf_cert_1",
-		},
-		NotBefore:             notBefore,
-		NotAfter:              notAfter,
-		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		BasicConstraintsValid: true,
-		IsCA:                  false,
-	} // Init leaf template
-
-	for _, host := range hosts { // Iterate through hosts
-		if ip := net.ParseIP(host); ip != nil { // Parse IP address
-			leafTemplate.IPAddresses = append(leafTemplate.IPAddresses, ip) // Append parsed IP
-		} else { // Could not parse
-			leafTemplate.DNSNames = append(leafTemplate.DNSNames, host) // Append hostname
-		}
-	}
-
-	derBytes, err = x509.CreateCertificate(rand.Reader, &leafTemplate, &rootTemplate, &leafKey.PublicKey, key) // Create certificate
-
-	if err != nil { // Check for errors
-		return err // Return found error
-	}
-
-	err = certToFile(fmt.Sprintf("%sCertTemplate.pem", certName), derBytes) // Write certificate to file
-
-	if err != nil { // Check for errors
-		return err // Return found error
-	}
-
-	clientKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader) // Generate client key
-
-	if err != nil { // Check for errors
-		return err // Return found error
-	}
-
-	err = keyToFile(fmt.Sprintf("%sClient.key", certName), clientKey) // Write client key to persistent memory
-
-	if err != nil { // Check for errors
-		return err // Return found error
-	}
-
-	clientTemplate := x509.Certificate{
-		SerialNumber: new(big.Int).SetInt64(4),
-		Subject: pkix.Name{
-			Organization: []string{"Polaris Node"},
-			CommonName:   "client_cert",
-		},
-		NotBefore:             notBefore,
-		NotAfter:              notAfter,
-		KeyUsage:              x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-		BasicConstraintsValid: true,
-		IsCA:                  false,
-	} // Initialize client template
-
-	derBytes, err = x509.CreateCertificate(rand.Reader, &clientTemplate, &rootTemplate, &clientKey.PublicKey, key) // Create certificate
-
-	if err != nil {
-		return err // Return found error
-	}
-
-	err = certToFile(fmt.Sprintf("%sClient.pem", certName), derBytes) // Write cert
-
-	if err != nil {
 		return err // Return found error
 	}
 
