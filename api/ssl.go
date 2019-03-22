@@ -56,7 +56,7 @@ func generateTLSKey(keyName string) (*ecdsa.PrivateKey, error) {
 
 	pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: marshaledPrivateKey}) // Encode to memory
 
-	err = ioutil.WriteFile(fmt.Sprintf("%sKey.pem", keyName), pemEncoded, 0644) // Write pem
+	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/%sKey.pem", common.CertificatesDir, keyName)), pemEncoded, 0644) // Write pem
 
 	if err != nil { // Check for errors
 		return nil, err // Return found error
@@ -100,7 +100,7 @@ func generateTLSCert(privateKey *ecdsa.PrivateKey, certName string, hosts []stri
 
 	pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert}) // Encode pem
 
-	err = ioutil.WriteFile(fmt.Sprintf("%sCert.pem", certName), pemEncoded, 0644) // Write cert file
+	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/%sCert.pem", common.CertificatesDir, certName)), pemEncoded, 0644) // Write cert file
 
 	if err != nil { // Check for errors
 		return err // Return found error
