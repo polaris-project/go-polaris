@@ -56,4 +56,19 @@ func (server *Server) AddressFromPublicKey(ctx context.Context, request *cryptoP
 	return &cryptoProto.GeneralResponse{Message: hex.EncodeToString(crypto.AddressFromPublicKey(publicKey).Bytes())}, nil // Return address value
 }
 
+// Sha3 handles the Sha3 request method.
+func (server *Server) Sha3(ctx context.Context, request *cryptoProto.GeneralRequest) (*cryptoProto.GeneralResponse, error) {
+	return &cryptoProto.GeneralResponse{Message: hex.EncodeToString(crypto.Sha3(request.B).Bytes())}, nil // Return hash value
+}
+
+// Sha3n handles the Sha3n request method.
+func (server *Server) Sha3n(ctx context.Context, request *cryptoProto.GeneralRequest) (*cryptoProto.GeneralResponse, error) {
+	return &cryptoProto.GeneralResponse{Message: hex.EncodeToString(crypto.Sha3n(request.B, uint(request.N)).Bytes())}, nil // Return hash value
+}
+
+// Sha3d handles the Sha3d request method.
+func (server *Server) Sha3d(ctx context.Context, request *cryptoProto.GeneralRequest) (*cryptoProto.GeneralResponse, error) {
+	return &cryptoProto.GeneralResponse{Message: hex.EncodeToString(crypto.Sha3d(request.B).Bytes())}, nil // Return hash value
+}
+
 /* END EXPORTED METHODS */
