@@ -2,6 +2,10 @@
 package api
 
 import (
+	"fmt"
+	"path/filepath"
+
+	"github.com/polaris-project/go-polaris/common"
 	configProto "github.com/polaris-project/go-polaris/internal/proto/config"
 	configServer "github.com/polaris-project/go-polaris/internal/rpc/config"
 
@@ -78,7 +82,7 @@ func (rpcAPI *RPCAPI) StartServing(ctx context.Context) error {
 
 	mux.Handle(configProto.ConfigPathPrefix, configHandler) // Set route handler
 
-	return http.ListenAndServeTLS(rpcAPI.URI, "rpcCert.pem", "rpcKey.pem", mux) // Start serving
+	return http.ListenAndServeTLS(rpcAPI.URI, filepath.FromSlash(fmt.Sprintf("%s/rpcCert.pem", common.CertificatesDir)), filepath.FromSlash(fmt.Sprintf("%s/rpcKey.pem", common.CertificatesDir)), mux) // Start serving
 }
 
 /* END EXPORTED METHODS */
