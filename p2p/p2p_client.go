@@ -183,6 +183,8 @@ func (client *Client) SyncGenesis(ctx context.Context) error {
 
 	getGenHashCtx, cancel := context.WithCancel(ctx) // Get context
 
+	logger.Infof("requesting genesis transaction hash") // Log request genesis
+
 	genesisHashes, err := BroadcastDhtResult(getGenHashCtx, WorkingHost, types.GenesisHashRequest, GetStreamHeaderProtocolPath(client.Network, RequestGenesisHash), client.Network, 128) // Get genesis transaction hashes
 
 	if err != nil { // Check for errors
@@ -209,7 +211,11 @@ func (client *Client) SyncGenesis(ctx context.Context) error {
 		}
 	}
 
+	logger.Infof("found genesis transaction hash %s", hex.EncodeToString(bestGenesisHash)) // Log found genesis hash
+
 	getGenCtx, cancel := context.WithCancel(ctx) // Get context
+
+	logger.Infof("requesting full genesis transaction") // Log request genesis tx
 
 	genesisTransaction, err := client.RequestTransactionWithHash(getGenCtx, common.NewHash(bestGenesisHash), 16) // Get genesis transaction
 
@@ -218,6 +224,8 @@ func (client *Client) SyncGenesis(ctx context.Context) error {
 
 		return err // Return found error
 	}
+
+	logger.Infof("found full genesis transaction with hash %s", hex.EncodeToString(genesisTransaction.Hash.Bytes())) // Log found genesis tx
 
 	cancel() // Cancel
 
