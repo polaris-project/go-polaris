@@ -32,7 +32,7 @@ func generateCert(certName string, hosts []string) error {
 		return err // Return found error
 	}
 
-	err = keyToFile(fmt.Sprintf("%sRootKey.pem", key), key) // Write key to file
+	err = keyToFile(fmt.Sprintf("%sRootKey.pem", certName), key) // Write key to file
 
 	if err != nil { // Check for errors
 		return err // Return found error
@@ -72,7 +72,7 @@ func generateCert(certName string, hosts []string) error {
 		return err // Return found error
 	}
 
-	err = keyToFile(fmt.Sprintf("%sLeafKey.pem", leafKey), leafKey) // Write leaf key to file
+	err = keyToFile(fmt.Sprintf("%sLeafKey.pem", certName), leafKey) // Write leaf key to file
 
 	if err != nil { // Check for errors
 		return err // Return found error

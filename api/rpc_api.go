@@ -2,6 +2,9 @@
 package api
 
 import (
+	configProto "github.com/polaris-project/go-polaris/internal/proto/config"
+	configServer "github.com/polaris-project/go-polaris/internal/rpc/config"
+
 	"context"
 	"net/http"
 )
@@ -63,9 +66,19 @@ func (rpcAPI *RPCAPI) GetIsServing() bool {
 
 // StartServing starts serving the API.
 func (rpcAPI *RPCAPI) StartServing(ctx context.Context) error {
-	// TODO: Serve
+	err := generateCert("rpc", []string{"127.0.0.1", "localhost"}) // Generate cert
 
-	return nil // No error occurred, return nil
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	configHandler := configProto.NewConfigServer(&configServer.Server{}, nil) // Get handler
+
+	mux := http.NewServeMux() // Init mux
+
+	mux.Handle(configProto.ConfigPathPrefix, configHandler) // Set route handler
+
+	return http.ListenAndServeTLS(rpcAPI.URI, "rpcClient.pem", "rpcClient.key", mux) // Start serving
 }
 
 /* END EXPORTED METHODS */
