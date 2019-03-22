@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"time"
 
+	routed "github.com/libp2p/go-libp2p/p2p/host/routed"
+
 	"github.com/juju/loggo"
 	"github.com/juju/loggo/loggocolor"
 
@@ -121,22 +123,10 @@ func startNode() error {
 		*bootstrapNodeAddressFlag = p2p.GetBestBootstrapAddress(context.Background(), host) // Get best bootstrap node
 	}
 
-	needsSync := false // Assume doesn't need sync
+	dagConfig, needsSync, err := getDagConfig(ctx, host) // Get dag config
 
-	dagConfig, err := config.ReadDagConfigFromMemory(*networkFlag) // Read config
-
-	if err != nil || dagConfig == nil { // Check no existing dag config
-		if *bootstrapNodeAddressFlag == "localhost" { // Check no bootstrap node
-			return errNoBootstrap // Return error
-		}
-
-		dagConfig, err = p2p.BootstrapConfig(ctx, host, *bootstrapNodeAddressFlag, *networkFlag) // Bootstrap dag config
-
-		if err != nil { // Check for errors
-			return err // Return found error
-		}
-
-		needsSync = true // Set does need sync
+	if err != nil { // Check for errors
+		return err // Return found error
 	}
 
 	dag, err := types.NewDag(dagConfig) // Init dag
@@ -173,20 +163,10 @@ func startNode() error {
 
 	client := p2p.NewClient(*networkFlag, &validator) // Initialize client
 
-	localBestTransaction, _ := (*client.Validator).GetWorkingDag().GetBestTransaction() // Get local best transaction
+	needsSync, err = startInitialSync(ctx, needsSync, client) // Start initial sync
 
-	remoteBestTransactionHash, _ := client.RequestBestTransactionHash(ctx, 64) // Request best tx hash
-
-	if !bytes.Equal(localBestTransaction.Hash.Bytes(), remoteBestTransactionHash.Bytes()) && !localBestTransaction.Hash.IsNil() && !remoteBestTransactionHash.IsNil() { // Check up to date
-		needsSync = true // Set does need sync
-	}
-
-	if localBestTransaction.Hash.IsNil() && remoteBestTransactionHash.IsNil() { // Check nil genesis
-		_, err = (*client.Validator).GetWorkingDag().MakeGenesis() // Make genesis
-
-		if err != nil { // Check for errors
-			return err // Return found error
-		}
+	if err != nil { // Check for errors
+		return err // Return found error
 	}
 
 	err = client.StartServingStreams(*networkFlag) // Start handlers
@@ -206,4 +186,48 @@ func startNode() error {
 	client.StartIntermittentSync(intermittentSyncContext, 120*time.Second) // Sync every 120 seconds
 
 	return nil // No error occurred, return nil
+}
+
+// startInitialSync starts an initial sync with a given client.
+func startInitialSync(ctx context.Context, needsSync bool, client *p2p.Client) (bool, error) {
+	localBestTransaction, _ := (*client.Validator).GetWorkingDag().GetBestTransaction() // Get local best transaction
+
+	remoteBestTransactionHash, _ := client.RequestBestTransactionHash(ctx, 64) // Request best tx hash
+
+	if !bytes.Equal(localBestTransaction.Hash.Bytes(), remoteBestTransactionHash.Bytes()) && !localBestTransaction.Hash.IsNil() && !remoteBestTransactionHash.IsNil() { // Check up to date
+		needsSync = true // Set does need sync
+	}
+
+	if localBestTransaction.Hash.IsNil() && remoteBestTransactionHash.IsNil() { // Check nil genesis
+		_, err := (*client.Validator).GetWorkingDag().MakeGenesis() // Make genesis
+
+		if err != nil { // Check for errors
+			return false, err // Return found error
+		}
+	}
+
+	return needsSync, nil // No error occurred, return nil
+}
+
+// getDagConfig attempts to read an existing dag config, or bootstrap one.
+func getDagConfig(ctx context.Context, host *routed.RoutedHost) (*config.DagConfig, bool, error) {
+	needsSync := false // Init buffer
+
+	dagConfig, err := config.ReadDagConfigFromMemory(*networkFlag) // Read config
+
+	if err != nil || dagConfig == nil { // Check no existing dag config
+		if *bootstrapNodeAddressFlag == "localhost" { // Check no bootstrap node
+			return &config.DagConfig{}, needsSync, errNoBootstrap // Return error
+		}
+
+		dagConfig, err = p2p.BootstrapConfig(ctx, host, *bootstrapNodeAddressFlag, *networkFlag) // Bootstrap dag config
+
+		if err != nil { // Check for errors
+			return &config.DagConfig{}, needsSync, err // Return found error
+		}
+
+		needsSync = true // Set does need sync
+	}
+
+	return dagConfig, needsSync, nil // Return found config
 }
