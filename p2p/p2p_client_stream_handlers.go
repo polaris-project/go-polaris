@@ -192,7 +192,9 @@ func (client *Client) HandleReceiveTransactionChildHashesRequest(stream inet.Str
 			summarizedChildHashes = append(summarizedChildHashes, append(child.Hash[:], []byte("end_hash")...)...) // Append hash
 		}
 
-		logger.Infof("responding with child hashes: %s", hex.EncodeToString(summarizedChildHashes)[:36]) // Log response
+		if hexEncodedChildHashes := hex.EncodeToString(summarizedChildHashes); hexEncodedChildHashes != "" { // Check can log
+			logger.Infof("responding with child hashes: %s", hex.EncodeToString(summarizedChildHashes)[:36]) // Log response
+		}
 
 		readWriter.Write(append(summarizedChildHashes, byte('\f'))) // Write child hashes
 
