@@ -42,16 +42,22 @@ func generateCert(certName string, hosts []string) error {
 
 // generateTLSKey generates necessary TLS keys.
 func generateTLSKey(keyName string) (*ecdsa.PrivateKey, error) {
+	err := common.CreateDirIfDoesNotExit(common.CertificatesDir) // Create certs dir if does not exist
+
+	if err != nil { // Check for errors
+		return &ecdsa.PrivateKey{}, err // Return found error
+	}
+
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader) // Generate private key
 
 	if err != nil { // Check for errors
-		return nil, err // Return found error
+		return &ecdsa.PrivateKey{}, err // Return found error
 	}
 
 	marshaledPrivateKey, err := x509.MarshalECPrivateKey(privateKey) // Marshal private key
 
 	if err != nil { // Check for errors
-		return nil, err // Return found error
+		return &ecdsa.PrivateKey{}, err // Return found error
 	}
 
 	pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: marshaledPrivateKey}) // Encode to memory
@@ -59,7 +65,7 @@ func generateTLSKey(keyName string) (*ecdsa.PrivateKey, error) {
 	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/%sKey.pem", common.CertificatesDir, keyName)), pemEncoded, 0644) // Write pem
 
 	if err != nil { // Check for errors
-		return nil, err // Return found error
+		return &ecdsa.PrivateKey{}, err // Return found error
 	}
 
 	return privateKey, nil // No error occurred, return nil
@@ -67,6 +73,12 @@ func generateTLSKey(keyName string) (*ecdsa.PrivateKey, error) {
 
 // generateTLSCert generates necessary TLS certs.
 func generateTLSCert(privateKey *ecdsa.PrivateKey, certName string, hosts []string) error {
+	err := common.CreateDirIfDoesNotExit(common.CertificatesDir) // Create certs dir if does not exist
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
 	notBefore := time.Now() // Fetch current time
 
 	notAfter := notBefore.Add(2 * 24 * time.Hour) // Fetch 'deadline'
