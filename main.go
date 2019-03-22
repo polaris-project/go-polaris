@@ -229,11 +229,7 @@ func startServingRPC(ctx context.Context, network string) error {
 		return err // Return found error
 	}
 
-	err = rpcAPI.StartServing(ctx) // Start serving
-
-	if err != nil { // Check for errors
-		return err // Return found error
-	}
+	go rpcAPI.StartServing(ctx) // Start serving
 
 	return nil // No error occurred, return nil
 }
