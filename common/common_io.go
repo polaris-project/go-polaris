@@ -23,7 +23,7 @@ var (
 	// LogsDir is the global logs directory definition.
 	LogsDir = filepath.FromSlash(fmt.Sprintf("%s/logs", DataDir))
 
-	// CertificateDir is the global certificate directory definition.
+	// CertificatesDir is the global certificate directory definition.
 	CertificatesDir = filepath.FromSlash(fmt.Sprintf("%s/certs", DataDir))
 )
 
