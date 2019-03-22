@@ -1,0 +1,29 @@
+syntax = "proto3"; // Specify compiler version
+
+package crypto;
+
+service Crypto {
+    rpc AddressFromPrivateKey(GeneralRequest) returns (GeneralResponse) {} // Serialize new address from private key
+    rpc AddressFromPublicKey(GeneralRequest) returns (GeneralResponse) {} // Serialize new address from public key
+    rpc Sha3(GeneralRequest) returns (GeneralResponse) {} // Hash a given message with sha3.
+}
+
+/* BEGIN REQUESTS */
+
+message GeneralRequest {
+    string privatePublicKey = 1; // Private/public key
+
+    bytes b = 2; // Hash input
+
+    double n = 3; // N times to hash
+}
+
+/* END REQUESTS */
+
+/* BEGIN RESPONSES */
+
+message GeneralResponse {
+    string message = 1; // Response
+}
+
+/* END REPSONSES */
