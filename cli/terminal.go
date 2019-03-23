@@ -135,7 +135,7 @@ func handleCrypto(cryptoClient *cryptoProto.Crypto, methodname string, params []
 		return result[1].Interface().(error) // Return error
 	}
 
-	fmt.Println(response.Message) // Log response
+	fmt.Println("\n" + response.Message) // Log response
 
 	return nil // No error occurred, return nil
 }
@@ -171,7 +171,7 @@ func handleAccounts(accountsClient *accountsProto.Accounts, methodname string, p
 		return result[1].Interface().(error) // Return error
 	}
 
-	fmt.Println(response.Message) // Log response
+	fmt.Println("\n" + response.Message) // Log response
 
 	return nil // No error occurred, return nil
 }
@@ -213,7 +213,7 @@ func handleConfig(configClient *configProto.Config, methodname string, params []
 		return result[1].Interface().(error) // Return error
 	}
 
-	fmt.Println(response.Message) // Log response
+	fmt.Println("\n" + response.Message) // Log response
 
 	return nil // No error occurred, return nil
 }
@@ -275,7 +275,7 @@ func handleTransaction(transactionClient *transactionProto.Transaction, methodna
 		return result[1].Interface().(error) // Return error
 	}
 
-	fmt.Println(response.Message) // Log response
+	fmt.Println("\n" + response.Message) // Log response
 
 	return nil // No error occurred, return nil
 }
