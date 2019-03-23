@@ -1,0 +1,28 @@
+syntax = "proto3"; // Specify compiler version
+
+package accounts;
+
+service Accounts {
+    rpc NewAccount(GeneralRequest) returns (GeneralResponse) {} // Generate a new ECDSA private-public keypair, returns the initialized account
+    rpc AccountFromKey(GeneralRequest) returns (GeneralResponse) {} // Import account with given private key
+    rpc Address(GeneralRequest) returns (GeneralResponse) {} // Log account address
+    rpc PublicKey(GeneralRequest) returns (GeneralResponse) {} // Log account public key
+    rpc PrivateKey(GeneralRequest) returns (GeneralResponse) {} // Log account private key
+    rpc String(GeneralRequest) returns (GeneralResponse) {} // Log account contents
+}
+
+/* BEGIN REQUESTS */
+
+message GeneralRequest {
+    string privatePublicKey = 1; // Private/public key
+}
+
+/* END REQUESTS */
+
+/* BEGIN RESPONSES */
+
+message GeneralResponse {
+    string message = 1; // Response
+}
+
+/* END REPSONSES */
