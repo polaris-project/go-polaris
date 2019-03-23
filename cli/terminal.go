@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/polaris-project/go-polaris/common"
+	"github.com/polaris-project/go-polaris/crypto"
 
 	accountsProto "github.com/polaris-project/go-polaris/internal/proto/accounts"
 	configProto "github.com/polaris-project/go-polaris/internal/proto/config"
@@ -159,7 +160,7 @@ func handleAccounts(accountsClient *accountsProto.Accounts, methodname string, p
 
 		reflectParams = append(reflectParams, reflect.ValueOf(&cryptoProto.GeneralRequest{PrivatePublicKey: params[0]})) // Append params
 	default:
-		return errors.New("illegal method: " + methodname + ", available methods: Sha3(), Sha3d(), Sha3n(), AddressFromPrivateKey(), AddressFromPublicKey()") // Return error
+		return errors.New("illegal method: " + methodname + ", available methods: NewAccount(), AccountFromKey(), Address(), PublicKey(), PrivateKey(), String()") // Return error
 	}
 
 	result := reflect.ValueOf(*accountsClient).MethodByName(methodname).Call(reflectParams) // Call method
@@ -201,7 +202,7 @@ func handleConfig(configClient *configProto.Config, methodname string, params []
 
 		reflectParams = append(reflectParams, reflect.ValueOf(&configProto.GeneralRequest{Network: params[0]})) // Append params
 	default:
-		return errors.New("illegal method: " + methodname + ", available methods: Sha3(), Sha3d(), Sha3n(), AddressFromPrivateKey(), AddressFromPublicKey()") // Return error
+		return errors.New("illegal method: " + methodname + ", available methods: GetAllConfigs(), NewDagConfig(), GetConfig()") // Return error
 	}
 
 	result := reflect.ValueOf(*configClient).MethodByName(methodname).Call(reflectParams) // Call method
@@ -250,8 +251,20 @@ func handleTransaction(transactionClient *transactionProto.Transaction, methodna
 		gasPrice, _ := new(big.Int).SetString(params[x+2], 10) // Get gas price
 
 		reflectParams = append(reflectParams, reflect.ValueOf(&transactionProto.GeneralRequest{Nonce: uint64(nonce), Amount: []byte(params[1]), Address: params[2], Address2: params[3], TransactionHash: parentHashes, GasLimit: uint64(gasLimit), GasPrice: gasPrice.Bytes(), Payload: []byte(params[x+3])})) // Append params
+	case "CalculateTotalValue", "SignTransaction", "Verify", "String":
+		if len(params) == 0 { // Check for invalid params
+			return ErrInvalidParams // Return error
+		}
+
+		reflectParams = append(reflectParams, reflect.ValueOf(&transactionProto.GeneralRequest{TransactionHash: params})) // Append params
+	case "SignMessage":
+		if len(params) != 2 { // Check for invalid params
+			return ErrInvalidParams // Return error
+		}
+
+		reflectParams = append(reflectParams, reflect.ValueOf(&transactionProto.GeneralRequest{Address: params[0], Payload: crypto.Sha3([]byte(params[1])).Bytes()})) // Append params
 	default:
-		return errors.New("illegal method: " + methodname + ", available methods: Sha3(), Sha3d(), Sha3n(), AddressFromPrivateKey(), AddressFromPublicKey()") // Return error
+		return errors.New("illegal method: " + methodname + ", available methods: NewTransaction(), CalculateTotalValue(), SignTransaction(), Verify(), String(), SignMessage()") // Return error
 	}
 
 	result := reflect.ValueOf(*transactionClient).MethodByName(methodname).Call(reflectParams) // Call method
