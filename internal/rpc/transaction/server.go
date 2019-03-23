@@ -148,4 +148,21 @@ func (server *Server) Verify(ctx context.Context, request *transactionProto.Gene
 	return &transactionProto.GeneralResponse{Message: strconv.FormatBool(transaction.Signature.Verify(transaction.Sender))}, nil // Return is valid
 }
 
+// String handles the String request method.
+func (server *Server) String(ctx context.Context, request *transactionProto.GeneralRequest) (*transactionProto.GeneralResponse, error) {
+	transactionHashBytes, err := hex.DecodeString(request.TransactionHash[0]) // Get transaction hash byte value
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	transaction, err := types.ReadTransactionFromMemory(common.NewHash(transactionHashBytes)) // Read transaction
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	return &transactionProto.GeneralResponse{Message: transaction.String()}, nil // Return tx string value
+}
+
 /* END EXPORTED METHODS */
