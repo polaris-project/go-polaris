@@ -51,4 +51,23 @@ func (account *Account) WriteToMemory() error {
 	return nil // No error occurred, return nil
 }
 
+// ReadAccountFromMemory reads an account with a given address from persistent memory.
+func ReadAccountFromMemory(address common.Address) (*Account, error) {
+	data, err := ioutil.ReadFile(filepath.FromSlash(fmt.Sprintf("%s/account_%s.json", common.KeystoreDir, hex.EncodeToString(address.Bytes())))) // Read account
+
+	if err != nil { // Check for errors
+		return &Account{}, err // Return found error
+	}
+
+	buffer := &Account{} // Initialize buffer
+
+	err = json.Unmarshal(data, buffer) // Deserialize JSON into buffer.
+
+	if err != nil { // Check for errors
+		return &Account{}, err // Return found error
+	}
+
+	return buffer, nil // No error occurred, return read account
+}
+
 /* END EXPORTED METHODS */
