@@ -68,6 +68,9 @@ var (
 	// WorkingHost is the current global routed host.
 	WorkingHost *routed.RoutedHost
 
+	// WorkingClient is the current global client.
+	WorkingClient *Client
+
 	// NodePort is the current node port
 	NodePort = 3030
 

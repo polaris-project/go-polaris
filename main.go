@@ -186,7 +186,9 @@ func startNode() error {
 		return err // Return found error
 	}
 
-	err = client.StartServingStreams(*networkFlag) // Start handlers
+	p2p.WorkingClient = client // Set working client
+
+	err = p2p.WorkingClient.StartServingStreams(*networkFlag) // Start handlers
 
 	if err != nil { // Check for errors
 		return err // Return found error
@@ -201,7 +203,7 @@ func startNode() error {
 	}
 
 	if needsSync { // Check must sync
-		err = client.SyncDag(ctx) // Sync network
+		err = p2p.WorkingClient.SyncDag(ctx) // Sync network
 
 		if err != nil { // Check for errors
 			return err // Return found error
@@ -209,9 +211,9 @@ func startNode() error {
 	}
 
 	if !*terminalFlag { // Check no terminal
-		client.StartIntermittentSync(intermittentSyncContext, 120*time.Second) // Sync every 120 seconds
+		p2p.WorkingClient.StartIntermittentSync(intermittentSyncContext, 120*time.Second) // Sync every 120 seconds
 	} else {
-		go client.StartIntermittentSync(intermittentSyncContext, 120*time.Second) // Sync every 120 seconds
+		go p2p.WorkingClient.StartIntermittentSync(intermittentSyncContext, 120*time.Second) // Sync every 120 seconds
 	}
 
 	return nil // No error occurred, return nil
