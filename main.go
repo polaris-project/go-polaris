@@ -7,9 +7,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -26,6 +28,7 @@ import (
 	"github.com/polaris-project/go-polaris/validator"
 
 	"github.com/polaris-project/go-polaris/api"
+	"github.com/polaris-project/go-polaris/cli"
 )
 
 var (
@@ -45,6 +48,9 @@ var (
 	disableAutoGenesisFlag   = flag.Bool("no-genesis", false, "disables the automatic creation of a genesis transaction set if no dag can be bootstrapped")     // Init disable auto genesis flag
 	apiPortFlag              = flag.Int("api-port", 8000, "incrementally start APIs on given port (i.e. RPC = 8080, HTTP = 8081, etc...)")                      // Init API port flag
 	disableAPIFlag           = flag.Bool("disable-api", false, "disable API")                                                                                   // Init disable API flag
+	terminalFlag             = flag.Bool("terminal", false, "launch with terminal")                                                                             // Init terminal flag
+	rpcPortFlag              = flag.Int("rpc-port", 8000, "port to connect to via RPC")                                                                         // Init RPC port flag
+	rpcAddrFlag              = flag.String("rpc-addr", "localhost", "RPC addr to connect to")                                                                   // Init RPC addr floag
 
 	logger = loggo.GetLogger("") // Get logger
 
@@ -65,14 +71,20 @@ func main() {
 		os.Exit(1) // Panic
 	}
 
-	defer cancelIntermittent() // Cancel
+	if !checkNodeAlreadyUp() { // Check no node already up
+		defer cancelIntermittent() // Cancel
 
-	err = startNode() // Start node
+		err = startNode() // Start node
 
-	if err != nil { // Check for errors
-		logger.Criticalf("main panicked: %s", err.Error()) // Log pending panic
+		if err != nil { // Check for errors
+			logger.Criticalf("main panicked: %s", err.Error()) // Log pending panic
 
-		os.Exit(1) // Panic
+			os.Exit(1) // Panic
+		}
+	}
+
+	if *terminalFlag { // Check should launch terminal
+		cli.NewTerminal(uint(*rpcPortFlag), *rpcAddrFlag) // Initialize terminal
 	}
 }
 
@@ -195,7 +207,11 @@ func startNode() error {
 		}
 	}
 
-	client.StartIntermittentSync(intermittentSyncContext, 120*time.Second) // Sync every 120 seconds
+	if !*terminalFlag { // Check no terminal
+		client.StartIntermittentSync(intermittentSyncContext, 120*time.Second) // Sync every 120 seconds
+	} else {
+		go client.StartIntermittentSync(intermittentSyncContext, 120*time.Second) // Sync every 120 seconds
+	}
 
 	return nil // No error occurred, return nil
 }
@@ -255,4 +271,17 @@ func getDagConfig(ctx context.Context, host *routed.RoutedHost) (*config.DagConf
 	}
 
 	return dagConfig, needsSync, nil // Return found config
+}
+
+// checkNodeAlreadyUp checks if a node RPC API is already running.
+func checkNodeAlreadyUp() bool {
+	ln, err := net.Listen("tcp", ":"+strconv.Itoa(*apiPortFlag)) // Attempt to listen
+
+	if err != nil {
+		return true // Already running
+	}
+
+	ln.Close() // Close
+
+	return false // Not running
 }
