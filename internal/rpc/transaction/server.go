@@ -97,12 +97,6 @@ func (server *Server) CalculateTotalValue(ctx context.Context, request *transact
 
 // SignTransaction handles the SignTransaction request method.
 func (server *Server) SignTransaction(ctx context.Context, request *transactionProto.GeneralRequest) (*transactionProto.GeneralResponse, error) {
-	senderBytes, err := hex.DecodeString(request.Address) // Decode sender address hex-encoded string value
-
-	if err != nil { // Check for errors
-		return &transactionProto.GeneralResponse{}, err // Return found error
-	}
-
 	if len(request.TransactionHash) == 0 { // Check nothing to read
 		return &transactionProto.GeneralResponse{}, ErrNilHashRequest // Return error
 	}
@@ -119,7 +113,7 @@ func (server *Server) SignTransaction(ctx context.Context, request *transactionP
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
-	account, err := accounts.ReadAccountFromMemory(common.NewAddress(senderBytes)) // Open account
+	account, err := accounts.ReadAccountFromMemory(common.NewAddress(transaction.Sender.Bytes())) // Open account
 
 	if err != nil { // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
