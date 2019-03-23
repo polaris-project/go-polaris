@@ -14,6 +14,8 @@ import (
 // Server represents a Polaris RPC server.
 type Server struct{}
 
+/* BEGIN EXPORTED METHODS */
+
 // NewTransaction handles the NewTransaction request method.
 func (server *Server) NewTransaction(ctx context.Context, request *transactionProto.GeneralRequest) (*transactionProto.GeneralResponse, error) {
 	senderBytes, err := hex.DecodeString(request.Address) // Decode sender address hex-encoded string value
@@ -51,4 +53,14 @@ func (server *Server) NewTransaction(ctx context.Context, request *transactionPr
 	if err != nil { // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
+
+	err = transaction.WriteToMemory() // Write transaction to mempool
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	return &transactionProto.GeneralResponse{Message: hex.EncodeToString(transaction.Hash.Bytes())}, nil // Return transaction hash string value
 }
+
+/* END EXPORTED METHODS */
