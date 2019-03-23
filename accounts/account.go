@@ -6,6 +6,9 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"math/big"
+
+	"github.com/polaris-project/go-polaris/common"
+	"github.com/polaris-project/go-polaris/crypto"
 )
 
 // Account represents an ECDSA private-public keypair.
@@ -41,6 +44,16 @@ func AccountFromKey(privateKey *ecdsa.PrivateKey) *Account {
 		X: privateKey.X, // Set X
 		Y: privateKey.Y, // Set Y
 	} // Return initialized account
+}
+
+// Address attempts to derive an address from the given account.
+func (account *Account) Address() *common.Address {
+	publicKey := &ecdsa.PublicKey{
+		X: account.X, // Set X
+		Y: account.Y, // Set Y
+	}
+
+	return crypto.AddressFromPublicKey(publicKey) // Return address value
 }
 
 /* END EXPORTED METHODS */
