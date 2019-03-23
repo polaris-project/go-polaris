@@ -7,12 +7,32 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 
 	"github.com/polaris-project/go-polaris/common"
 	"github.com/polaris-project/go-polaris/crypto"
 )
 
 /* BEGIN EXPORTED METHODS */
+
+// GetAllAccounts gets a list of all the owned accounts.
+func GetAllAccounts() []common.Address {
+	buffer := []common.Address{} // Init buffer
+
+	files, err := ioutil.ReadDir(common.KeystoreDir) // Walk keystore dir
+
+	if err != nil { // Check for errors
+		return []common.Address{} // Return nil
+	}
+
+	for _, file := range files { // Iterate through files
+		addressBytes, _ := hex.DecodeString(strings.Split(strings.Split(file.Name(), "account_")[1], ".json")[0]) // Decode hex addr
+
+		buffer = append(buffer, *common.NewAddress(addressBytes)) // Append address
+	}
+
+	return buffer // No error occurred, return success
+}
 
 // String marshals a given account's contents to a JSON-encoded string.
 func (account *Account) String() string {
