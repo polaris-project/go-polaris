@@ -24,6 +24,9 @@ var (
 	// ErrNilHash defines an error describing a situation in which a message has no hash.
 	ErrNilHash = errors.New("hash not set")
 
+	// ErrNilTxResponse defines an error describing a situation in which a response gives no valid tx.
+	ErrNilTxResponse = errors.New("could not find a valid tx response from peer set")
+
 	// ErrNoAvailablePeers defines an error describing an available peer sampling set with a length of 0.
 	ErrNoAvailablePeers = errors.New("no available peers")
 )
@@ -287,6 +290,10 @@ func (client *Client) RequestTransactionWithHash(ctx context.Context, hash commo
 	}
 
 	occurrences := make(map[common.Hash]int64) // Occurrences of each transaction hash
+
+	if len(transactionBytes) == 0 { // Check no response
+		return &types.Transaction{}, ErrNilTxResponse // Return error
+	}
 
 	bestTransaction := types.TransactionFromBytes(transactionBytes[0]) // Init best transaction buffer
 
