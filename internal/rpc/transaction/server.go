@@ -133,7 +133,7 @@ func (server *Server) SignTransaction(ctx context.Context, request *transactionP
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
-	return &transactionProto.GeneralResponse{Message: transaction.Signature.String()}, nil // Return signature
+	return &transactionProto.GeneralResponse{Message: hex.EncodeToString(transaction.Hash.Bytes())}, nil // Return signature
 }
 
 // Publish handles the Publish request method.
