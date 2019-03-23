@@ -2,7 +2,15 @@
 // of the Polaris protocol.
 package types
 
-import "encoding/json"
+import (
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"path/filepath"
+
+	"github.com/polaris-project/go-polaris/common"
+)
 
 /* BEGIN EXPORTED METHODS */
 
@@ -31,6 +39,23 @@ func (transaction *Transaction) String() string {
 	marshaledVal, _ := json.MarshalIndent(*transaction, "", "  ") // Marshal JSON
 
 	return string(marshaledVal) // Returned the marshalled JSON as a string
+}
+
+// WriteToMemory writes a given transaction to persistent memory in the mempool.
+func (transaction *Transaction) WriteToMemory() error {
+	err := common.CreateDirIfDoesNotExit(common.MempoolDir) // Create mempool dir if necessary
+
+	if err != nil { // Check for errors
+		return err // Return found error
+	}
+
+	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/transaction_%s.json", common.MempoolDir, hex.EncodeToString(transaction.Hash.Bytes()))), transaction.Bytes(), 0644) // Write transaction to persistent memory
+
+	if err != nil { // Check for errors
+		return err // Return error
+	}
+
+	return nil // No error occurred, return nil
 }
 
 /* END EXPORTED METHODS */
