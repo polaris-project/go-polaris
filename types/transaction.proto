@@ -4,6 +4,11 @@ package transaction;
 
 service Transaction {
     rpc NewTransaction(GeneralRequest) returns (GeneralResponse) {} // Attempt to initialize transaction primitive
+    rpc CalculateTotalValue(GeneralRequest) returns (GeneralResponse) {} // Calculate the total value of a transaction, including both its amount and total gas
+    rpc SignTransaction(GeneralRequest) returns (GeneralResponse) {} // Sign a given transaction via ecdsa, and set the transaction signature to the new signature
+    rpc SignMessage(GeneralRequest) returns (GeneralResponse) {} // Sign a given message hash via ecdsa, and return a new signature
+    rpc Verify(GeneralRequest) returns (GeneralResponse) {} // Check that a given signature is valid, and return whether or not the given signature is valid
+    rpc String(GeneralRequest) returns (GeneralResponse) {} // Serialize a given transaction to a string via json
 }
 
 /* BEGIN REQUESTS */
