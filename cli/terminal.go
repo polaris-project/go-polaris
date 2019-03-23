@@ -152,13 +152,13 @@ func handleAccounts(accountsClient *accountsProto.Accounts, methodname string, p
 			return ErrInvalidParams // Return error
 		}
 
-		reflectParams = append(reflectParams, reflect.ValueOf(&cryptoProto.GeneralRequest{})) // Append params
+		reflectParams = append(reflectParams, reflect.ValueOf(&accountsProto.GeneralRequest{})) // Append params
 	case "AccountFromKey", "Address", "PublicKey", "PrivateKey", "String":
 		if len(params) != 1 { // Check for invalid params
 			return ErrInvalidParams // return error
 		}
 
-		reflectParams = append(reflectParams, reflect.ValueOf(&cryptoProto.GeneralRequest{PrivatePublicKey: params[0]})) // Append params
+		reflectParams = append(reflectParams, reflect.ValueOf(&accountsProto.GeneralRequest{PrivatePublicKey: params[0]})) // Append params
 	default:
 		return errors.New("illegal method: " + methodname + ", available methods: NewAccount(), AccountFromKey(), Address(), PublicKey(), PrivateKey(), String()") // Return error
 	}
