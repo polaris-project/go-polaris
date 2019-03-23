@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"math/big"
 	"net/http"
 	"os"
 	"reflect"
@@ -18,6 +19,7 @@ import (
 	accountsProto "github.com/polaris-project/go-polaris/internal/proto/accounts"
 	configProto "github.com/polaris-project/go-polaris/internal/proto/config"
 	cryptoProto "github.com/polaris-project/go-polaris/internal/proto/crypto"
+	transactionProto "github.com/polaris-project/go-polaris/internal/proto/transaction"
 )
 
 var (
@@ -58,9 +60,10 @@ func NewTerminal(rpcPort uint, rpcAddress string) {
 
 // handleCommand runs the handler for a given receiver.
 func handleCommand(receiver string, methodname string, params []string, rpcPort uint, rpcAddress string, transport *http.Transport) {
-	cryptoClient := cryptoProto.NewCryptoProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})       // Init crypto client
-	accountsClient := accountsProto.NewAccountsProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport}) // Init accounts client
-	configClient := configProto.NewConfigProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})       // Init config client
+	cryptoClient := cryptoProto.NewCryptoProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})                // Init crypto client
+	accountsClient := accountsProto.NewAccountsProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})          // Init accounts client
+	configClient := configProto.NewConfigProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})                // Init config client
+	transactionClient := transactionProto.NewTransactionProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport}) // Init transaction client
 
 	switch receiver {
 	case "crypto":
@@ -77,6 +80,12 @@ func handleCommand(receiver string, methodname string, params []string, rpcPort 
 		}
 	case "config":
 		err := handleConfig(&configClient, methodname, params) // Handle config
+
+		if err != nil { // Check for errors
+			fmt.Println("\n" + err.Error()) // Log found error
+		}
+	case "transaction":
+		err := handleTransaction(&transactionClient, methodname, params) // Handle transaction
 
 		if err != nil { // Check for errors
 			fmt.Println("\n" + err.Error()) // Log found error
@@ -198,6 +207,56 @@ func handleConfig(configClient *configProto.Config, methodname string, params []
 	result := reflect.ValueOf(*configClient).MethodByName(methodname).Call(reflectParams) // Call method
 
 	response := result[0].Interface().(*configProto.GeneralResponse) // Get response
+
+	if result[1].Interface() != nil { // Check for errors
+		return result[1].Interface().(error) // Return error
+	}
+
+	fmt.Println(response.Message) // Log response
+
+	return nil // No error occurred, return nil
+}
+
+// handleTransaction handles the transaction receiver.
+func handleTransaction(transactionClient *transactionProto.Transaction, methodname string, params []string) error {
+	reflectParams := []reflect.Value{} // Init buffer
+
+	reflectParams = append(reflectParams, reflect.ValueOf(context.Background())) // Append request context
+
+	switch methodname { // Handle different methods
+	case "NewTransaction":
+		if len(params) != 8 { // Check for invalid params
+			return ErrInvalidParams // Return error
+		}
+
+		nonce, _ := strconv.Atoi(params[0]) // Get nonce
+
+		var parentHashes []string // Init parent buffer
+
+		x := 0 // Init x buffer
+
+		for y, param := range params { // Iterate through params
+			if y > 2 { // Skip sender and recipient
+				if len(param) == common.HashLength { // Check is hash
+					parentHashes = append(parentHashes, param) // Append param
+
+					x = y // Set x
+				}
+			}
+		}
+
+		gasLimit, _ := strconv.Atoi(params[x+1]) // Get gas limit
+
+		gasPrice, _ := new(big.Int).SetString(params[x+2], 10) // Get gas price
+
+		reflectParams = append(reflectParams, reflect.ValueOf(&transactionProto.GeneralRequest{Nonce: uint64(nonce), Amount: []byte(params[1]), Address: params[2], Address2: params[3], TransactionHash: parentHashes, GasLimit: uint64(gasLimit), GasPrice: gasPrice.Bytes(), Payload: []byte(params[x+3])})) // Append params
+	default:
+		return errors.New("illegal method: " + methodname + ", available methods: Sha3(), Sha3d(), Sha3n(), AddressFromPrivateKey(), AddressFromPublicKey()") // Return error
+	}
+
+	result := reflect.ValueOf(*transactionClient).MethodByName(methodname).Call(reflectParams) // Call method
+
+	response := result[0].Interface().(*transactionProto.GeneralResponse) // Get response
 
 	if result[1].Interface() != nil { // Check for errors
 		return result[1].Interface().(error) // Return error
