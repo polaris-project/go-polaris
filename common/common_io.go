@@ -29,6 +29,9 @@ var (
 	// MempoolDir is the global mempool directory definition.
 	// The mempool is used to store cached transactions that have not been added to the public dag.
 	MempoolDir = filepath.FromSlash(fmt.Sprintf("%s/mempool", DataDir))
+
+	// KeystoreDir is the global keystore directory definition.
+	KeystoreDir = filepath.FromSlash(fmt.Sprintf("%s/keystore", DataDir))
 )
 
 /* BEGIN EXPORTED METHODS */
