@@ -54,7 +54,8 @@ var (
 
 	logger = loggo.GetLogger("") // Get logger
 
-	logFile *os.File // Log file
+	logFile *os.File   // Log file
+	dag     *types.Dag // Dag reference
 
 	intermittentSyncContext, cancelIntermittent = context.WithCancel(context.Background()) // Get background sync context
 )
@@ -70,6 +71,9 @@ func main() {
 
 		os.Exit(1) // Panic
 	}
+
+	defer dag.Close()     // Close dag
+	defer logFile.Close() // Close log file
 
 	if !checkNodeAlreadyUp() { // Check no node already up
 		defer cancelIntermittent() // Cancel
@@ -145,7 +149,7 @@ func startNode() error {
 		return err // Return found error
 	}
 
-	dag, err := types.NewDag(dagConfig) // Init dag
+	dag, err = types.NewDag(dagConfig) // Init dag
 
 	if err != nil { // Check for errors
 		return err // Return found error
@@ -171,9 +175,6 @@ func startNode() error {
 
 		os.Exit(0) // Exit
 	}()
-
-	defer logFile.Close() // Close log file
-	defer dag.Close()     // Close dag
 
 	validator := validator.Validator(validator.NewBeaconDagValidator(dagConfig, dag)) // Initialize validator
 
