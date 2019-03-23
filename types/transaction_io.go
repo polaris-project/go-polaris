@@ -58,4 +58,23 @@ func (transaction *Transaction) WriteToMemory() error {
 	return nil // No error occurred, return nil
 }
 
+// ReadTransactionFromMemory reads a given transaction (specified by hash) from persistent memory.
+func ReadTransactionFromMemory(hash common.Hash) (*Transaction, error) {
+	data, err := ioutil.ReadFile(filepath.FromSlash(fmt.Sprintf("%s/transaction_%s.json", common.MempoolDir, hex.EncodeToString(hash.Bytes())))) // Read transaction
+
+	if err != nil { // Check for errors
+		return &Transaction{}, err // Return found error
+	}
+
+	buffer := &Transaction{} // Initialize buffer
+
+	err = json.Unmarshal(data, buffer) // Deserialize JSON into buffer.
+
+	if err != nil { // Check for errors
+		return &Transaction{}, err // Return found error
+	}
+
+	return buffer, nil // No error occurred, return read transaction
+}
+
 /* END EXPORTED METHODS */
