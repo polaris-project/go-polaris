@@ -14,6 +14,7 @@ import (
 type Account struct {
 	X *big.Int `json:"x"` // X value
 	Y *big.Int `json:"y"` // Y value
+	D *big.Int `json:"d"` // D value
 }
 
 /* BEGIN EXPORTED METHODS */
@@ -30,6 +31,7 @@ func NewAccount() (*Account, error) {
 	return &Account{
 		privateKey.X, // Set X
 		privateKey.Y, // Set Y
+		privateKey.D, // Set D
 	}, nil // Return initialized account
 }
 
