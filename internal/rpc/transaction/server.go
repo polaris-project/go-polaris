@@ -17,6 +17,9 @@ import (
 var (
 	// ErrNilHashRequest defines an error describing a TransactionHash length of 0.
 	ErrNilHashRequest = errors.New("request did not contain a valid transaction hash")
+
+	// ErrInvalidHashRequest defines an error describing a MessageHash length >||< common.HashLength.
+	ErrInvalidHashRequest = errors.New("request did not contain a valid message hash")
 )
 
 // Server represents a Polaris RPC server.
@@ -129,6 +132,33 @@ func (server *Server) SignTransaction(ctx context.Context, request *transactionP
 	}
 
 	return &transactionProto.GeneralResponse{Message: transaction.Signature.String()}, nil // Return signature
+}
+
+// SignMessage handles the SignMessage request method.
+func (server *Server) SignMessage(ctx context.Context, request *transactionProto.GeneralRequest) (*transactionProto.GeneralResponse, error) {
+	senderBytes, err := hex.DecodeString(request.Address) // Decode sender address hex-encoded string value
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	account, err := accounts.ReadAccountFromMemory(common.NewAddress(senderBytes)) // Open account
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	if len(request.Payload) != common.HashLength { // Check invalid message hash
+		return &transactionProto.GeneralResponse{}, ErrInvalidHashRequest
+	}
+
+	signature, err := types.SignMessage(common.NewHash(request.Payload), account.PrivateKey()) // Sign message
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	return &transactionProto.GeneralResponse{Message: signature.String()}, nil // Retrun signature
 }
 
 // Verify handles the Verify request method.

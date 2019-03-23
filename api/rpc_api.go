@@ -8,8 +8,10 @@ import (
 	"github.com/polaris-project/go-polaris/common"
 	configProto "github.com/polaris-project/go-polaris/internal/proto/config"
 	cryptoProto "github.com/polaris-project/go-polaris/internal/proto/crypto"
+	transactionProto "github.com/polaris-project/go-polaris/internal/proto/transaction"
 	configServer "github.com/polaris-project/go-polaris/internal/rpc/config"
 	cryptoServer "github.com/polaris-project/go-polaris/internal/rpc/crypto"
+	transactionServer "github.com/polaris-project/go-polaris/internal/rpc/transaction"
 
 	"context"
 	"net/http"
@@ -78,13 +80,15 @@ func (rpcAPI *RPCAPI) StartServing(ctx context.Context) error {
 		return err // Return found error
 	}
 
-	configHandler := configProto.NewConfigServer(&configServer.Server{}, nil) // Get handler
-	cryptoHandler := cryptoProto.NewCryptoServer(&cryptoServer.Server{}, nil) // Get handler
+	configHandler := configProto.NewConfigServer(&configServer.Server{}, nil)                     // Get handler
+	cryptoHandler := cryptoProto.NewCryptoServer(&cryptoServer.Server{}, nil)                     // Get handler
+	transactionHandler := transactionProto.NewTransactionServer(&transactionServer.Server{}, nil) // Get handler
 
 	mux := http.NewServeMux() // Init mux
 
-	mux.Handle(configProto.ConfigPathPrefix, configHandler) // Set route handler
-	mux.Handle(cryptoProto.CryptoPathPrefix, cryptoHandler) // Set route handler
+	mux.Handle(configProto.ConfigPathPrefix, configHandler)                // Set route handler
+	mux.Handle(cryptoProto.CryptoPathPrefix, cryptoHandler)                // Set route handler
+	mux.Handle(transactionProto.TransactionPathPrefix, transactionHandler) // Set route handler
 
 	return http.ListenAndServeTLS(rpcAPI.URI, filepath.FromSlash(fmt.Sprintf("%s/rpcCert.pem", common.CertificatesDir)), filepath.FromSlash(fmt.Sprintf("%s/rpcKey.pem", common.CertificatesDir)), mux) // Start serving
 }
