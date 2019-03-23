@@ -92,7 +92,7 @@ func handleCommand(receiver string, methodname string, params []string, rpcPort 
 			fmt.Println("\n" + err.Error()) // Log found error
 		}
 	default:
-		fmt.Println("\n" + "unrecognized namespace " + `"` + receiver + `"` + ", available namespaces: crypto, accounts") // Log invalid namespace
+		fmt.Println("\n" + "unrecognized namespace " + `"` + receiver + `"` + ", available namespaces: crypto, accounts, config, transaction") // Log invalid namespace
 	}
 }
 
