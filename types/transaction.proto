@@ -1,0 +1,37 @@
+syntax = "proto3"; // Specify compiler version
+
+package transaction;
+
+service Transaction {
+    rpc NewTransaction(GeneralRequest) returns (GeneralResponse) {} // Attempt to initialize transaction primitive
+}
+
+/* BEGIN REQUESTS */
+
+message GeneralRequest {
+    uint32 nonce = 1; // Transaction nonce in account tx set
+
+    bytes amount = 2; // Tx amount
+
+    string address = 3; // Transaction sender
+
+    string address2 = 4; // Transaction recipient
+
+    repeated string transactionHash = 5; // Hashes of parents or tx-to-sign
+
+    uint64 gasLimit = 6; // Gas limit
+
+    bytes gasPrice = 7; // Gas price
+
+    bytes payload = 8; // Tx payload
+}
+
+/* END REQUESTS */
+
+/* BEGIN RESPONSES */
+
+message GeneralResponse {
+    string message = 1; // Response
+}
+
+/* END REPSONSES */
