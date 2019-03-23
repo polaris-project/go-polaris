@@ -127,6 +127,12 @@ func (server *Server) SignTransaction(ctx context.Context, request *transactionP
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
+	err = transaction.WriteToMemory() // Write transaction to mempool
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
 	return &transactionProto.GeneralResponse{Message: transaction.Signature.String()}, nil // Return signature
 }
 
