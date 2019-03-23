@@ -15,6 +15,7 @@ import (
 
 	"github.com/polaris-project/go-polaris/common"
 
+	accountsProto "github.com/polaris-project/go-polaris/internal/proto/accounts"
 	cryptoProto "github.com/polaris-project/go-polaris/internal/proto/crypto"
 )
 
@@ -56,7 +57,8 @@ func NewTerminal(rpcPort uint, rpcAddress string) {
 
 // handleCommand runs the handler for a given receiver.
 func handleCommand(receiver string, methodname string, params []string, rpcPort uint, rpcAddress string, transport *http.Transport) {
-	cryptoClient := cryptoProto.NewCryptoProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport}) // Init crypto client
+	cryptoClient := cryptoProto.NewCryptoProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})       // Init crypto client
+	accountsClient := accountsProto.NewAccountsProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport}) // Init accounts client
 
 	switch receiver {
 	case "crypto":
@@ -65,12 +67,18 @@ func handleCommand(receiver string, methodname string, params []string, rpcPort 
 		if err != nil { // Check for errors
 			fmt.Println("\n" + err.Error()) // Log found error
 		}
+	case "accounts":
+		err := handleAccounts(&accountsClient, methodname, params) // Handle accounts
+
+		if err != nil { // Check for errors
+			fmt.Println("\n" + err.Error()) // Log found error
+		}
 	default:
-		fmt.Println("\n" + "unrecognized namespace " + `"` + receiver + `"` + ", available namespaces: crypto, upnp, accounts, config, transaction, chain, coordinationChain, common") // Log invalid namespace
+		fmt.Println("\n" + "unrecognized namespace " + `"` + receiver + `"` + ", available namespaces: crypto, accounts") // Log invalid namespace
 	}
 }
 
-// handleCrypto - handle crypto receiver
+// handleCrypto handles the crypto receiver.
 func handleCrypto(cryptoClient *cryptoProto.Crypto, methodname string, params []string) error {
 	reflectParams := []reflect.Value{} // Init buffer
 
@@ -98,12 +106,48 @@ func handleCrypto(cryptoClient *cryptoProto.Crypto, methodname string, params []
 
 		reflectParams = append(reflectParams, reflect.ValueOf(&cryptoProto.GeneralRequest{PrivatePublicKey: params[0]})) // Append params
 	default:
-		return errors.New("illegal method: " + methodname + ", available methods: Sha3(), Sha3String(), Sha3d(), Sha3dString(), Sha3n(), Sha3nString()") // Return error
+		return errors.New("illegal method: " + methodname + ", available methods: Sha3(), Sha3d(), Sha3n(), AddressFromPrivateKey(), AddressFromPublicKey()") // Return error
 	}
 
 	result := reflect.ValueOf(*cryptoClient).MethodByName(methodname).Call(reflectParams) // Call method
 
 	response := result[0].Interface().(*cryptoProto.GeneralResponse) // Get response
+
+	if result[1].Interface() != nil { // Check for errors
+		return result[1].Interface().(error) // Return error
+	}
+
+	fmt.Println(response.Message) // Log response
+
+	return nil // No error occurred, return nil
+}
+
+// handleAccounts handles the accounts receiver.
+func handleAccounts(accountsClient *accountsProto.Accounts, methodname string, params []string) error {
+	reflectParams := []reflect.Value{} // Init buffer
+
+	reflectParams = append(reflectParams, reflect.ValueOf(context.Background())) // Append request context
+
+	switch methodname { // Handle different methods
+	case "NewAccount":
+		if len(params) != 0 { // Check for invalid params
+			return ErrInvalidParams // Return error
+		}
+
+		reflectParams = append(reflectParams, reflect.ValueOf(&cryptoProto.GeneralRequest{})) // Append params
+	case "AccountFromKey", "Address", "PublicKey", "PrivateKey", "String":
+		if len(params) != 1 { // Check for invalid params
+			return ErrInvalidParams // return error
+		}
+
+		reflectParams = append(reflectParams, reflect.ValueOf(&cryptoProto.GeneralRequest{PrivatePublicKey: params[0]})) // Append params
+	default:
+		return errors.New("illegal method: " + methodname + ", available methods: Sha3(), Sha3d(), Sha3n(), AddressFromPrivateKey(), AddressFromPublicKey()") // Return error
+	}
+
+	result := reflect.ValueOf(*accountsClient).MethodByName(methodname).Call(reflectParams) // Call method
+
+	response := result[0].Interface().(*accountsProto.GeneralResponse) // Get response
 
 	if result[1].Interface() != nil { // Check for errors
 		return result[1].Interface().(error) // Return error
