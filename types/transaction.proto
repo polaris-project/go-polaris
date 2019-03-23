@@ -14,7 +14,7 @@ service Transaction {
 /* BEGIN REQUESTS */
 
 message GeneralRequest {
-    uint32 nonce = 1; // Transaction nonce in account tx set
+    uint64 nonce = 1; // Transaction nonce in account tx set
 
     bytes amount = 2; // Tx amount
 
