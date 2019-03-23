@@ -18,5 +18,4 @@ require (
 	github.com/twitchtv/twirp v5.5.2+incompatible
 	golang.org/x/crypto v0.0.0-20190228161510-8dd112bcdc25
 	golang.org/x/sys v0.0.0-20190302025703-b6889370fb10 // indirect
-	google.golang.org/grpc v1.19.1
 )
