@@ -55,8 +55,9 @@ func (account *Account) Address() *common.Address {
 // PublicKey derives an ECDSA public key from the given account.
 func (account *Account) PublicKey() *ecdsa.PublicKey {
 	return &ecdsa.PublicKey{
-		X: account.X, // Set X
-		Y: account.Y, // Set Y
+		Curve: elliptic.P521(), // Set curve
+		X:     account.X,       // Set X
+		Y:     account.Y,       // Set Y
 	} // Return public key
 }
 
