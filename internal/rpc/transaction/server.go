@@ -7,6 +7,7 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/polaris-project/go-polaris/accounts"
 	"github.com/polaris-project/go-polaris/common"
 	transactionProto "github.com/polaris-project/go-polaris/internal/proto/transaction"
 	"github.com/polaris-project/go-polaris/types"
@@ -92,6 +93,12 @@ func (server *Server) CalculateTotalValue(ctx context.Context, request *transact
 
 // SignTransaction handles the SignTransaction request method.
 func (server *Server) SignTransaction(ctx context.Context, request *transactionProto.GeneralRequest) (*transactionProto.GeneralResponse, error) {
+	senderBytes, err := hex.DecodeString(request.Address) // Decode sender address hex-encoded string value
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
 	if len(request.TransactionHash) == 0 { // Check nothing to read
 		return &transactionProto.GeneralResponse{}, ErrNilHashRequest // Return error
 	}
@@ -108,7 +115,19 @@ func (server *Server) SignTransaction(ctx context.Context, request *transactionP
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
-	err = types.SignTransaction(transaction)
+	account, err := accounts.ReadAccountFromMemory(common.NewAddress(senderBytes)) // Open account
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	err = types.SignTransaction(transaction, account.PrivateKey()) // Sign transaction
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	return &transactionProto.GeneralResponse{Message: transaction.Signature.String()}, nil // Return signature
 }
 
 /* END EXPORTED METHODS */
