@@ -35,7 +35,7 @@ func (server *Server) NewTransaction(ctx context.Context, request *transactionPr
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
-	recipientBytes, err := hex.DecodeString(request.Address) // Decode recipient address hex-encoded string value
+	recipientBytes, err := hex.DecodeString(request.Address2) // Decode recipient address hex-encoded string value
 
 	if err != nil { // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
