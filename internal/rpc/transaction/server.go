@@ -4,11 +4,17 @@ package transaction
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"math/big"
 
 	"github.com/polaris-project/go-polaris/common"
 	transactionProto "github.com/polaris-project/go-polaris/internal/proto/transaction"
 	"github.com/polaris-project/go-polaris/types"
+)
+
+var (
+	// ErrNilHashRequest defines an error describing a TransactionHash length of 0.
+	ErrNilHashRequest = errors.New("request did not contain a valid transaction hash")
 )
 
 // Server represents a Polaris RPC server.
@@ -61,6 +67,27 @@ func (server *Server) NewTransaction(ctx context.Context, request *transactionPr
 	}
 
 	return &transactionProto.GeneralResponse{Message: hex.EncodeToString(transaction.Hash.Bytes())}, nil // Return transaction hash string value
+}
+
+// CalculateTotalValue handles the CalculateTotalValue request method.
+func (server *Server) CalculateTotalValue(ctx context.Context, request *transactionProto.GeneralRequest) (*transactionProto.GeneralResponse, error) {
+	if len(request.TransactionHash) == 0 { // Check nothing to read
+		return &transactionProto.GeneralResponse{}, ErrNilHashRequest // Return error
+	}
+
+	transactionHashBytes, err := hex.DecodeString(request.TransactionHash[0]) // Get transaction hash byte value
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	transaction, err := types.ReadTransactionFromMemory(common.NewHash(transactionHashBytes)) // Read transaction
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	return &transactionProto.GeneralResponse{Message: transaction.CalculateTotalValue().String()}, nil // Return total value
 }
 
 /* END EXPORTED METHODS */
