@@ -149,9 +149,9 @@ func (validator *BeaconDagValidator) ValidateTransactionSenderBalance(transactio
 
 // ValidateTransactionIsNotDuplicate checks that a given transaction does not already exist in the working dag.
 func (validator *BeaconDagValidator) ValidateTransactionIsNotDuplicate(transaction *types.Transaction) bool {
-	_, err := validator.WorkingDag.GetTransactionByHash(transaction.Hash) // Attempt to get tx by hash
+	transaction, err := validator.WorkingDag.GetTransactionByHash(transaction.Hash) // Attempt to get tx by hash
 
-	if err == nil { // Check transaction exists
+	if err == nil && !transaction.Hash.IsNil() { // Check transaction exists
 		return false // Transaction is duplicate
 	}
 
