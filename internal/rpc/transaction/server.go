@@ -154,6 +154,12 @@ func (server *Server) Publish(ctx context.Context, request *transactionProto.Gen
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
+	err = (*p2p.WorkingClient.Validator).GetWorkingDag().AddTransaction(transaction) // Add transaction
+
+	if err != nil && err != types.ErrDuplicateTransaction { // Check for errors (other than duplicate transaction)
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
 	publishContext, cancel := context.WithCancel(ctx) // Get context
 
 	defer cancel() // Cancel
