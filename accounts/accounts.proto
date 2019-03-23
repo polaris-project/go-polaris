@@ -4,6 +4,7 @@ package accounts;
 
 service Accounts {
     rpc NewAccount(GeneralRequest) returns (GeneralResponse) {} // Generate a new ECDSA private-public keypair, returns the initialized account
+    rpc GetAllAccounts(GeneralRequest) returns (GeneralResponse) {} // Log all accounts
     rpc AccountFromKey(GeneralRequest) returns (GeneralResponse) {} // Import account with given private key
     rpc Address(GeneralRequest) returns (GeneralResponse) {} // Log account address
     rpc PublicKey(GeneralRequest) returns (GeneralResponse) {} // Log account public key
