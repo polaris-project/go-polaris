@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"context"
 	"crypto/tls"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
@@ -238,7 +239,7 @@ func handleTransaction(transactionClient *transactionProto.Transaction, methodna
 
 		for y, param := range params { // Iterate through params
 			if y > 2 { // Skip sender and recipient
-				if len(param) == common.HashLength { // Check is hash
+				if decoded, _ := hex.DecodeString(param); len(decoded) == common.HashLength { // Check is hash
 					parentHashes = append(parentHashes, param) // Append param
 
 					x = y // Set x
