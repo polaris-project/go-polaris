@@ -39,7 +39,7 @@ type Transaction interface {
 
 	SignTransaction(context.Context, *GeneralRequest) (*GeneralResponse, error)
 
-	Publich(context.Context, *GeneralRequest) (*GeneralResponse, error)
+	Publish(context.Context, *GeneralRequest) (*GeneralResponse, error)
 
 	SignMessage(context.Context, *GeneralRequest) (*GeneralResponse, error)
 
@@ -65,7 +65,7 @@ func NewTransactionProtobufClient(addr string, client HTTPClient) Transaction {
 		prefix + "NewTransaction",
 		prefix + "CalculateTotalValue",
 		prefix + "SignTransaction",
-		prefix + "Publich",
+		prefix + "Publish",
 		prefix + "SignMessage",
 		prefix + "Verify",
 		prefix + "String",
@@ -118,10 +118,10 @@ func (c *transactionProtobufClient) SignTransaction(ctx context.Context, in *Gen
 	return out, nil
 }
 
-func (c *transactionProtobufClient) Publich(ctx context.Context, in *GeneralRequest) (*GeneralResponse, error) {
+func (c *transactionProtobufClient) Publish(ctx context.Context, in *GeneralRequest) (*GeneralResponse, error) {
 	ctx = ctxsetters.WithPackageName(ctx, "transaction")
 	ctx = ctxsetters.WithServiceName(ctx, "Transaction")
-	ctx = ctxsetters.WithMethodName(ctx, "Publich")
+	ctx = ctxsetters.WithMethodName(ctx, "Publish")
 	out := new(GeneralResponse)
 	err := doProtobufRequest(ctx, c.client, c.urls[3], in, out)
 	if err != nil {
@@ -183,7 +183,7 @@ func NewTransactionJSONClient(addr string, client HTTPClient) Transaction {
 		prefix + "NewTransaction",
 		prefix + "CalculateTotalValue",
 		prefix + "SignTransaction",
-		prefix + "Publich",
+		prefix + "Publish",
 		prefix + "SignMessage",
 		prefix + "Verify",
 		prefix + "String",
@@ -236,10 +236,10 @@ func (c *transactionJSONClient) SignTransaction(ctx context.Context, in *General
 	return out, nil
 }
 
-func (c *transactionJSONClient) Publich(ctx context.Context, in *GeneralRequest) (*GeneralResponse, error) {
+func (c *transactionJSONClient) Publish(ctx context.Context, in *GeneralRequest) (*GeneralResponse, error) {
 	ctx = ctxsetters.WithPackageName(ctx, "transaction")
 	ctx = ctxsetters.WithServiceName(ctx, "Transaction")
-	ctx = ctxsetters.WithMethodName(ctx, "Publich")
+	ctx = ctxsetters.WithMethodName(ctx, "Publish")
 	out := new(GeneralResponse)
 	err := doJSONRequest(ctx, c.client, c.urls[3], in, out)
 	if err != nil {
@@ -341,8 +341,8 @@ func (s *transactionServer) ServeHTTP(resp http.ResponseWriter, req *http.Reques
 	case "/twirp/transaction.Transaction/SignTransaction":
 		s.serveSignTransaction(ctx, resp, req)
 		return
-	case "/twirp/transaction.Transaction/Publich":
-		s.servePublich(ctx, resp, req)
+	case "/twirp/transaction.Transaction/Publish":
+		s.servePublish(ctx, resp, req)
 		return
 	case "/twirp/transaction.Transaction/SignMessage":
 		s.serveSignMessage(ctx, resp, req)
@@ -793,7 +793,7 @@ func (s *transactionServer) serveSignTransactionProtobuf(ctx context.Context, re
 	callResponseSent(ctx, s.hooks)
 }
 
-func (s *transactionServer) servePublich(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+func (s *transactionServer) servePublish(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
 	header := req.Header.Get("Content-Type")
 	i := strings.Index(header, ";")
 	if i == -1 {
@@ -801,9 +801,9 @@ func (s *transactionServer) servePublich(ctx context.Context, resp http.Response
 	}
 	switch strings.TrimSpace(strings.ToLower(header[:i])) {
 	case "application/json":
-		s.servePublichJSON(ctx, resp, req)
+		s.servePublishJSON(ctx, resp, req)
 	case "application/protobuf":
-		s.servePublichProtobuf(ctx, resp, req)
+		s.servePublishProtobuf(ctx, resp, req)
 	default:
 		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
 		twerr := badRouteError(msg, req.Method, req.URL.Path)
@@ -811,9 +811,9 @@ func (s *transactionServer) servePublich(ctx context.Context, resp http.Response
 	}
 }
 
-func (s *transactionServer) servePublichJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+func (s *transactionServer) servePublishJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
 	var err error
-	ctx = ctxsetters.WithMethodName(ctx, "Publich")
+	ctx = ctxsetters.WithMethodName(ctx, "Publish")
 	ctx, err = callRequestRouted(ctx, s.hooks)
 	if err != nil {
 		s.writeError(ctx, resp, err)
@@ -838,7 +838,7 @@ func (s *transactionServer) servePublichJSON(ctx context.Context, resp http.Resp
 				panic(r)
 			}
 		}()
-		respContent, err = s.Transaction.Publich(ctx, reqContent)
+		respContent, err = s.Transaction.Publish(ctx, reqContent)
 	}()
 
 	if err != nil {
@@ -846,7 +846,7 @@ func (s *transactionServer) servePublichJSON(ctx context.Context, resp http.Resp
 		return
 	}
 	if respContent == nil {
-		s.writeError(ctx, resp, twirp.InternalError("received a nil *GeneralResponse and nil error while calling Publich. nil responses are not supported"))
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *GeneralResponse and nil error while calling Publish. nil responses are not supported"))
 		return
 	}
 
@@ -873,9 +873,9 @@ func (s *transactionServer) servePublichJSON(ctx context.Context, resp http.Resp
 	callResponseSent(ctx, s.hooks)
 }
 
-func (s *transactionServer) servePublichProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+func (s *transactionServer) servePublishProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
 	var err error
-	ctx = ctxsetters.WithMethodName(ctx, "Publich")
+	ctx = ctxsetters.WithMethodName(ctx, "Publish")
 	ctx, err = callRequestRouted(ctx, s.hooks)
 	if err != nil {
 		s.writeError(ctx, resp, err)
@@ -905,7 +905,7 @@ func (s *transactionServer) servePublichProtobuf(ctx context.Context, resp http.
 				panic(r)
 			}
 		}()
-		respContent, err = s.Transaction.Publich(ctx, reqContent)
+		respContent, err = s.Transaction.Publish(ctx, reqContent)
 	}()
 
 	if err != nil {
@@ -913,7 +913,7 @@ func (s *transactionServer) servePublichProtobuf(ctx context.Context, resp http.
 		return
 	}
 	if respContent == nil {
-		s.writeError(ctx, resp, twirp.InternalError("received a nil *GeneralResponse and nil error while calling Publich. nil responses are not supported"))
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *GeneralResponse and nil error while calling Publish. nil responses are not supported"))
 		return
 	}
 
@@ -1816,8 +1816,8 @@ var twirpFileDescriptor0 = []byte{
 	0x4a, 0x64, 0x0c, 0xdd, 0x09, 0x7f, 0x2b, 0x4f, 0x2e, 0x87, 0xe5, 0x13, 0x7f, 0xbf, 0x65, 0xff,
 	0xea, 0xf7, 0x30, 0xff, 0xec, 0xe0, 0x1f, 0x61, 0x70, 0x76, 0x8b, 0x32, 0xc9, 0x24, 0x3a, 0x3e,
 	0xd7, 0x0e, 0xe5, 0x02, 0x65, 0xc6, 0xab, 0x75, 0x4e, 0xa0, 0x37, 0x13, 0xa9, 0xfa, 0x33, 0xc7,
-	0x7b, 0x68, 0x4e, 0xb3, 0xa5, 0x14, 0xc9, 0xba, 0x5a, 0xcf, 0x13, 0x74, 0xf6, 0x5e, 0xe3, 0xfc,
-	0xb2, 0xd5, 0xba, 0xee, 0x20, 0x5c, 0x70, 0x23, 0x5e, 0x76, 0x95, 0x6b, 0x66, 0xce, 0x08, 0x95,
-	0x56, 0xaa, 0x59, 0x86, 0xfe, 0xc7, 0xba, 0xf9, 0x0c, 0x00, 0x00, 0xff, 0xff, 0x24, 0xdb, 0x6a,
-	0x1f, 0x6d, 0x03, 0x00, 0x00,
+	0x7b, 0x68, 0x4e, 0xb3, 0xa5, 0x14, 0x76, 0x5d, 0xad, 0xe7, 0x09, 0x3a, 0x7b, 0xaf, 0x71, 0x7e,
+	0xd9, 0x6a, 0x5d, 0x77, 0x10, 0x2e, 0xb8, 0x11, 0x2f, 0xbb, 0xca, 0x35, 0x33, 0x67, 0x84, 0x4a,
+	0x2b, 0xd5, 0x2c, 0x43, 0xff, 0x63, 0xdd, 0x7c, 0x06, 0x00, 0x00, 0xff, 0xff, 0x03, 0x70, 0xa0,
+	0xed, 0x6d, 0x03, 0x00, 0x00,
 }
