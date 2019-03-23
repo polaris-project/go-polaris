@@ -39,6 +39,8 @@ type Transaction interface {
 
 	SignTransaction(context.Context, *GeneralRequest) (*GeneralResponse, error)
 
+	Publich(context.Context, *GeneralRequest) (*GeneralResponse, error)
+
 	SignMessage(context.Context, *GeneralRequest) (*GeneralResponse, error)
 
 	Verify(context.Context, *GeneralRequest) (*GeneralResponse, error)
@@ -52,17 +54,18 @@ type Transaction interface {
 
 type transactionProtobufClient struct {
 	client HTTPClient
-	urls   [6]string
+	urls   [7]string
 }
 
 // NewTransactionProtobufClient creates a Protobuf client that implements the Transaction interface.
 // It communicates using Protobuf and can be configured with a custom HTTPClient.
 func NewTransactionProtobufClient(addr string, client HTTPClient) Transaction {
 	prefix := urlBase(addr) + TransactionPathPrefix
-	urls := [6]string{
+	urls := [7]string{
 		prefix + "NewTransaction",
 		prefix + "CalculateTotalValue",
 		prefix + "SignTransaction",
+		prefix + "Publich",
 		prefix + "SignMessage",
 		prefix + "Verify",
 		prefix + "String",
@@ -115,12 +118,24 @@ func (c *transactionProtobufClient) SignTransaction(ctx context.Context, in *Gen
 	return out, nil
 }
 
+func (c *transactionProtobufClient) Publich(ctx context.Context, in *GeneralRequest) (*GeneralResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "transaction")
+	ctx = ctxsetters.WithServiceName(ctx, "Transaction")
+	ctx = ctxsetters.WithMethodName(ctx, "Publich")
+	out := new(GeneralResponse)
+	err := doProtobufRequest(ctx, c.client, c.urls[3], in, out)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *transactionProtobufClient) SignMessage(ctx context.Context, in *GeneralRequest) (*GeneralResponse, error) {
 	ctx = ctxsetters.WithPackageName(ctx, "transaction")
 	ctx = ctxsetters.WithServiceName(ctx, "Transaction")
 	ctx = ctxsetters.WithMethodName(ctx, "SignMessage")
 	out := new(GeneralResponse)
-	err := doProtobufRequest(ctx, c.client, c.urls[3], in, out)
+	err := doProtobufRequest(ctx, c.client, c.urls[4], in, out)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +147,7 @@ func (c *transactionProtobufClient) Verify(ctx context.Context, in *GeneralReque
 	ctx = ctxsetters.WithServiceName(ctx, "Transaction")
 	ctx = ctxsetters.WithMethodName(ctx, "Verify")
 	out := new(GeneralResponse)
-	err := doProtobufRequest(ctx, c.client, c.urls[4], in, out)
+	err := doProtobufRequest(ctx, c.client, c.urls[5], in, out)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +159,7 @@ func (c *transactionProtobufClient) String(ctx context.Context, in *GeneralReque
 	ctx = ctxsetters.WithServiceName(ctx, "Transaction")
 	ctx = ctxsetters.WithMethodName(ctx, "String")
 	out := new(GeneralResponse)
-	err := doProtobufRequest(ctx, c.client, c.urls[5], in, out)
+	err := doProtobufRequest(ctx, c.client, c.urls[6], in, out)
 	if err != nil {
 		return nil, err
 	}
@@ -157,17 +172,18 @@ func (c *transactionProtobufClient) String(ctx context.Context, in *GeneralReque
 
 type transactionJSONClient struct {
 	client HTTPClient
-	urls   [6]string
+	urls   [7]string
 }
 
 // NewTransactionJSONClient creates a JSON client that implements the Transaction interface.
 // It communicates using JSON and can be configured with a custom HTTPClient.
 func NewTransactionJSONClient(addr string, client HTTPClient) Transaction {
 	prefix := urlBase(addr) + TransactionPathPrefix
-	urls := [6]string{
+	urls := [7]string{
 		prefix + "NewTransaction",
 		prefix + "CalculateTotalValue",
 		prefix + "SignTransaction",
+		prefix + "Publich",
 		prefix + "SignMessage",
 		prefix + "Verify",
 		prefix + "String",
@@ -220,12 +236,24 @@ func (c *transactionJSONClient) SignTransaction(ctx context.Context, in *General
 	return out, nil
 }
 
+func (c *transactionJSONClient) Publich(ctx context.Context, in *GeneralRequest) (*GeneralResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "transaction")
+	ctx = ctxsetters.WithServiceName(ctx, "Transaction")
+	ctx = ctxsetters.WithMethodName(ctx, "Publich")
+	out := new(GeneralResponse)
+	err := doJSONRequest(ctx, c.client, c.urls[3], in, out)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *transactionJSONClient) SignMessage(ctx context.Context, in *GeneralRequest) (*GeneralResponse, error) {
 	ctx = ctxsetters.WithPackageName(ctx, "transaction")
 	ctx = ctxsetters.WithServiceName(ctx, "Transaction")
 	ctx = ctxsetters.WithMethodName(ctx, "SignMessage")
 	out := new(GeneralResponse)
-	err := doJSONRequest(ctx, c.client, c.urls[3], in, out)
+	err := doJSONRequest(ctx, c.client, c.urls[4], in, out)
 	if err != nil {
 		return nil, err
 	}
@@ -237,7 +265,7 @@ func (c *transactionJSONClient) Verify(ctx context.Context, in *GeneralRequest) 
 	ctx = ctxsetters.WithServiceName(ctx, "Transaction")
 	ctx = ctxsetters.WithMethodName(ctx, "Verify")
 	out := new(GeneralResponse)
-	err := doJSONRequest(ctx, c.client, c.urls[4], in, out)
+	err := doJSONRequest(ctx, c.client, c.urls[5], in, out)
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +277,7 @@ func (c *transactionJSONClient) String(ctx context.Context, in *GeneralRequest) 
 	ctx = ctxsetters.WithServiceName(ctx, "Transaction")
 	ctx = ctxsetters.WithMethodName(ctx, "String")
 	out := new(GeneralResponse)
-	err := doJSONRequest(ctx, c.client, c.urls[5], in, out)
+	err := doJSONRequest(ctx, c.client, c.urls[6], in, out)
 	if err != nil {
 		return nil, err
 	}
@@ -312,6 +340,9 @@ func (s *transactionServer) ServeHTTP(resp http.ResponseWriter, req *http.Reques
 		return
 	case "/twirp/transaction.Transaction/SignTransaction":
 		s.serveSignTransaction(ctx, resp, req)
+		return
+	case "/twirp/transaction.Transaction/Publich":
+		s.servePublich(ctx, resp, req)
 		return
 	case "/twirp/transaction.Transaction/SignMessage":
 		s.serveSignMessage(ctx, resp, req)
@@ -739,6 +770,150 @@ func (s *transactionServer) serveSignTransactionProtobuf(ctx context.Context, re
 	}
 	if respContent == nil {
 		s.writeError(ctx, resp, twirp.InternalError("received a nil *GeneralResponse and nil error while calling SignTransaction. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto.Marshal(respContent)
+	if err != nil {
+		err = wrapErr(err, "failed to marshal proto response")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *transactionServer) servePublich(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.servePublichJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.servePublichProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *transactionServer) servePublichJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "Publich")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	reqContent := new(GeneralRequest)
+	unmarshaler := jsonpb.Unmarshaler{AllowUnknownFields: true}
+	if err = unmarshaler.Unmarshal(req.Body, reqContent); err != nil {
+		err = wrapErr(err, "failed to parse request json")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+
+	// Call service method
+	var respContent *GeneralResponse
+	func() {
+		defer func() {
+			// In case of a panic, serve a 500 error and then panic.
+			if r := recover(); r != nil {
+				s.writeError(ctx, resp, twirp.InternalError("Internal service panic"))
+				panic(r)
+			}
+		}()
+		respContent, err = s.Transaction.Publich(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *GeneralResponse and nil error while calling Publich. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	var buf bytes.Buffer
+	marshaler := &jsonpb.Marshaler{OrigName: true}
+	if err = marshaler.Marshal(&buf, respContent); err != nil {
+		err = wrapErr(err, "failed to marshal json response")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.WriteHeader(http.StatusOK)
+
+	respBytes := buf.Bytes()
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *transactionServer) servePublichProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "Publich")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		err = wrapErr(err, "failed to read request body")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+	reqContent := new(GeneralRequest)
+	if err = proto.Unmarshal(buf, reqContent); err != nil {
+		err = wrapErr(err, "failed to parse request proto")
+		s.writeError(ctx, resp, twirp.InternalErrorWith(err))
+		return
+	}
+
+	// Call service method
+	var respContent *GeneralResponse
+	func() {
+		defer func() {
+			// In case of a panic, serve a 500 error and then panic.
+			if r := recover(); r != nil {
+				s.writeError(ctx, resp, twirp.InternalError("Internal service panic"))
+				panic(r)
+			}
+		}()
+		respContent, err = s.Transaction.Publich(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *GeneralResponse and nil error while calling Publich. nil responses are not supported"))
 		return
 	}
 
@@ -1623,25 +1798,26 @@ func callError(ctx context.Context, h *twirp.ServerHooks, err twirp.Error) conte
 }
 
 var twirpFileDescriptor0 = []byte{
-	// 315 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x93, 0xc1, 0x4a, 0x33, 0x31,
-	0x14, 0x85, 0xff, 0xf9, 0xdb, 0x4e, 0xdb, 0x5b, 0x69, 0x31, 0x8a, 0x84, 0xea, 0x62, 0xe8, 0x6a,
-	0x40, 0xe8, 0xa2, 0x3e, 0x82, 0x88, 0x22, 0xb6, 0x48, 0x5a, 0xba, 0xbf, 0x4e, 0xaf, 0x63, 0x60,
-	0x9a, 0xd4, 0x24, 0x83, 0xf4, 0x55, 0x7d, 0x0a, 0x1f, 0x41, 0x9a, 0x69, 0xc7, 0x51, 0xdc, 0x8d,
-	0xbb, 0x7c, 0xf7, 0x84, 0x93, 0x73, 0x0f, 0x04, 0x8e, 0x9d, 0x41, 0x65, 0x31, 0x71, 0x52, 0xab,
-	0xf1, 0xc6, 0x68, 0xa7, 0x59, 0xaf, 0x32, 0x1a, 0x7d, 0x04, 0xd0, 0xbf, 0x25, 0x45, 0x06, 0x33,
-	0x41, 0xaf, 0x39, 0x59, 0xc7, 0x4e, 0xa1, 0xa5, 0xb4, 0x4a, 0x88, 0x07, 0x51, 0x10, 0x37, 0x45,
-	0x01, 0xec, 0x0c, 0x42, 0x5c, 0xeb, 0x5c, 0x39, 0xfe, 0x3f, 0x0a, 0xe2, 0x23, 0xb1, 0x27, 0xc6,
-	0xa1, 0x8d, 0xab, 0x95, 0x21, 0x6b, 0x79, 0x23, 0x0a, 0xe2, 0xae, 0x38, 0x20, 0x1b, 0x42, 0x67,
-	0x7f, 0x9c, 0xf0, 0xa6, 0x97, 0x4a, 0x66, 0x31, 0x0c, 0x2a, 0x29, 0xee, 0xd0, 0xbe, 0xf0, 0x56,
-	0xd4, 0x88, 0xbb, 0xe2, 0xe7, 0x78, 0xe7, 0x92, 0xa2, 0x7d, 0x90, 0x6b, 0xe9, 0x78, 0xe8, 0x03,
-	0x95, 0xbc, 0xd7, 0x1e, 0x8d, 0x4c, 0x88, 0xb7, 0x7d, 0xaa, 0x92, 0x77, 0xb9, 0x36, 0xb8, 0xcd,
-	0x34, 0xae, 0x78, 0xc7, 0x4b, 0x07, 0x1c, 0x5d, 0xc2, 0xa0, 0xdc, 0xd8, 0x6e, 0xb4, 0xb2, 0xfe,
-	0xf2, 0x9a, 0xac, 0xc5, 0xb4, 0x58, 0xba, 0x2b, 0x0e, 0x38, 0x79, 0x6f, 0x40, 0x6f, 0xf1, 0x15,
-	0x89, 0x4d, 0xa1, 0x3f, 0xa3, 0xb7, 0xea, 0xe4, 0x7c, 0x5c, 0xad, 0xf8, 0x7b, 0x97, 0xc3, 0x8b,
-	0xdf, 0xc5, 0xe2, 0xd9, 0xd1, 0x3f, 0x26, 0xe0, 0xe4, 0x1a, 0xb3, 0x24, 0xcf, 0xd0, 0xd1, 0x42,
-	0x3b, 0xcc, 0x96, 0x98, 0xe5, 0x54, 0xcf, 0x73, 0x06, 0x83, 0xb9, 0x4c, 0xd5, 0x9f, 0x65, 0xbc,
-	0x87, 0xde, 0xce, 0x6f, 0x5a, 0x34, 0x52, 0xcf, 0xeb, 0x06, 0xc2, 0x25, 0x19, 0xf9, 0xbc, 0xad,
-	0x6d, 0x33, 0x77, 0x46, 0xaa, 0xb4, 0x96, 0xcd, 0x53, 0xe8, 0x3f, 0xc4, 0xd5, 0x67, 0x00, 0x00,
-	0x00, 0xff, 0xff, 0xc5, 0xe1, 0x31, 0xf8, 0x25, 0x03, 0x00, 0x00,
+	// 325 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x93, 0xcd, 0x6a, 0xf2, 0x40,
+	0x14, 0x86, 0xbf, 0x7c, 0x6a, 0xd4, 0x63, 0x51, 0x3a, 0x2d, 0x65, 0xb0, 0x5d, 0x04, 0x57, 0x81,
+	0x82, 0x0b, 0x7b, 0x09, 0xa5, 0x3f, 0x94, 0x2a, 0x32, 0x8a, 0xfb, 0x63, 0x9c, 0xc6, 0x81, 0x71,
+	0xc6, 0xce, 0x4c, 0x28, 0xde, 0x4e, 0xaf, 0xb0, 0x97, 0x50, 0x9c, 0x68, 0x9a, 0x96, 0xee, 0xd2,
+	0x5d, 0x9e, 0xf3, 0x86, 0x37, 0xcf, 0x39, 0x10, 0x38, 0x75, 0x06, 0x95, 0xc5, 0xc4, 0x09, 0xad,
+	0x86, 0x5b, 0xa3, 0x9d, 0x26, 0x9d, 0xd2, 0x68, 0xf0, 0x11, 0x40, 0xf7, 0x81, 0x2b, 0x6e, 0x50,
+	0x32, 0xfe, 0x9a, 0x71, 0xeb, 0xc8, 0x39, 0x34, 0x94, 0x56, 0x09, 0xa7, 0x41, 0x14, 0xc4, 0x75,
+	0x96, 0x03, 0xb9, 0x80, 0x10, 0x37, 0x3a, 0x53, 0x8e, 0xfe, 0x8f, 0x82, 0xf8, 0x84, 0x1d, 0x88,
+	0x50, 0x68, 0xe2, 0x6a, 0x65, 0xb8, 0xb5, 0xb4, 0x16, 0x05, 0x71, 0x9b, 0x1d, 0x91, 0xf4, 0xa1,
+	0x75, 0x78, 0x1c, 0xd1, 0xba, 0x8f, 0x0a, 0x26, 0x31, 0xf4, 0x4a, 0x16, 0x8f, 0x68, 0xd7, 0xb4,
+	0x11, 0xd5, 0xe2, 0x36, 0xfb, 0x39, 0xde, 0xb7, 0xa4, 0x68, 0x9f, 0xc5, 0x46, 0x38, 0x1a, 0x7a,
+	0xa1, 0x82, 0x0f, 0xd9, 0xd4, 0x88, 0x84, 0xd3, 0xa6, 0xb7, 0x2a, 0x78, 0xef, 0xb5, 0xc5, 0x9d,
+	0xd4, 0xb8, 0xa2, 0x2d, 0x1f, 0x1d, 0x71, 0x70, 0x0d, 0xbd, 0x62, 0x63, 0xbb, 0xd5, 0xca, 0xfa,
+	0x97, 0x37, 0xdc, 0x5a, 0x4c, 0xf3, 0xa5, 0xdb, 0xec, 0x88, 0xa3, 0xf7, 0x3a, 0x74, 0xe6, 0x5f,
+	0x4a, 0x64, 0x0c, 0xdd, 0x09, 0x7f, 0x2b, 0x4f, 0x2e, 0x87, 0xe5, 0x13, 0x7f, 0xbf, 0x65, 0xff,
+	0xea, 0xf7, 0x30, 0xff, 0xec, 0xe0, 0x1f, 0x61, 0x70, 0x76, 0x8b, 0x32, 0xc9, 0x24, 0x3a, 0x3e,
+	0xd7, 0x0e, 0xe5, 0x02, 0x65, 0xc6, 0xab, 0x75, 0x4e, 0xa0, 0x37, 0x13, 0xa9, 0xfa, 0x33, 0xc7,
+	0x7b, 0x68, 0x4e, 0xb3, 0xa5, 0x14, 0xc9, 0xba, 0x5a, 0xcf, 0x13, 0x74, 0xf6, 0x5e, 0xe3, 0xfc,
+	0xb2, 0xd5, 0xba, 0xee, 0x20, 0x5c, 0x70, 0x23, 0x5e, 0x76, 0x95, 0x6b, 0x66, 0xce, 0x08, 0x95,
+	0x56, 0xaa, 0x59, 0x86, 0xfe, 0xc7, 0xba, 0xf9, 0x0c, 0x00, 0x00, 0xff, 0xff, 0x24, 0xdb, 0x6a,
+	0x1f, 0x6d, 0x03, 0x00, 0x00,
 }
