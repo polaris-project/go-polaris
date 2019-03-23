@@ -2,7 +2,6 @@
 package accounts
 
 import (
-	"crypto/ecdsa"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -37,12 +36,7 @@ func (account *Account) WriteToMemory() error {
 		return err // Return found error
 	}
 
-	publicKey := &ecdsa.PublicKey{
-		X: account.X, // Set x
-		Y: account.Y, // Set y
-	} // Initialize public key instance
-
-	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/account_%s.json", common.KeystoreDir, hex.EncodeToString(crypto.AddressFromPublicKey(publicKey).Bytes()))), account.Bytes(), 0644) // Write account to persistent memory
+	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/account_%s.json", common.KeystoreDir, hex.EncodeToString(crypto.AddressFromPublicKey(account.PublicKey()).Bytes()))), account.Bytes(), 0644) // Write account to persistent memory
 
 	if err != nil { // Check for errors
 		return err // Return error
