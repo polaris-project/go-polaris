@@ -16,6 +16,7 @@ import (
 	"github.com/polaris-project/go-polaris/common"
 
 	accountsProto "github.com/polaris-project/go-polaris/internal/proto/accounts"
+	configProto "github.com/polaris-project/go-polaris/internal/proto/config"
 	cryptoProto "github.com/polaris-project/go-polaris/internal/proto/crypto"
 )
 
@@ -59,6 +60,7 @@ func NewTerminal(rpcPort uint, rpcAddress string) {
 func handleCommand(receiver string, methodname string, params []string, rpcPort uint, rpcAddress string, transport *http.Transport) {
 	cryptoClient := cryptoProto.NewCryptoProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})       // Init crypto client
 	accountsClient := accountsProto.NewAccountsProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport}) // Init accounts client
+	configClient := configProto.NewConfigProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})       // Init config client
 
 	switch receiver {
 	case "crypto":
@@ -69,6 +71,12 @@ func handleCommand(receiver string, methodname string, params []string, rpcPort 
 		}
 	case "accounts":
 		err := handleAccounts(&accountsClient, methodname, params) // Handle accounts
+
+		if err != nil { // Check for errors
+			fmt.Println("\n" + err.Error()) // Log found error
+		}
+	case "config":
+		err := handleConfig(&configClient, methodname, params) // Handle config
 
 		if err != nil { // Check for errors
 			fmt.Println("\n" + err.Error()) // Log found error
@@ -148,6 +156,48 @@ func handleAccounts(accountsClient *accountsProto.Accounts, methodname string, p
 	result := reflect.ValueOf(*accountsClient).MethodByName(methodname).Call(reflectParams) // Call method
 
 	response := result[0].Interface().(*accountsProto.GeneralResponse) // Get response
+
+	if result[1].Interface() != nil { // Check for errors
+		return result[1].Interface().(error) // Return error
+	}
+
+	fmt.Println(response.Message) // Log response
+
+	return nil // No error occurred, return nil
+}
+
+// handleConfig handles the config receiver.
+func handleConfig(configClient *configProto.Config, methodname string, params []string) error {
+	reflectParams := []reflect.Value{} // Init buffer
+
+	reflectParams = append(reflectParams, reflect.ValueOf(context.Background())) // Append request context
+
+	switch methodname { // Handle different methods
+	case "GetAllConfigs":
+		if len(params) != 0 { // Check for invalid params
+			return ErrInvalidParams // Return error
+		}
+
+		reflectParams = append(reflectParams, reflect.ValueOf(&configProto.GeneralRequest{})) // Append params
+	case "NewDagConfig":
+		if len(params) != 1 { // Check for invalid params
+			return ErrInvalidParams // Return error
+		}
+
+		reflectParams = append(reflectParams, reflect.ValueOf(&configProto.GeneralRequest{FilePath: params[0]})) // Append params
+	case "GetConfig":
+		if len(params) != 1 { // Check for invalid params
+			return ErrInvalidParams // return error
+		}
+
+		reflectParams = append(reflectParams, reflect.ValueOf(&configProto.GeneralRequest{Network: params[0]})) // Append params
+	default:
+		return errors.New("illegal method: " + methodname + ", available methods: Sha3(), Sha3d(), Sha3n(), AddressFromPrivateKey(), AddressFromPublicKey()") // Return error
+	}
+
+	result := reflect.ValueOf(*configClient).MethodByName(methodname).Call(reflectParams) // Call method
+
+	response := result[0].Interface().(*configProto.GeneralResponse) // Get response
 
 	if result[1].Interface() != nil { // Check for errors
 		return result[1].Interface().(error) // Return error
