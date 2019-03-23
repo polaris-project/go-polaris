@@ -5,12 +5,14 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 	"strconv"
 
 	"github.com/polaris-project/go-polaris/accounts"
 	"github.com/polaris-project/go-polaris/common"
 	transactionProto "github.com/polaris-project/go-polaris/internal/proto/transaction"
+	"github.com/polaris-project/go-polaris/p2p"
 	"github.com/polaris-project/go-polaris/types"
 )
 
@@ -126,6 +128,37 @@ func (server *Server) SignTransaction(ctx context.Context, request *transactionP
 	}
 
 	return &transactionProto.GeneralResponse{Message: transaction.Signature.String()}, nil // Return signature
+}
+
+// Publish handles the Publish request method.
+func (server *Server) Publish(ctx context.Context, request *transactionProto.GeneralRequest) (*transactionProto.GeneralResponse, error) {
+	if len(request.TransactionHash) == 0 { // Check nothing to read
+		return &transactionProto.GeneralResponse{}, ErrNilHashRequest // Return error
+	}
+
+	transactionHashBytes, err := hex.DecodeString(request.TransactionHash[0]) // Get transaction hash byte value
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	transaction, err := types.ReadTransactionFromMemory(common.NewHash(transactionHashBytes)) // Read transaction
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	publishContext, cancel := context.WithCancel(ctx) // Get context
+
+	defer cancel() // Cancel
+
+	err = p2p.WorkingClient.PublishTransaction(publishContext, transaction) // Publish transaction
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	return &transactionProto.GeneralResponse{Message: fmt.Sprintf("published transaction %s successfully", hex.EncodeToString(transaction.Hash.Bytes()))}, nil // Return success
 }
 
 // SignMessage handles the SignMessage request method.
