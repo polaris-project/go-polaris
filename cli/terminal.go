@@ -252,7 +252,7 @@ func handleTransaction(transactionClient *transactionProto.Transaction, methodna
 		gasPrice, _ := new(big.Int).SetString(params[x+2], 10) // Get gas price
 
 		reflectParams = append(reflectParams, reflect.ValueOf(&transactionProto.GeneralRequest{Nonce: uint64(nonce), Amount: []byte(params[1]), Address: params[2], Address2: params[3], TransactionHash: parentHashes, GasLimit: uint64(gasLimit), GasPrice: gasPrice.Bytes(), Payload: []byte(params[x+3])})) // Append params
-	case "CalculateTotalValue", "SignTransaction", "Verify", "String":
+	case "CalculateTotalValue", "SignTransaction", "Verify", "String", "Publish":
 		if len(params) == 0 { // Check for invalid params
 			return ErrInvalidParams // Return error
 		}
