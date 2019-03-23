@@ -43,17 +43,29 @@ func AccountFromKey(privateKey *ecdsa.PrivateKey) *Account {
 	return &Account{
 		X: privateKey.X, // Set X
 		Y: privateKey.Y, // Set Y
+		D: privateKey.D, // Set D
 	} // Return initialized account
 }
 
 // Address attempts to derive an address from the given account.
 func (account *Account) Address() *common.Address {
-	publicKey := &ecdsa.PublicKey{
+	return crypto.AddressFromPublicKey(account.PublicKey()) // Return address value
+}
+
+// PublicKey derives an ECDSA public key from the given account.
+func (account *Account) PublicKey() *ecdsa.PublicKey {
+	return &ecdsa.PublicKey{
 		X: account.X, // Set X
 		Y: account.Y, // Set Y
-	}
+	} // Return public key
+}
 
-	return crypto.AddressFromPublicKey(publicKey) // Return address value
+// PrivateKey derives an ECDSA private key from the given account.
+func (account *Account) PrivateKey() *ecdsa.PrivateKey {
+	return &ecdsa.PrivateKey{
+		PublicKey: *account.PublicKey(), // Set public key
+		D:         account.D,            // Set D
+	} // Return private key
 }
 
 /* END EXPORTED METHODS */
