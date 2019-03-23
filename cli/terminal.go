@@ -147,7 +147,7 @@ func handleAccounts(accountsClient *accountsProto.Accounts, methodname string, p
 	reflectParams = append(reflectParams, reflect.ValueOf(context.Background())) // Append request context
 
 	switch methodname { // Handle different methods
-	case "NewAccount":
+	case "NewAccount", "GetAllAccounts":
 		if len(params) != 0 { // Check for invalid params
 			return ErrInvalidParams // Return error
 		}
