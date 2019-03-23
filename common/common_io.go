@@ -25,6 +25,10 @@ var (
 
 	// CertificatesDir is the global certificate directory definition.
 	CertificatesDir = filepath.FromSlash(fmt.Sprintf("%s/certs", DataDir))
+
+	// MempoolDir is the global mempool directory definition.
+	// The mempool is used to store cached transactions that have not been added to the public dag.
+	MempoolDir = filepath.FromSlash(fmt.Sprintf("%s/mempool", DataDir))
 )
 
 /* BEGIN EXPORTED METHODS */
