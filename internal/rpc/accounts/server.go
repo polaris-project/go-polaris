@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 	"encoding/pem"
+	"strings"
 
 	account "github.com/polaris-project/go-polaris/accounts"
 	"github.com/polaris-project/go-polaris/common"
@@ -34,6 +35,19 @@ func (server *Server) NewAccount(ctx context.Context, request *accountsProto.Gen
 	}
 
 	return &accountsProto.GeneralResponse{Message: hex.EncodeToString(account.Address().Bytes())}, nil // Return account address
+}
+
+// GetAllAccounts handles the GetAllAccounts request method.
+func (server *Server) GetAllAccounts(ctx context.Context, request *accountsProto.GeneralRequest) (*accountsProto.GeneralResponse, error) {
+	accounts := account.GetAllAccounts() // Get all accounts
+
+	var accountStrings []string // Init string buffer
+
+	for _, account := range accounts { // Iterate through accounts
+		accountStrings = append(accountStrings, hex.EncodeToString(account.Bytes())) // Append hex encoded address
+	}
+
+	return &accountsProto.GeneralResponse{Message: strings.Join(accountStrings, ", ")}, nil // Return accounts
 }
 
 // AccountFromKey handles the AccountFromKey request method.
