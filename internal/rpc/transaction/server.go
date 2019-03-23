@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"math/big"
+	"strconv"
 
 	"github.com/polaris-project/go-polaris/accounts"
 	"github.com/polaris-project/go-polaris/common"
@@ -128,6 +129,23 @@ func (server *Server) SignTransaction(ctx context.Context, request *transactionP
 	}
 
 	return &transactionProto.GeneralResponse{Message: transaction.Signature.String()}, nil // Return signature
+}
+
+// Verify handles the Verify request method.
+func (server *Server) Verify(ctx context.Context, request *transactionProto.GeneralRequest) (*transactionProto.GeneralResponse, error) {
+	transactionHashBytes, err := hex.DecodeString(request.TransactionHash[0]) // Get transaction hash byte value
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	transaction, err := types.ReadTransactionFromMemory(common.NewHash(transactionHashBytes)) // Read transaction
+
+	if err != nil { // Check for errors
+		return &transactionProto.GeneralResponse{}, err // Return found error
+	}
+
+	return &transactionProto.GeneralResponse{Message: strconv.FormatBool(transaction.Signature.Verify(transaction.Sender))}, nil // Return is valid
 }
 
 /* END EXPORTED METHODS */
