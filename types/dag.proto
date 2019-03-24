@@ -16,13 +16,11 @@ service Dag {
 /* BEGIN REQUESTS */
 
 message GeneralRequest {
-    string filePath = 1; // File path
+    string network = 1; // Network
 
-    string network = 2; // Network
+    string transactionHash = 2; // Transaction hash
 
-    string transactionHash = 3; // Transaction hash
-
-    string address = 4; // Address
+    string address = 3; // Address
 }
 
 /* END REQUESTS */
