@@ -3,6 +3,8 @@ package dag
 
 import (
 	"context"
+	"encoding/hex"
+	"strings"
 
 	"github.com/polaris-project/go-polaris/config"
 	dagProto "github.com/polaris-project/go-polaris/internal/proto/dag"
@@ -37,6 +39,29 @@ func (server *Server) NewDag(ctx context.Context, request *dagProto.GeneralReque
 	dag.Close() // Close dag
 
 	return &dagProto.GeneralResponse{Message: string(dag.Bytes())}, nil // Return dag db header string
+}
+
+// MakeGenesis handles the MakeGenesis request method.
+func (server *Server) MakeGenesis(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
+	dag, err := types.OpenDag(request.Network) // Open dag
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	genesisTransactions, err := dag.MakeGenesis() // Make genesis
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	var genesisTransactionStrings []string // Init string value buffer
+
+	for _, transaction := range genesisTransactions { // Iterate through genesis transactions
+		genesisTransactionStrings = append(genesisTransactionStrings, hex.EncodeToString(transaction.Hash.Bytes())) // Append hash
+	}
+
+	return &dagProto.GeneralResponse{Message: strings.Join(genesisTransactionStrings, ", ")}, nil // Return hashes
 }
 
 /* END EXPORTED METHODS */
