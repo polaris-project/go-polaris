@@ -6,6 +6,11 @@ service Dag {
     rpc NewDag(GeneralRequest) returns (GeneralResponse) {} // Attempt to initialize dag with given config dir
     rpc MakeGenesis(GeneralRequest) returns (GeneralResponse) {} // Attempt to make genesis on provided network dag
     rpc GetTransactionByHash(GeneralRequest) returns (GeneralResponse) {} // Query transaction by hash
+    rpc GetTransactionChildren(GeneralRequest) returns (GeneralResponse) {} // Query childreh for tx
+    rpc GetTransactionsByAddress(GeneralRequest) returns (GeneralResponse) {} // Query transactions by address
+    rpc GetTransactionsBySender(GeneralRequest) returns (GeneralResponse) {} // Query transactions by sender
+    rpc GetBestTransaction(GeneralRequest) returns (GeneralResponse) {} // Attempt to query best transaction
+    rpc CalculateAddressBalance(GeneralRequest) returns (GeneralResponse) {} // Calculate address balance
 }
 
 /* BEGIN REQUESTS */
@@ -16,6 +21,8 @@ message GeneralRequest {
     string network = 2; // Network
 
     string transactionHash = 3; // Transaction hash
+
+    string address = 4; // Address
 }
 
 /* END REQUESTS */
