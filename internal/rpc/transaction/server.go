@@ -61,7 +61,7 @@ func (server *Server) NewTransaction(ctx context.Context, request *transactionPr
 		parentHashes = append(parentHashes, common.NewHash(parentHashBytes)) // Append hash
 	}
 
-	transaction := types.NewTransaction(request.Nonce, amount, common.NewAddress(senderBytes), common.NewAddress(recipientBytes), parentHashes, request.GasLimit, new(big.Int).SetBytes(request.GasPrice), request.Payload) // Initialize transaction
+	transaction := types.NewTransaction(request.Nonce, amount, common.NewAddress(senderBytes), common.NewAddress(recipientBytes), parentHashes, request.GasLimit, big.NewInt(int64(request.GasPrice)), request.Payload) // Initialize transaction
 
 	if err != nil { // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
