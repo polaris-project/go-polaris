@@ -6,6 +6,8 @@ import (
 	"encoding/hex"
 	"strings"
 
+	"github.com/polaris-project/go-polaris/p2p"
+
 	"github.com/polaris-project/go-polaris/common"
 	"github.com/polaris-project/go-polaris/config"
 	dagProto "github.com/polaris-project/go-polaris/internal/proto/dag"
@@ -44,11 +46,7 @@ func (server *Server) NewDag(ctx context.Context, request *dagProto.GeneralReque
 
 // MakeGenesis handles the MakeGenesis request method.
 func (server *Server) MakeGenesis(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
-	dag, err := types.OpenDag(request.Network) // Open dag
-
-	if err != nil { // Check for errors
-		return &dagProto.GeneralResponse{}, err // Return found error
-	}
+	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	genesisTransactions, err := dag.MakeGenesis() // Make genesis
 
@@ -67,11 +65,7 @@ func (server *Server) MakeGenesis(ctx context.Context, request *dagProto.General
 
 // GetTransactionByHash handles the GetTransactionByHash request method.
 func (server *Server) GetTransactionByHash(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
-	dag, err := types.OpenDag(request.Network) // Open dag
-
-	if err != nil { // Check for errors
-		return &dagProto.GeneralResponse{}, err // Return found error
-	}
+	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	transactionHashBytes, err := hex.DecodeString(request.TransactionHash) // Decode hash hex value
 
@@ -90,11 +84,7 @@ func (server *Server) GetTransactionByHash(ctx context.Context, request *dagProt
 
 // GetTransactionChildren handles the GetTransactionChildren request method.
 func (server *Server) GetTransactionChildren(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
-	dag, err := types.OpenDag(request.Network) // Open dag
-
-	if err != nil { // Check for errors
-		return &dagProto.GeneralResponse{}, err // Return found error
-	}
+	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	transactionHashBytes, err := hex.DecodeString(request.TransactionHash) // Decode hash hex value
 
@@ -119,11 +109,7 @@ func (server *Server) GetTransactionChildren(ctx context.Context, request *dagPr
 
 // GetTransactionsByAddress handles the GetTransactionByAddress request method.
 func (server *Server) GetTransactionsByAddress(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
-	dag, err := types.OpenDag(request.Network) // Open dag
-
-	if err != nil { // Check for errors
-		return &dagProto.GeneralResponse{}, err // Return found error
-	}
+	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	addressBytes, err := hex.DecodeString(request.Address) // Decode address value
 
@@ -148,11 +134,7 @@ func (server *Server) GetTransactionsByAddress(ctx context.Context, request *dag
 
 // GetTransactionsBySender handles the GetTransactionBySender request method.
 func (server *Server) GetTransactionsBySender(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
-	dag, err := types.OpenDag(request.Network) // Open dag
-
-	if err != nil { // Check for errors
-		return &dagProto.GeneralResponse{}, err // Return found error
-	}
+	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	addressBytes, err := hex.DecodeString(request.Address) // Decode address hex value
 
@@ -177,11 +159,7 @@ func (server *Server) GetTransactionsBySender(ctx context.Context, request *dagP
 
 // GetBestTransaction handles the GetBestTransaction request method.
 func (server *Server) GetBestTransaction(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
-	dag, err := types.OpenDag(request.Network) // Open dag
-
-	if err != nil { // Check for errors
-		return &dagProto.GeneralResponse{}, err // Return found error
-	}
+	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	bestTransaction, err := dag.GetBestTransaction() // Get best transaction
 
@@ -194,11 +172,7 @@ func (server *Server) GetBestTransaction(ctx context.Context, request *dagProto.
 
 // CalculateAddressBalance handles the CalculateAddressBalance request method.
 func (server *Server) CalculateAddressBalance(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
-	dag, err := types.OpenDag(request.Network) // Open dag
-
-	if err != nil { // Check for errors
-		return &dagProto.GeneralResponse{}, err // Return found error
-	}
+	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	addressBytes, err := hex.DecodeString(request.Address) // Decode address hex value
 
