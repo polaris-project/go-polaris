@@ -27,7 +27,7 @@ message GeneralRequest {
 
     uint64 gasLimit = 6; // Gas limit
 
-    bytes gasPrice = 7; // Gas price
+    uint64 gasPrice = 7; // Gas price
 
     bytes payload = 8; // Tx payload
 }
