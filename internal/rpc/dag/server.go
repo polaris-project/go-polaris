@@ -117,8 +117,8 @@ func (server *Server) GetTransactionChildren(ctx context.Context, request *dagPr
 	return &dagProto.GeneralResponse{Message: strings.Join(childHashStrings, ", ")}, nil // Return child hashes
 }
 
-// GetTransactionByAddress handles the GetTransactionByAddress request method.
-func (server *Server) GetTransactionByAddress(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
+// GetTransactionsByAddress handles the GetTransactionByAddress request method.
+func (server *Server) GetTransactionsByAddress(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
 	dag, err := types.OpenDag(request.Network) // Open dag
 
 	if err != nil { // Check for errors
@@ -146,8 +146,8 @@ func (server *Server) GetTransactionByAddress(ctx context.Context, request *dagP
 	return &dagProto.GeneralResponse{Message: strings.Join(hashStrings, ", ")}, nil // Return hashes
 }
 
-// GetTransactionBySender handles the GetTransactionBySender request method.
-func (server *Server) GetTransactionBySender(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
+// GetTransactionsBySender handles the GetTransactionBySender request method.
+func (server *Server) GetTransactionsBySender(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
 	dag, err := types.OpenDag(request.Network) // Open dag
 
 	if err != nil { // Check for errors
