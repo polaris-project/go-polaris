@@ -146,4 +146,50 @@ func (server *Server) GetTransactionByAddress(ctx context.Context, request *dagP
 	return &dagProto.GeneralResponse{Message: strings.Join(hashStrings, ", ")}, nil // Return hashes
 }
 
+// GetTransactionBySender handles the GetTransactionBySender request method.
+func (server *Server) GetTransactionBySender(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
+	dag, err := types.OpenDag(request.Network) // Open dag
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	addressHashBytes, err := hex.DecodeString(request.Address) // Decode hash hex value
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	transactions, err := dag.GetTransactionsBySender(common.NewAddress(addressHashBytes)) // Query tx
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	var hashStrings []string // Init string value buffer
+
+	for _, transaction := range transactions { // Iterate through transactions
+		hashStrings = append(hashStrings, hex.EncodeToString(transaction.Hash.Bytes())) // Append hash
+	}
+
+	return &dagProto.GeneralResponse{Message: strings.Join(hashStrings, ", ")}, nil // Return hashes
+}
+
+// GetBestTransaction handles the GetBestTransaction request method.
+func (server *Server) GetBestTransaction(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
+	dag, err := types.OpenDag(request.Network) // Open dag
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	bestTransaction, err := dag.GetBestTransaction() // Get best transaction
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	return &dagProto.GeneralResponse{Message: hex.EncodeToString(bestTransaction.Hash.Bytes())}, nil // Return hash
+}
+
 /* END EXPORTED METHODS */
