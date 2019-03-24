@@ -302,9 +302,9 @@ func handleDag(dagClient *dagProto.Dag, methodname string, params []string) erro
 
 		reflectParams = append(reflectParams, reflect.ValueOf(&dagProto.GeneralRequest{Network: params[0]})) // Append params
 	case "GetTransactionByHash", "GetTransactionChildren":
-		reflectParams = append(reflectParams, reflect.ValueOf(&dagProto.GeneralRequest{Network: params[0], TransactionHash: params[1]})) // Append params
+		reflectParams = append(reflectParams, reflect.ValueOf(&dagProto.GeneralRequest{TransactionHash: params[0]})) // Append params
 	case "GetTransactionsByAddress", "GetTransactionsBySender", "CalculateAddressBalance":
-		reflectParams = append(reflectParams, reflect.ValueOf(&dagProto.GeneralRequest{Network: params[0], Address: params[1]})) // Append params
+		reflectParams = append(reflectParams, reflect.ValueOf(&dagProto.GeneralRequest{Address: params[0]})) // Append params
 	default:
 		return errors.New("illegal method: " + methodname + ", available methods: NewDag(), MakeGenesis(), GetBestTransaction(), GetsTransactionByHash(), GetTransactionChildren(), GetTransactionsByAddress(), GetTransactionsBySender(), CalculateAddressBalance()") // Return error
 	}
