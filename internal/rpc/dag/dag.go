@@ -88,4 +88,33 @@ func (server *Server) GetTransactionByHash(ctx context.Context, request *dagProt
 	return &dagProto.GeneralResponse{Message: transaction.String()}, nil // Return tx JSON string value
 }
 
+// GetTransactionChildren handles the GetTransactionChildren request method.
+func (server *Server) GetTransactionChildren(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
+	dag, err := types.OpenDag(request.Network) // Open dag
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	transactionHashBytes, err := hex.DecodeString(request.TransactionHash) // Decode hash hex value
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	children, err := dag.GetTransactionChildren(common.NewHash(transactionHashBytes)) // Query tx children
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	var childHashStrings []string // Init string value buffer
+
+	for _, transaction := range children { // Iterate through children
+		childHashStrings = append(childHashStrings, hex.EncodeToString(transaction.Hash.Bytes())) // Append hash
+	}
+
+	return &dagProto.GeneralResponse{Message: strings.Join(childHashStrings, ", ")}, nil // Return child hashes
+}
+
 /* END EXPORTED METHODS */
