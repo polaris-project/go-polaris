@@ -20,6 +20,7 @@ import (
 	accountsProto "github.com/polaris-project/go-polaris/internal/proto/accounts"
 	configProto "github.com/polaris-project/go-polaris/internal/proto/config"
 	cryptoProto "github.com/polaris-project/go-polaris/internal/proto/crypto"
+	dagProto "github.com/polaris-project/go-polaris/internal/proto/dag"
 	transactionProto "github.com/polaris-project/go-polaris/internal/proto/transaction"
 )
 
@@ -65,6 +66,7 @@ func handleCommand(receiver string, methodname string, params []string, rpcPort 
 	accountsClient := accountsProto.NewAccountsProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})          // Init accounts client
 	configClient := configProto.NewConfigProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})                // Init config client
 	transactionClient := transactionProto.NewTransactionProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport}) // Init transaction client
+	dagClient := dagProto.NewDagProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})                         // Init dag client
 
 	switch receiver {
 	case "crypto":
@@ -87,6 +89,12 @@ func handleCommand(receiver string, methodname string, params []string, rpcPort 
 		}
 	case "transaction":
 		err := handleTransaction(&transactionClient, methodname, params) // Handle transaction
+
+		if err != nil { // Check for errors
+			fmt.Println("\n" + err.Error()) // Log found error
+		}
+	case "dag":
+		err := handleDag(&dagClient, methodname, params) // Handle dag
 
 		if err != nil { // Check for errors
 			fmt.Println("\n" + err.Error()) // Log found error
@@ -270,6 +278,40 @@ func handleTransaction(transactionClient *transactionProto.Transaction, methodna
 	result := reflect.ValueOf(*transactionClient).MethodByName(methodname).Call(reflectParams) // Call method
 
 	response := result[0].Interface().(*transactionProto.GeneralResponse) // Get response
+
+	if result[1].Interface() != nil { // Check for errors
+		return result[1].Interface().(error) // Return error
+	}
+
+	fmt.Println("\n" + response.Message) // Log response
+
+	return nil // No error occurred, return nil
+}
+
+// handleDag handles the dag receiver.
+func handleDag(dagClient *dagProto.Dag, methodname string, params []string) error {
+	reflectParams := []reflect.Value{} // Init buffer
+
+	reflectParams = append(reflectParams, reflect.ValueOf(context.Background())) // Append request context
+
+	switch methodname { // Handle different methods
+	case "NewDag", "MakeGenesis", "GetBestTransaction":
+		if len(params) != 1 { // Check for invalid params
+			return ErrInvalidParams // Return error
+		}
+
+		reflectParams = append(reflectParams, reflect.ValueOf(&dagProto.GeneralRequest{Network: params[0]})) // Append params
+	case "GetTransactionByHash", "GetTransactionChildren":
+		reflectParams = append(reflectParams, reflect.ValueOf(&dagProto.GeneralRequest{Network: params[0], TransactionHash: params[1]})) // Append params
+	case "GetTransactionsByAddress", "GetTransactionsBySender", "CalculateAddressBalance":
+		reflectParams = append(reflectParams, reflect.ValueOf(&dagProto.GeneralRequest{Network: params[0], Address: params[1]})) // Append params
+	default:
+		return errors.New("illegal method: " + methodname + ", available methods: NewDag(), MakeGenesis(), GetBestTransaction(), GetsTransactionByHash(), GetTransactionChildren(), GetTransactionsByAddress(), GetTransactionsBySender(), CalculateAddressBalance()") // Return error
+	}
+
+	result := reflect.ValueOf(*dagClient).MethodByName(methodname).Call(reflectParams) // Call method
+
+	response := result[0].Interface().(*dagProto.GeneralResponse) // Get response
 
 	if result[1].Interface() != nil { // Check for errors
 		return result[1].Interface().(error) // Return error
