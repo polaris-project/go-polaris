@@ -273,7 +273,7 @@ func (client *Client) PublishTransaction(ctx context.Context, transaction *types
 		return ErrNoWorkingHost // Return found error
 	}
 
-	if err := (*client.Validator).ValidateTransaction(transaction); err != nil { // Validate transaction
+	if err := (*client.Validator).ValidateTransaction(transaction); err != nil && err != validator.ErrDuplicateTransaction { // Validate transaction
 		return err // Return found error
 	}
 
