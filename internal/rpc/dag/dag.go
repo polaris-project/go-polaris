@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"strings"
 
+	"github.com/polaris-project/go-polaris/common"
 	"github.com/polaris-project/go-polaris/config"
 	dagProto "github.com/polaris-project/go-polaris/internal/proto/dag"
 	"github.com/polaris-project/go-polaris/types"
@@ -62,6 +63,29 @@ func (server *Server) MakeGenesis(ctx context.Context, request *dagProto.General
 	}
 
 	return &dagProto.GeneralResponse{Message: strings.Join(genesisTransactionStrings, ", ")}, nil // Return hashes
+}
+
+// GetTransactionByHash handles the GetTransactionByHash request method.
+func (server *Server) GetTransactionByHash(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
+	dag, err := types.OpenDag(request.Network) // Open dag
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	transactionHashBytes, err := hex.DecodeString(request.TransactionHash) // Decode hash hex value
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	transaction, err := dag.GetTransactionByHash(common.NewHash(transactionHashBytes)) // Query tx
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	return &dagProto.GeneralResponse{Message: transaction.String()}, nil // Return tx JSON string value
 }
 
 /* END EXPORTED METHODS */
