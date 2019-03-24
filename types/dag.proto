@@ -1,0 +1,29 @@
+syntax = "proto3"; // Specify compiler version
+
+package dag;
+
+service Dag {
+    rpc NewDag(GeneralRequest) returns (GeneralResponse) {} // Attempt to initialize dag with given config dir
+    rpc MakeGenesis(GeneralRequest) returns (GeneralResponse) {} // Attempt to make genesis on provided network dag
+    rpc GetTransactionByHash(GeneralRequest) returns (GeneralResponse) {} // Query transaction by hash
+}
+
+/* BEGIN REQUESTS */
+
+message GeneralRequest {
+    string filePath = 1; // File path
+
+    string network = 2; // Network
+
+    string transactionHash = 3; // Transaction hash
+}
+
+/* END REQUESTS */
+
+/* BEGIN RESPONSES */
+
+message GeneralResponse {
+    string message = 1; // Response
+}
+
+/* END REPSONSES */
