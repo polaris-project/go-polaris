@@ -125,13 +125,13 @@ func (server *Server) GetTransactionByAddress(ctx context.Context, request *dagP
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
-	addressHashBytes, err := hex.DecodeString(request.Address) // Decode hash hex value
+	addressBytes, err := hex.DecodeString(request.Address) // Decode address value
 
 	if err != nil { // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
-	transactions, err := dag.GetTransactionsByAddress(common.NewAddress(addressHashBytes)) // Query tx
+	transactions, err := dag.GetTransactionsByAddress(common.NewAddress(addressBytes)) // Query tx
 
 	if err != nil { // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
@@ -154,13 +154,13 @@ func (server *Server) GetTransactionBySender(ctx context.Context, request *dagPr
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
-	addressHashBytes, err := hex.DecodeString(request.Address) // Decode hash hex value
+	addressBytes, err := hex.DecodeString(request.Address) // Decode address hex value
 
 	if err != nil { // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
-	transactions, err := dag.GetTransactionsBySender(common.NewAddress(addressHashBytes)) // Query tx
+	transactions, err := dag.GetTransactionsBySender(common.NewAddress(addressBytes)) // Query tx
 
 	if err != nil { // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
@@ -190,6 +190,29 @@ func (server *Server) GetBestTransaction(ctx context.Context, request *dagProto.
 	}
 
 	return &dagProto.GeneralResponse{Message: hex.EncodeToString(bestTransaction.Hash.Bytes())}, nil // Return hash
+}
+
+// CalculateAddressBalance handles the CalculateAddressBalance request method.
+func (server *Server) CalculateAddressBalance(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
+	dag, err := types.OpenDag(request.Network) // Open dag
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	addressBytes, err := hex.DecodeString(request.Address) // Decode address hex value
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	balance, err := dag.CalculateAddressBalance(common.NewAddress(addressBytes)) // Calculate balance
+
+	if err != nil { // Check for errors
+		return &dagProto.GeneralResponse{}, err // Return found error
+	}
+
+	return &dagProto.GeneralResponse{Message: balance.String()}, nil // Return balance
 }
 
 /* END EXPORTED METHODS */
