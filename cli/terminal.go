@@ -295,12 +295,18 @@ func handleDag(dagClient *dagProto.Dag, methodname string, params []string) erro
 	reflectParams = append(reflectParams, reflect.ValueOf(context.Background())) // Append request context
 
 	switch methodname { // Handle different methods
-	case "NewDag", "MakeGenesis", "GetBestTransaction":
+	case "NewDag":
 		if len(params) != 1 { // Check for invalid params
 			return ErrInvalidParams // Return error
 		}
 
 		reflectParams = append(reflectParams, reflect.ValueOf(&dagProto.GeneralRequest{Network: params[0]})) // Append params
+	case "MakeGenesis", "GetBestTransaction":
+		if len(params) != 0 { // Check for invalid params
+			return ErrInvalidParams // Return error
+		}
+
+		reflectParams = append(reflectParams, reflect.ValueOf(&dagProto.GeneralRequest{})) // Append params
 	case "GetTransactionByHash", "GetTransactionChildren":
 		reflectParams = append(reflectParams, reflect.ValueOf(&dagProto.GeneralRequest{TransactionHash: params[0]})) // Append params
 	case "GetTransactionsByAddress", "GetTransactionsBySender", "CalculateAddressBalance":
