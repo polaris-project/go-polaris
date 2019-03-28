@@ -1,4 +1,4 @@
-// Package validator represents a helper methods useful for validators in the Polaris network.
+// Package validator represents a collection of helper methods useful for validators in the Polaris network.
 // Methods in the validator package are specified in terms of a validator interface, that of which is
 // also implemented in the validator package.
 package validator
