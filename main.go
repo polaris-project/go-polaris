@@ -50,7 +50,7 @@ var (
 	disableAPIFlag           = flag.Bool("disable-api", false, "disable API")                                                                                   // Init disable API flag
 	terminalFlag             = flag.Bool("terminal", false, "launch with terminal")                                                                             // Init terminal flag
 	rpcPortFlag              = flag.Int("rpc-port", 8000, "port to connect to via RPC")                                                                         // Init RPC port flag
-	rpcAddrFlag              = flag.String("rpc-addr", "localhost", "RPC addr to connect to")                                                                   // Init RPC addr flag
+	rpcAddrFlag              = flag.String("rpc-address", "localhost", "RPC addr to connect to")                                                                // Init RPC addr flag
 
 	logger = loggo.GetLogger("") // Get logger
 
