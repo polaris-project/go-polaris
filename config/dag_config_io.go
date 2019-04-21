@@ -49,7 +49,7 @@ func DagConfigFromBytes(b []byte) *DagConfig {
 
 // WriteToMemory writes the given dag config to persistent memory.
 func (dagConfig *DagConfig) WriteToMemory() error {
-	err := common.CreateDirIfDoesNotExit(common.ConfigDir) // Create config dir if necessary
+	err := common.CreateDirIfDoesNotExist(common.ConfigDir) // Create config dir if necessary
 
 	if err != nil { // Check for errors
 		return err // Return found error

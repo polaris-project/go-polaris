@@ -42,7 +42,7 @@ func generateCert(certName string, hosts []string) error {
 
 // generateTLSKey generates necessary TLS keys.
 func generateTLSKey(keyName string) (*ecdsa.PrivateKey, error) {
-	err := common.CreateDirIfDoesNotExit(common.CertificatesDir) // Create certs dir if does not exist
+	err := common.CreateDirIfDoesNotExist(common.CertificatesDir) // Create certs dir if does not exist
 
 	if err != nil { // Check for errors
 		return &ecdsa.PrivateKey{}, err // Return found error
@@ -73,7 +73,7 @@ func generateTLSKey(keyName string) (*ecdsa.PrivateKey, error) {
 
 // generateTLSCert generates necessary TLS certs.
 func generateTLSCert(privateKey *ecdsa.PrivateKey, certName string, hosts []string) error {
-	err := common.CreateDirIfDoesNotExit(common.CertificatesDir) // Create certs dir if does not exist
+	err := common.CreateDirIfDoesNotExist(common.CertificatesDir) // Create certs dir if does not exist
 
 	if err != nil { // Check for errors
 		return err // Return found error
@@ -123,7 +123,7 @@ func generateTLSCert(privateKey *ecdsa.PrivateKey, certName string, hosts []stri
 
 // keyToFile writes a given key to a pem-encoded file.
 func keyToFile(filename string, key *ecdsa.PrivateKey) error {
-	err := common.CreateDirIfDoesNotExit(common.CertificatesDir) // Create cert dir if doesn't already exist
+	err := common.CreateDirIfDoesNotExist(common.CertificatesDir) // Create cert dir if doesn't already exist
 
 	if err != nil { // Check for errors
 		return err // Return found error
@@ -154,7 +154,7 @@ func keyToFile(filename string, key *ecdsa.PrivateKey) error {
 
 // certToFile writes a given certificate to a file.
 func certToFile(filename string, derBytes []byte) error {
-	err := common.CreateDirIfDoesNotExit(common.CertificatesDir) // Create cert dir if doesn't already exist
+	err := common.CreateDirIfDoesNotExist(common.CertificatesDir) // Create cert dir if doesn't already exist
 
 	if err != nil { // Check for errors
 		return err // Return found error

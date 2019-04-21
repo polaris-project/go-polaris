@@ -114,7 +114,7 @@ func NewHost(ctx context.Context, port int) (*routed.RoutedHost, error) {
 
 		pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: x509Encoded}) // Encode to pem
 
-		err = common.CreateDirIfDoesNotExit(common.PeerIdentityDir) // Create identity dir if it doesn't already exist
+		err = common.CreateDirIfDoesNotExist(common.PeerIdentityDir) // Create identity dir if it doesn't already exist
 
 		if err != nil { // Check for errors
 			return nil, err // Return found error

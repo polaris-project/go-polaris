@@ -50,7 +50,7 @@ func (account *Account) Bytes() []byte {
 
 // WriteToMemory writes the given account's contents to persistent memory
 func (account *Account) WriteToMemory() error {
-	err := common.CreateDirIfDoesNotExit(common.KeystoreDir) // Create keystore dir if necessary
+	err := common.CreateDirIfDoesNotExist(common.KeystoreDir) // Create keystore dir if necessary
 
 	if err != nil { // Check for errors
 		return err // Return found error

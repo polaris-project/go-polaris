@@ -85,7 +85,7 @@ func NewDag(config *config.DagConfig) (*Dag, error) {
 		return &Dag{}, err // Return found error
 	}
 
-	err = common.CreateDirIfDoesNotExit(common.DbDir) // Make database directory
+	err = common.CreateDirIfDoesNotExist(common.DbDir) // Make database directory
 
 	if err != nil { // Check for errors
 		return &Dag{}, err // Return found error

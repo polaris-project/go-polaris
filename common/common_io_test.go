@@ -4,9 +4,9 @@ import "testing"
 
 /* BEGIN EXPORTED METHODS TESTS */
 
-// TestCreateDirIfDoesNotExist tests the functionality of the CreateDirIfDoesNotExit() helper method.
+// TestCreateDirIfDoesNotExist tests the functionality of the CreateDirIfDoesNotExist() helper method.
 func TestCreateDirIfDoesNotExist(t *testing.T) {
-	err := CreateDirIfDoesNotExit(DataDir) // Create data dir (just as an example)
+	err := CreateDirIfDoesNotExist(DataDir) // Create data dir (just as an example)
 
 	if err != nil { // Check for errors
 		t.Fatal(err) // Panic

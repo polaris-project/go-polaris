@@ -22,7 +22,7 @@ func (dag *Dag) Bytes() []byte {
 
 // WriteToMemory writes the dag header to persistent memory.
 func (dag *Dag) WriteToMemory() error {
-	err := common.CreateDirIfDoesNotExit(common.DbDir) // Create db dir if necessary
+	err := common.CreateDirIfDoesNotExist(common.DbDir) // Create db dir if necessary
 
 	if err != nil { // Check for errors
 		return err // Return found error

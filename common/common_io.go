@@ -36,8 +36,8 @@ var (
 
 /* BEGIN EXPORTED METHODS */
 
-// CreateDirIfDoesNotExit creates a given directory if it does not already exist.
-func CreateDirIfDoesNotExit(dir string) error {
+// CreateDirIfDoesNotExist creates a given directory if it does not already exist.
+func CreateDirIfDoesNotExist(dir string) error {
 	safeDir := filepath.FromSlash(dir) // Just to be safe
 
 	if _, err := os.Stat(safeDir); os.IsNotExist(err) { // Check dir exists

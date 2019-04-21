@@ -43,7 +43,7 @@ func (transaction *Transaction) String() string {
 
 // WriteToMemory writes a given transaction to persistent memory in the mempool.
 func (transaction *Transaction) WriteToMemory() error {
-	err := common.CreateDirIfDoesNotExit(common.MempoolDir) // Create mempool dir if necessary
+	err := common.CreateDirIfDoesNotExist(common.MempoolDir) // Create mempool dir if necessary
 
 	if err != nil { // Check for errors
 		return err // Return found error

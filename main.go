@@ -100,7 +100,7 @@ func setUserParams() error {
 
 	if !*disableColoredOutputFlag { // Check can log colored output
 		if !*disableLogFileFlag { // Check can have log files
-			err := common.CreateDirIfDoesNotExit(filepath.FromSlash(common.LogsDir)) // Create log dir
+			err := common.CreateDirIfDoesNotExist(filepath.FromSlash(common.LogsDir)) // Create log dir
 
 			if err != nil { // Check for errors
 				return err // Return found error
