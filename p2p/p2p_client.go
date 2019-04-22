@@ -141,7 +141,7 @@ func (client *Client) SyncBestTransaction(ctx context.Context, remoteBestTransac
 		}
 
 		if len(childHashes) == 1 { // Check singular
-			logger.Infof("found %d child for current best transaction: %s", len(childHashes), hex.EncodeToString(localBestTransaction.Hash.Bytes())) // Log child
+			logger.Infof("found %d child for current best transaction %s: %s", len(childHashes), hex.EncodeToString(localBestTransaction.Hash.Bytes()), hex.EncodeToString(childHashes[0].Bytes())) // Log child
 		} else {
 			logger.Infof("found %d children for current best transaction: %s", len(childHashes), hex.EncodeToString(localBestTransaction.Hash.Bytes())) // Log children
 		}
@@ -149,6 +149,8 @@ func (client *Client) SyncBestTransaction(ctx context.Context, remoteBestTransac
 		cancel() // Cancel
 
 		for _, childHash := range childHashes { // Iterate through child hashes
+			logger.Infof("requesting child %s from network peers", hex.EncodeToString(childHash.Bytes())) // Log child
+
 			requestTransactionCtx, cancel := context.WithCancel(ctx) // Initialize context
 
 			destinationTransaction, err := client.RequestTransactionWithHash(requestTransactionCtx, childHash, 16) // Get transaction
@@ -169,6 +171,8 @@ func (client *Client) SyncBestTransaction(ctx context.Context, remoteBestTransac
 				if err != nil { // Check for errors
 					return err // Return found error
 				}
+			} else { // Check for errors
+				logger.Errorf("validation error while adding tx %s: %s", hex.EncodeToString(childHash.Bytes()), err.Error()) // Log found error
 			}
 		}
 
