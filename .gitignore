@@ -18,11 +18,7 @@ vendor/
 .vscode/
 
 # Test data
-common/data/
-config/data/
-types/data/
-p2p/data/
-accounts/data/
+*/data
 
 # Data
 data/

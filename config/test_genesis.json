@@ -1,7 +1,0 @@
-{
-    "network": 0,
-    "identifier": "test_genesis_network",
-    "alloc": {
-        "0x040028d536d5351e83fbbec320c194629ace": 1000000000000000000
-    }
-}
