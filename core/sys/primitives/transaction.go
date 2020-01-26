@@ -22,18 +22,26 @@ type Transaction struct {
 	// Value is the value of the transaction, or the number of pulsars sent
 	Value *big.Int
 
+	// Parents is a list of hashes representing each of the transactions that the transaction was spawned off of
+	Parents []crypto.Hash
+
+	// Receipts represents the set of transaction outputs for each of the transaction's parents
+	Receipts map[crypto.Hash]Receipt
+
 	// Payload is any miscellaneous data sent along with the transaction
 	Payload []byte
 }
 
 // NewTransaction initializes a new Transaction with the given nonce, sender, recipient, value, and payload.
-func NewTransaction(nonce *big.Int, sender crypto.Address, recipient crypto.Address, value *big.Int, payload []byte) Transaction {
+func NewTransaction(nonce *big.Int, sender crypto.Address, recipient crypto.Address, value *big.Int, parents []crypto.Hash, receipts map[crypto.Hash]Receipt, payload []byte) Transaction {
 	// Initialize and return the transaction
 	return Transaction{
 		nonce,
 		sender,
 		recipient,
 		value,
+		parents,
+		receipts,
 		payload,
 	}
 }
@@ -58,7 +66,7 @@ func DeserializeTransaction(b []byte) (Transaction, error) {
 	var tx Transaction
 
 	// Return the deserialized transaction, as well as any errors
-	return tx, amino.UnmarshalBinaryLengthPrefixed(b, tx)
+	return tx, amino.UnmarshalBinaryBare(b, &tx)
 }
 
 // Serialize serializes the transaction using the amino binary format.
@@ -67,7 +75,7 @@ func (t *Transaction) Serialize() ([]byte, error) {
 	return amino.MarshalBinaryBare(t)
 }
 
-// IsZero checks if the transaction's fields have been initialized to zero. Note: the payload field is omitted in this calculation.
-func (t *Transaction) IsZero() bool {
-	return t.Nonce == nil || t.Sender.IsZero() || t.Recipient.IsZero() || t.Value == nil
+// IsNil checks if the transaction's fields have been initialized to zero. Note: the payload field is omitted in this calculation.
+func (t *Transaction) IsNil() bool {
+	return t.Nonce == nil || t.Sender.IsZero() || t.Recipient.IsZero() || t.Value == nil || t.Parents == nil || t.Receipts == nil
 }
