@@ -16,7 +16,7 @@ func AddressFromPrivateKey(pk *ed25519.PrivateKey) Address {
 	// Derive a public key from the given private key
 	publicKey, ok := pk.Public().(ed25519.PublicKey)
 
-	// Check if we were able to successfully perform the type assertion. Realistiically, this shouldn't ever happen.
+	// Check if we were able to successfully perform the type assertion. Realistically, this shouldn't ever happen.
 	if !ok {
 		// Return an empty address, since we weren't able to derive a public key from the private key
 		return Address{}
