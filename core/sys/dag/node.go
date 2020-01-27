@@ -20,3 +20,5 @@ func (n *Node) Hash() crypto.Hash {
 	// Return the hash of the node's transaction
 	return n.Transaction.Hash()
 }
+
+func (n *Node) State()
