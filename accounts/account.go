@@ -1,38 +1,72 @@
-// Package accounts implements types and methods for aiding in the generation and serialization of polaris accounts.
+// Package accounts defines a set of ECDSA private-public keypair management utilities and helper methods.
 package accounts
 
 import (
-	"crypto/ed25519"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
+	"math/big"
 
+	"github.com/polaris-project/go-polaris/common"
 	"github.com/polaris-project/go-polaris/crypto"
 )
 
-// Account represents a Polaris network primtiive
+// Account represents an ECDSA private-public keypair.
+// Only an account's x and y curve values are stored persistently.
+// ecdsa.PrivateKey and ecdsa.PublicKey references can be obtained at runtime via .PrivateKey() and .PublicKey().
 type Account struct {
-	// privateKey is the private key of the account
-	privateKey ed25519.PrivateKey
+	X *big.Int `json:"x"` // X value
+	Y *big.Int `json:"y"` // Y value
+	D *big.Int `json:"d"` // D value
 }
 
-// NewAccount generates a new Account, along side a new private key.
-func NewAccount() (Account, error) {
-	// Generate a private key for the account
-	_, privateKey, err := ed25519.GenerateKey(rand.Reader)
+/* BEGIN EXPORTED METHODS */
 
-	// Check for any errors that might arise whilst generating the key
-	if err != nil {
-		// Return the errors
-		return Account{}, err
+// NewAccount generates a new ECDSA private-public keypair, returns the initialized account.
+// Does not write the new account to persistent memory on creation.
+func NewAccount() (*Account, error) {
+	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate private key
+
+	if err != nil { // Check for errors
+		return &Account{}, err // Return found error
 	}
 
-	// Generate and return an account from the crypto lib rand reader
-	return Account{
-		privateKey: privateKey,
-	}, nil
+	return &Account{
+		privateKey.X, // Set X
+		privateKey.Y, // Set Y
+		privateKey.D, // Set D
+	}, nil // Return initialized account
 }
 
-// Address derives a Polaris address from the account's ed25519 private key.
-func (acc *Account) Address() crypto.Address {
-	// Return a hash of the account's public key
-	return crypto.AddressFromPrivateKey(&acc.privateKey)
+// AccountFromKey initializes a new account instance from a given ECDSA private key.
+func AccountFromKey(privateKey *ecdsa.PrivateKey) *Account {
+	return &Account{
+		X: privateKey.X, // Set X
+		Y: privateKey.Y, // Set Y
+		D: privateKey.D, // Set D
+	} // Return initialized account
 }
+
+// Address attempts to derive an address from the given account.
+func (account *Account) Address() *common.Address {
+	return crypto.AddressFromPublicKey(account.PublicKey()) // Return address value
+}
+
+// PublicKey derives an ECDSA public key from the given account.
+func (account *Account) PublicKey() *ecdsa.PublicKey {
+	return &ecdsa.PublicKey{
+		Curve: elliptic.P521(), // Set curve
+		X:     account.X,       // Set X
+		Y:     account.Y,       // Set Y
+	} // Return public key
+}
+
+// PrivateKey derives an ECDSA private key from the given account.
+func (account *Account) PrivateKey() *ecdsa.PrivateKey {
+	return &ecdsa.PrivateKey{
+		PublicKey: *account.PublicKey(), // Set public key
+		D:         account.D,            // Set D
+	} // Return private key
+}
+
+/* END EXPORTED METHODS */

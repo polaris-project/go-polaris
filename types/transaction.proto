@@ -1,0 +1,43 @@
+syntax = "proto3"; // Specify compiler version
+
+package transaction;
+
+service Transaction {
+    rpc NewTransaction(GeneralRequest) returns (GeneralResponse) {} // Attempt to initialize transaction primitive
+    rpc CalculateTotalValue(GeneralRequest) returns (GeneralResponse) {} // Calculate the total value of a transaction, including both its amount and total gas
+    rpc SignTransaction(GeneralRequest) returns (GeneralResponse) {} // Sign a given transaction via ecdsa, and set the transaction signature to the new signature
+    rpc Publish(GeneralRequest) returns (GeneralResponse) {} // Publish a given transaction
+    rpc SignMessage(GeneralRequest) returns (GeneralResponse) {} // Sign a given message hash via ecdsa, and return a new signature
+    rpc Verify(GeneralRequest) returns (GeneralResponse) {} // Check that a given signature is valid, and return whether or not the given signature is valid
+    rpc String(GeneralRequest) returns (GeneralResponse) {} // Serialize a given transaction to a string via json
+}
+
+/* BEGIN REQUESTS */
+
+message GeneralRequest {
+    uint64 nonce = 1; // Transaction nonce in account tx set
+
+    bytes amount = 2; // Tx amount
+
+    string address = 3; // Transaction sender
+
+    string address2 = 4; // Transaction recipient
+
+    repeated string transactionHash = 5; // Hashes of parents or tx-to-sign
+
+    uint64 gasLimit = 6; // Gas limit
+
+    uint64 gasPrice = 7; // Gas price
+
+    bytes payload = 8; // Tx payload
+}
+
+/* END REQUESTS */
+
+/* BEGIN RESPONSES */
+
+message GeneralResponse {
+    string message = 1; // Response
+}
+
+/* END REPSONSES */

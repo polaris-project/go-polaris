@@ -1,37 +1,37 @@
-// Package accounts implements types and methods for aiding in the generation and serialization of polaris accounts.
+// Package accounts defines a set of ECDSA private-public keypair management utilities and helper methods.
 package accounts
 
-import "testing"
+import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"testing"
+)
 
-// TestNewAccount tests the functionality of the NewAccount helper method.
+/* BEGIN EXPORTED METHODS TESTS */
+
+// TestNewAccount tests the functionality of the NewAccount() helper method.
 func TestNewAccount(t *testing.T) {
-	// Generate the account
-	_, err := NewAccount()
+	_, err := NewAccount() // Initialize new account
 
-	// Check for any errors that were generated whilst creating the account
-	if err != nil {
-		// Print the error
-		t.Fatal(err)
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
 	}
 }
 
-// TestAccountAddress tests the functionality of the account Address helper method.
-func TestAccountAddress(t *testing.T) {
-	// Generate the account
-	acc, err := NewAccount()
+// TestAccountFromKey tests the functionality of the AccountFromKey() helper method.
+func TestAccountFromKey(t *testing.T) {
+	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate private key
 
-	// Check for any errors that arose whilst creating the account
-	if err != nil {
-		// Panic
-		t.Fatal(err)
+	if err != nil { // Check for errors
+		t.Fatal(err) // Panic
 	}
 
-	// Get the account's address
-	address := acc.Address()
+	account := AccountFromKey(privateKey) // Initialize account from private key
 
-	// Make sure that an actual address was generated, not just fluff
-	if address.IsZero() {
-		// Panic
-		t.Fatal("should have generated a real address; found nil")
+	if account == nil { // Check for nil account
+		t.Fatal("account should not be nil") // Panic
 	}
 }
+
+/* END EXPORTED METHODS TESTS */
