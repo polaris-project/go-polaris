@@ -22,9 +22,7 @@ import (
 	"github.com/polaris-project/go-polaris/crypto"
 )
 
-var (
-	transactionBucket = []byte("transaction-bucket")
-)
+var transactionBucket = []byte("transaction-bucket")
 
 var (
 	// WorkingDagDB represents the current opened dag database.
@@ -58,10 +56,8 @@ var (
 	ErrInvalidSignature = errors.New("signature invalid")
 )
 
-var (
-	// logger is the dag package logger.
-	logger = getDagLogger()
-)
+// logger is the dag package logger.
+var logger = getDagLogger()
 
 // Dag is a simple struct used to abstract db reading and writing methods.
 type Dag struct {
@@ -80,8 +76,7 @@ func NewDag(config *config.DagConfig) (*Dag, error) {
 	logger.Infof("initializing dag instance") // Log init dag
 
 	err := config.WriteToMemory() // Write dag config to persistent memory
-
-	if err != nil { // Check for errors
+	if err != nil {               // Check for errors
 		return &Dag{}, err // Return found error
 	}
 
@@ -93,9 +88,8 @@ func NewDag(config *config.DagConfig) (*Dag, error) {
 
 	logger.Infof("opening dag db") // Log open db
 
-	dagDB, err := bolt.Open(filepath.FromSlash(fmt.Sprintf("%s/%s.db", common.DbDir, config.Identifier)), 0644, &bolt.Options{Timeout: 5 * time.Second}) // Open DB with timeout
-
-	if err != nil { // Check for errors
+	dagDB, err := bolt.Open(filepath.FromSlash(fmt.Sprintf("%s/%s.db", common.DbDir, config.Identifier)), 0o644, &bolt.Options{Timeout: 5 * time.Second}) // Open DB with timeout
+	if err != nil {                                                                                                                                       // Check for errors
 		return &Dag{}, err // Return found error
 	}
 
@@ -153,8 +147,7 @@ func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 	}
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate gensis address
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		return nil, err // Return found error
 	}
 
@@ -198,8 +191,7 @@ func (dag *Dag) MakeGenesis() ([]*Transaction, error) {
 		logger.Infof("creating genesis child transaction for allocation address: %s", key) // Log create genesis child
 
 		decodedKey, err := hex.DecodeString(key) // Decode key
-
-		if err != nil { // Check for errors
+		if err != nil {                          // Check for errors
 			return nil, err // Return found error
 		}
 
@@ -236,14 +228,13 @@ func OpenDag(identifier string) (*Dag, error) {
 	logger.Infof("opening dag db header with identifier: %s", identifier) // Log open dag
 
 	dagDbHeader, err := readDagDbHeaderFromMemory(identifier) // Read dag db header
-
-	if err != nil { // Check for errors
+	if err != nil {                                           // Check for errors
 		return &Dag{}, err // Return found error
 	}
 
 	logger.Infof("finished opening dag db header with identifier: %s", identifier) // Log opened dag
 
-	WorkingDagDB, err = bolt.Open(filepath.FromSlash(fmt.Sprintf("%s/%s.db", common.DbDir, identifier)), 0644, &bolt.Options{Timeout: 5 * time.Second}) // Open DB with timeout
+	WorkingDagDB, err = bolt.Open(filepath.FromSlash(fmt.Sprintf("%s/%s.db", common.DbDir, identifier)), 0o644, &bolt.Options{Timeout: 5 * time.Second}) // Open DB with timeout
 
 	if err != nil { // Check for errors
 		return &Dag{}, err // Return found error
@@ -276,8 +267,7 @@ func (dag *Dag) AddTransaction(transaction *Transaction) error {
 	}
 
 	err := createTransactionBucketIfNotExist() // Create transaction bucket if it doesn't already exist
-
-	if err != nil { // Check for errors
+	if err != nil {                            // Check for errors
 		return err // Return found error
 	}
 
@@ -322,8 +312,7 @@ func (dag *Dag) GetTransactionByHash(transactionHash common.Hash) (*Transaction,
 	}
 
 	err := createTransactionBucketIfNotExist() // Create tx bucket if doesn't already exist to prevent nil pointer dereferences
-
-	if err != nil { // Check for errors
+	if err != nil {                            // Check for errors
 		return &Transaction{}, err // Return found error
 	}
 
@@ -357,8 +346,7 @@ func (dag *Dag) GetTransactionChildren(transactionHash common.Hash) ([]*Transact
 	transactions := []*Transaction{} // Initialize tx buffer
 
 	err := createTransactionBucketIfNotExist() // Create transaction bucket if not exist
-
-	if err != nil { // Check for errors
+	if err != nil {                            // Check for errors
 		return []*Transaction{}, err // Return found error
 	}
 
@@ -394,8 +382,7 @@ func (dag *Dag) GetTransactionsByAddress(address *common.Address) ([]*Transactio
 	transactions := []*Transaction{} // Init tx buffer
 
 	err := createTransactionBucketIfNotExist() // Create transaction bucket if not exist
-
-	if err != nil { // Check for errors
+	if err != nil {                            // Check for errors
 		return []*Transaction{}, err // Return found error
 	}
 
@@ -429,8 +416,7 @@ func (dag *Dag) GetTransactionsBySender(sender *common.Address) ([]*Transaction,
 	transactions := []*Transaction{} // Init tx buffer
 
 	err := createTransactionBucketIfNotExist() // Create transaction bucket if not exist
-
-	if err != nil { // Check for errors
+	if err != nil {                            // Check for errors
 		return []*Transaction{}, err // Return found error
 	}
 
@@ -469,14 +455,12 @@ func (dag *Dag) GetBestTransaction() (*Transaction, error) {
 	}
 
 	err := dag.WriteToMemory() // Write to persistent memory
-
-	if err != nil { // Check for errors
+	if err != nil {            // Check for errors
 		return &Transaction{}, err // Return found error
 	}
 
 	lastTransaction, err := dag.GetTransactionByHash(dag.LastTransaction) // Initialize last transaction buffer
-
-	if err != nil { // Check for errors
+	if err != nil {                                                       // Check for errors
 		return &Transaction{}, err // Return found error
 	}
 
@@ -520,8 +504,7 @@ func (dag *Dag) CalculateAddressBalance(address *common.Address) (*big.Float, er
 	logger.Infof("calculating balance for address: %s", hex.EncodeToString(address.Bytes())) // Log calculate balance
 
 	transactionsRegardingAddress, err := dag.GetTransactionsByAddress(address) // Filter by pertaining to
-
-	if err != nil { // Check for errors
+	if err != nil {                                                            // Check for errors
 		return &big.Float{}, err // Return found error
 	}
 
@@ -559,8 +542,7 @@ func (dag *Dag) CalculateAddressBalance(address *common.Address) (*big.Float, er
 // forceAddTransaction forces the adding of a given transaction to the dag (only useful for adding a genesis tx).
 func (dag *Dag) forceAddTransaction(transaction *Transaction) error {
 	err := createTransactionBucketIfNotExist() // Create transaction bucket if it doesn't already exist
-
-	if err != nil { // Check for errors
+	if err != nil {                            // Check for errors
 		return err // Return found error
 	}
 

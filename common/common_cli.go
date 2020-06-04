@@ -6,10 +6,8 @@ import (
 	"strings"
 )
 
-var (
-	// ErrNilInput is an error definition describing input of 0 char length.
-	ErrNilInput = errors.New("nil input")
-)
+// ErrNilInput is an error definition describing input of 0 char length.
+var ErrNilInput = errors.New("nil input")
 
 /* BEGIN EXPORTED METHODS */
 

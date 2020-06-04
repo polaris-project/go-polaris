@@ -21,16 +21,14 @@ type Server struct{}
 // AddressFromPrivateKey handles the AddressFromPrivateKey request method.
 func (server *Server) AddressFromPrivateKey(ctx context.Context, request *cryptoProto.GeneralRequest) (*cryptoProto.GeneralResponse, error) {
 	decodedBytes, err := hex.DecodeString(request.PrivatePublicKey) // Decode hex-encoded private key string
-
-	if err != nil { // Check for errors
+	if err != nil {                                                 // Check for errors
 		return &cryptoProto.GeneralResponse{}, err // Return found error
 	}
 
 	block, _ := pem.Decode(decodedBytes) // Decode private key pem
 
 	privateKey, err := x509.ParseECPrivateKey(block.Bytes) // Parse PEM block
-
-	if err != nil { // Check for errors
+	if err != nil {                                        // Check for errors
 		return &cryptoProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -40,8 +38,7 @@ func (server *Server) AddressFromPrivateKey(ctx context.Context, request *crypto
 // AddressFromPublicKey handles the AddressFromPublicKey request method.
 func (server *Server) AddressFromPublicKey(ctx context.Context, request *cryptoProto.GeneralRequest) (*cryptoProto.GeneralResponse, error) {
 	decodedBytes, err := hex.DecodeString(request.PrivatePublicKey) // Decode hex-encoded private key string
-
-	if err != nil { // Check for errors
+	if err != nil {                                                 // Check for errors
 		return &cryptoProto.GeneralResponse{}, err // Return found error
 	}
 

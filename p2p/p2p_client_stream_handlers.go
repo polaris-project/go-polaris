@@ -21,8 +21,7 @@ func (client *Client) StartServingStreams(network string) error {
 	logger.Infof("setting up node stream handlers") // Log set up stream handlers
 
 	err := client.StartServingStream(GetStreamHeaderProtocolPath(network, PublishTransaction), client.HandleReceiveTransaction) // Register tx handler
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                                                             // Check for errors
 		return err // Return found error
 	}
 
@@ -85,8 +84,7 @@ func (client *Client) HandleReceiveTransaction(stream inet.Stream) {
 	reader := bufio.NewReader(stream) // Initialize reader from stream
 
 	transactionBytes, err := readAsync(reader) // Read async
-
-	if err != nil { // Check for errors
+	if err != nil {                            // Check for errors
 		return // Return
 	}
 
@@ -125,8 +123,7 @@ func (client *Client) HandleReceiveTransactionRequest(stream inet.Stream) {
 	defer readWriter.Flush() // Flush
 
 	targetHashBytes, err := readAsync(readWriter.Reader) // Read async
-
-	if err != nil { // Check for errors
+	if err != nil {                                      // Check for errors
 		return // Return
 	}
 
@@ -174,8 +171,7 @@ func (client *Client) HandleReceiveTransactionChildHashesRequest(stream inet.Str
 	defer readWriter.Flush() // Flush
 
 	parentHashBytes, err := readAsync(readWriter.Reader) // Read async
-
-	if err != nil { // Check for errors
+	if err != nil {                                      // Check for errors
 		return // Return
 	}
 

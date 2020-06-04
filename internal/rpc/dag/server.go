@@ -22,14 +22,12 @@ type Server struct{}
 // NewDag handles the NewDag request method.
 func (server *Server) NewDag(ctx context.Context, request *dagProto.GeneralRequest) (*dagProto.GeneralResponse, error) {
 	config, err := config.ReadDagConfigFromMemory(request.Network) // Read config
-
-	if err != nil { // Check for errors
+	if err != nil {                                                // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
 	dag, err := types.NewDag(config) // Initialize dag
-
-	if err != nil { // Check for errors
+	if err != nil {                  // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -49,8 +47,7 @@ func (server *Server) MakeGenesis(ctx context.Context, request *dagProto.General
 	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	genesisTransactions, err := dag.MakeGenesis() // Make genesis
-
-	if err != nil { // Check for errors
+	if err != nil {                               // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -68,14 +65,12 @@ func (server *Server) GetTransactionByHash(ctx context.Context, request *dagProt
 	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	transactionHashBytes, err := hex.DecodeString(request.TransactionHash) // Decode hash hex value
-
-	if err != nil { // Check for errors
+	if err != nil {                                                        // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
 	transaction, err := dag.GetTransactionByHash(common.NewHash(transactionHashBytes)) // Query tx
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                    // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -87,14 +82,12 @@ func (server *Server) GetTransactionChildren(ctx context.Context, request *dagPr
 	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	transactionHashBytes, err := hex.DecodeString(request.TransactionHash) // Decode hash hex value
-
-	if err != nil { // Check for errors
+	if err != nil {                                                        // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
 	children, err := dag.GetTransactionChildren(common.NewHash(transactionHashBytes)) // Query tx children
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                   // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -112,14 +105,12 @@ func (server *Server) GetTransactionsByAddress(ctx context.Context, request *dag
 	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	addressBytes, err := hex.DecodeString(request.Address) // Decode address value
-
-	if err != nil { // Check for errors
+	if err != nil {                                        // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
 	transactions, err := dag.GetTransactionsByAddress(common.NewAddress(addressBytes)) // Query tx
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                    // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -137,14 +128,12 @@ func (server *Server) GetTransactionsBySender(ctx context.Context, request *dagP
 	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	addressBytes, err := hex.DecodeString(request.Address) // Decode address hex value
-
-	if err != nil { // Check for errors
+	if err != nil {                                        // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
 	transactions, err := dag.GetTransactionsBySender(common.NewAddress(addressBytes)) // Query tx
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                   // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -162,8 +151,7 @@ func (server *Server) GetBestTransaction(ctx context.Context, request *dagProto.
 	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	bestTransaction, err := dag.GetBestTransaction() // Get best transaction
-
-	if err != nil { // Check for errors
+	if err != nil {                                  // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -175,14 +163,12 @@ func (server *Server) CalculateAddressBalance(ctx context.Context, request *dagP
 	dag := (*p2p.WorkingClient.Validator).GetWorkingDag() // Get working dag
 
 	addressBytes, err := hex.DecodeString(request.Address) // Decode address hex value
-
-	if err != nil { // Check for errors
+	if err != nil {                                        // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 
 	balance, err := dag.CalculateAddressBalance(common.NewAddress(addressBytes)) // Calculate balance
-
-	if err != nil { // Check for errors
+	if err != nil {                                                              // Check for errors
 		return &dagProto.GeneralResponse{}, err // Return found error
 	}
 

@@ -23,8 +23,7 @@ type Server struct{}
 // NewAccount handles the NewAccount request method.
 func (server *Server) NewAccount(ctx context.Context, request *accountsProto.GeneralRequest) (*accountsProto.GeneralResponse, error) {
 	account, err := account.NewAccount() // Initialize new account
-
-	if err != nil { // Check for errors
+	if err != nil {                      // Check for errors
 		return &accountsProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -53,16 +52,14 @@ func (server *Server) GetAllAccounts(ctx context.Context, request *accountsProto
 // AccountFromKey handles the AccountFromKey request method.
 func (server *Server) AccountFromKey(ctx context.Context, request *accountsProto.GeneralRequest) (*accountsProto.GeneralResponse, error) {
 	decodedBytes, err := hex.DecodeString(request.PrivatePublicKey) // Decode hex-encoded private key string
-
-	if err != nil { // Check for errors
+	if err != nil {                                                 // Check for errors
 		return &accountsProto.GeneralResponse{}, err // Return found error
 	}
 
 	block, _ := pem.Decode(decodedBytes) // Decode private key pem
 
 	privateKey, err := x509.ParseECPrivateKey(block.Bytes) // Parse PEM block
-
-	if err != nil { // Check for errors
+	if err != nil {                                        // Check for errors
 		return &accountsProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -72,14 +69,12 @@ func (server *Server) AccountFromKey(ctx context.Context, request *accountsProto
 // Address handles the Address request method.
 func (server *Server) Address(ctx context.Context, request *accountsProto.GeneralRequest) (*accountsProto.GeneralResponse, error) {
 	addressBytes, err := hex.DecodeString(request.PrivatePublicKey) // Decode address
-
-	if err != nil { // Check for errors
+	if err != nil {                                                 // Check for errors
 		return &accountsProto.GeneralResponse{}, err // Return found error
 	}
 
 	account, err := account.ReadAccountFromMemory(common.NewAddress(addressBytes)) // Read account
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                // Check for errors
 		return &accountsProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -89,14 +84,12 @@ func (server *Server) Address(ctx context.Context, request *accountsProto.Genera
 // PublicKey handles the PublicKey request method.
 func (server *Server) PublicKey(ctx context.Context, request *accountsProto.GeneralRequest) (*accountsProto.GeneralResponse, error) {
 	addressBytes, err := hex.DecodeString(request.PrivatePublicKey) // Decode address
-
-	if err != nil { // Check for errors
+	if err != nil {                                                 // Check for errors
 		return &accountsProto.GeneralResponse{}, err // Return found error
 	}
 
 	account, err := account.ReadAccountFromMemory(common.NewAddress(addressBytes)) // Read account
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                // Check for errors
 		return &accountsProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -108,20 +101,17 @@ func (server *Server) PublicKey(ctx context.Context, request *accountsProto.Gene
 // PrivateKey handles the PrivateKey request method.
 func (server *Server) PrivateKey(ctx context.Context, request *accountsProto.GeneralRequest) (*accountsProto.GeneralResponse, error) {
 	addressBytes, err := hex.DecodeString(request.PrivatePublicKey) // Decode address
-
-	if err != nil { // Check for errors
+	if err != nil {                                                 // Check for errors
 		return &accountsProto.GeneralResponse{}, err // Return found error
 	}
 
 	account, err := account.ReadAccountFromMemory(common.NewAddress(addressBytes)) // Read account
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                // Check for errors
 		return &accountsProto.GeneralResponse{}, err // Return found error
 	}
 
 	marshaledPrivateKey, err := x509.MarshalECPrivateKey(account.PrivateKey()) // Marshal private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                            // Check for errors
 		return &accountsProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -133,14 +123,12 @@ func (server *Server) PrivateKey(ctx context.Context, request *accountsProto.Gen
 // String handles the String request method.
 func (server *Server) String(ctx context.Context, request *accountsProto.GeneralRequest) (*accountsProto.GeneralResponse, error) {
 	addressBytes, err := hex.DecodeString(request.PrivatePublicKey) // Decode address
-
-	if err != nil { // Check for errors
+	if err != nil {                                                 // Check for errors
 		return &accountsProto.GeneralResponse{}, err // Return found error
 	}
 
 	account, err := account.ReadAccountFromMemory(common.NewAddress(addressBytes)) // Read account
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                // Check for errors
 		return &accountsProto.GeneralResponse{}, err // Return found error
 	}
 

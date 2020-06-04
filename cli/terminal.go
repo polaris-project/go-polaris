@@ -24,10 +24,8 @@ import (
 	transactionProto "github.com/polaris-project/go-polaris/internal/proto/transaction"
 )
 
-var (
-	// ErrInvalidParams is an error definition describing invalid input parameters.
-	ErrInvalidParams = errors.New("invalid parameters")
-)
+// ErrInvalidParams is an error definition describing invalid input parameters.
+var ErrInvalidParams = errors.New("invalid parameters")
 
 /* BEGIN EXPORTED METHODS */
 
@@ -49,8 +47,7 @@ func NewTerminal(rpcPort uint, rpcAddress string) {
 		input = strings.TrimSuffix(input, "\n") // Trim newline
 
 		receiver, methodname, params, err := common.ParseStringMethodCall(input) // Attempt to parse as method call
-
-		if err != nil { // Check for errors
+		if err != nil {                                                          // Check for errors
 			fmt.Println(err.Error()) // Log found error
 
 			continue // Continue
@@ -61,7 +58,7 @@ func NewTerminal(rpcPort uint, rpcAddress string) {
 }
 
 // handleCommand runs the handler for a given receiver.
-func handleCommand(receiver string, methodname string, params []string, rpcPort uint, rpcAddress string, transport *http.Transport) {
+func handleCommand(receiver, methodname string, params []string, rpcPort uint, rpcAddress string, transport *http.Transport) {
 	cryptoClient := cryptoProto.NewCryptoProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})                // Init crypto client
 	accountsClient := accountsProto.NewAccountsProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})          // Init accounts client
 	configClient := configProto.NewConfigProtobufClient("https://"+rpcAddress+":"+strconv.Itoa(int(rpcPort)), &http.Client{Transport: transport})                // Init config client
@@ -71,32 +68,27 @@ func handleCommand(receiver string, methodname string, params []string, rpcPort 
 	switch receiver {
 	case "crypto":
 		err := handleCrypto(&cryptoClient, methodname, params) // Handle crypto
-
-		if err != nil { // Check for errors
+		if err != nil {                                        // Check for errors
 			fmt.Println("\n" + err.Error()) // Log found error
 		}
 	case "accounts":
 		err := handleAccounts(&accountsClient, methodname, params) // Handle accounts
-
-		if err != nil { // Check for errors
+		if err != nil {                                            // Check for errors
 			fmt.Println("\n" + err.Error()) // Log found error
 		}
 	case "config":
 		err := handleConfig(&configClient, methodname, params) // Handle config
-
-		if err != nil { // Check for errors
+		if err != nil {                                        // Check for errors
 			fmt.Println("\n" + err.Error()) // Log found error
 		}
 	case "transaction":
 		err := handleTransaction(&transactionClient, methodname, params) // Handle transaction
-
-		if err != nil { // Check for errors
+		if err != nil {                                                  // Check for errors
 			fmt.Println("\n" + err.Error()) // Log found error
 		}
 	case "dag":
 		err := handleDag(&dagClient, methodname, params) // Handle dag
-
-		if err != nil { // Check for errors
+		if err != nil {                                  // Check for errors
 			fmt.Println("\n" + err.Error()) // Log found error
 		}
 	default:

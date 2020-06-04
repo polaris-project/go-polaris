@@ -2,7 +2,9 @@
 package api
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"path/filepath"
 
 	"github.com/polaris-project/go-polaris/common"
@@ -16,9 +18,6 @@ import (
 	cryptoServer "github.com/polaris-project/go-polaris/internal/rpc/crypto"
 	dagServer "github.com/polaris-project/go-polaris/internal/rpc/dag"
 	transactionServer "github.com/polaris-project/go-polaris/internal/rpc/transaction"
-
-	"context"
-	"net/http"
 )
 
 // RPCAPI represents an RPC API.
@@ -35,10 +34,9 @@ type RPCAPI struct {
 /* BEGIN EXPORTED METHODS */
 
 // NewRPCAPI initializes a new RPCAPI instance.
-func NewRPCAPI(network string, uri string) (*RPCAPI, error) {
+func NewRPCAPI(network, uri string) (*RPCAPI, error) {
 	err := generateCert("rpc", []string{"localhost", "127.0.0.1"}) // Generate tls certs
-
-	if err != nil { // Check for errors
+	if err != nil {                                                // Check for errors
 		return nil, err // Return found error
 	}
 
@@ -49,7 +47,7 @@ func NewRPCAPI(network string, uri string) (*RPCAPI, error) {
 }
 
 // NewRPCAPINoTLS initializes a new RPCAPI instance without enabling TLS.
-func NewRPCAPINoTLS(network string, uri string) *RPCAPI {
+func NewRPCAPINoTLS(network, uri string) *RPCAPI {
 	return &RPCAPI{
 		Network: network, // Set network
 		URI:     uri,     // Set URI
@@ -79,8 +77,7 @@ func (rpcAPI *RPCAPI) GetIsServing() bool {
 // StartServing starts serving the API.
 func (rpcAPI *RPCAPI) StartServing(ctx context.Context) error {
 	err := generateCert("rpc", []string{"localhost"}) // Generate cert
-
-	if err != nil { // Check for errors
+	if err != nil {                                   // Check for errors
 		return err // Return found error
 	}
 

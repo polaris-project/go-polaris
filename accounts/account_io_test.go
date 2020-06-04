@@ -8,8 +8,7 @@ import "testing"
 // TestWriteToMemory tests the functionality of the WriteToMemory() helper method.
 func TestWriteToMemory(t *testing.T) {
 	account, err := NewAccount() // Initialize new account
-
-	if err != nil { // Check for errors
+	if err != nil {              // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -23,8 +22,7 @@ func TestWriteToMemory(t *testing.T) {
 // TestReadAccountFromMemory tests the functionality of the ReadAccountFromMemory() helper method.
 func TestReadAccountFromMemory(t *testing.T) {
 	account, err := NewAccount() // Initialize new account
-
-	if err != nil { // Check for errors
+	if err != nil {              // Check for errors
 		t.Fatal(err) // Panic
 	}
 

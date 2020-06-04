@@ -13,8 +13,7 @@ import (
 // TestString tests the functionality of the dag config string() helper method.
 func TestString(t *testing.T) {
 	dagConfig, err := NewDagConfigFromGenesis("test_genesis.json") // Initialize new dag config with test genesis file.
-
-	if err != nil { // Check for errors
+	if err != nil {                                                // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -28,8 +27,7 @@ func TestString(t *testing.T) {
 // TestBytes tests the functionality fo the dag config bytes() helper method.
 func TestBytes(t *testing.T) {
 	dagConfig, err := NewDagConfigFromGenesis("test_genesis.json") // Initialize new dag config with test genesis file.
-
-	if err != nil { // Check for errors
+	if err != nil {                                                // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -41,8 +39,7 @@ func TestBytes(t *testing.T) {
 // TestDagConfigFromBytes tests the functionality of the dag config FromBytes() helper method.
 func TestDagConfigFromBytes(t *testing.T) {
 	dagConfig, err := NewDagConfigFromGenesis("test_genesis.json") // Initialize new dag config with test genesis file.
-
-	if err != nil { // Check for errors
+	if err != nil {                                                // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -56,8 +53,7 @@ func TestDagConfigFromBytes(t *testing.T) {
 // TestWriteToMemory tests the functionality of outbound dag config I/O.
 func TestWriteToMemory(t *testing.T) {
 	dagConfig, err := NewDagConfigFromGenesis("test_genesis.json") // Initialize new dag config with test genesis file.
-
-	if err != nil { // Check for errors
+	if err != nil {                                                // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -71,8 +67,7 @@ func TestWriteToMemory(t *testing.T) {
 // TestReadDagConfigFromMemory tests the functionality of inbound dag config I/O.
 func TestReadDagConfigFromMemory(t *testing.T) {
 	dagConfig, err := NewDagConfigFromGenesis("test_genesis.json") // Initialize new dag config with test genesis file.
-
-	if err != nil { // Check for errors
+	if err != nil {                                                // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -83,8 +78,7 @@ func TestReadDagConfigFromMemory(t *testing.T) {
 	}
 
 	readDagConfig, err := ReadDagConfigFromMemory(dagConfig.Identifier) // Read dag config
-
-	if err != nil { // Check for errors
+	if err != nil {                                                     // Check for errors
 		t.Fatal(err) // Panic
 	}
 

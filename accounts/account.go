@@ -26,8 +26,7 @@ type Account struct {
 // Does not write the new account to persistent memory on creation.
 func NewAccount() (*Account, error) {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		return &Account{}, err // Return found error
 	}
 

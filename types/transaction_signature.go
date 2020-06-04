@@ -44,8 +44,7 @@ func SignTransaction(transaction *Transaction, privateKey *ecdsa.PrivateKey) err
 
 	if transaction.Signature == nil { // Check no existing signature
 		r, s, err := ecdsa.Sign(rand.Reader, privateKey, transaction.Hash.Bytes()) // Sign via ECDSA
-
-		if err != nil { // Check for errors
+		if err != nil {                                                            // Check for errors
 			return err // Return found error
 		}
 
@@ -73,8 +72,7 @@ func SignMessage(messageHash common.Hash, privateKey *ecdsa.PrivateKey) (*Signat
 	}
 
 	r, s, err := ecdsa.Sign(rand.Reader, privateKey, messageHash.Bytes()) // Sign via ECDSA
-
-	if err != nil { // Check for errors
+	if err != nil {                                                       // Check for errors
 		return nil, err // Return found error
 	}
 

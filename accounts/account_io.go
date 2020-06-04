@@ -20,8 +20,7 @@ func GetAllAccounts() []common.Address {
 	buffer := []common.Address{} // Init buffer
 
 	files, err := ioutil.ReadDir(common.KeystoreDir) // Walk keystore dir
-
-	if err != nil { // Check for errors
+	if err != nil {                                  // Check for errors
 		return []common.Address{} // Return nil
 	}
 
@@ -51,12 +50,11 @@ func (account *Account) Bytes() []byte {
 // WriteToMemory writes the given account's contents to persistent memory
 func (account *Account) WriteToMemory() error {
 	err := common.CreateDirIfDoesNotExist(common.KeystoreDir) // Create keystore dir if necessary
-
-	if err != nil { // Check for errors
+	if err != nil {                                           // Check for errors
 		return err // Return found error
 	}
 
-	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/account_%s.json", common.KeystoreDir, hex.EncodeToString(crypto.AddressFromPublicKey(account.PublicKey()).Bytes()))), account.Bytes(), 0644) // Write account to persistent memory
+	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/account_%s.json", common.KeystoreDir, hex.EncodeToString(crypto.AddressFromPublicKey(account.PublicKey()).Bytes()))), account.Bytes(), 0o644) // Write account to persistent memory
 
 	if err != nil { // Check for errors
 		return err // Return error
@@ -68,8 +66,7 @@ func (account *Account) WriteToMemory() error {
 // ReadAccountFromMemory reads an account with a given address from persistent memory.
 func ReadAccountFromMemory(address *common.Address) (*Account, error) {
 	data, err := ioutil.ReadFile(filepath.FromSlash(fmt.Sprintf("%s/account_%s.json", common.KeystoreDir, hex.EncodeToString(address.Bytes())))) // Read account
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                                                                              // Check for errors
 		return &Account{}, err // Return found error
 	}
 

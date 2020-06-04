@@ -86,15 +86,13 @@ type StreamHeaderProtocol int
 // NewHost initializes a new libp2p host with the given context.
 func NewHost(ctx context.Context, port int) (*routed.RoutedHost, error) {
 	peerIdentity, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                      // Check for errors
 		return nil, err // Return found error
 	}
 
 	if _, err := os.Stat(filepath.FromSlash(fmt.Sprintf("%s/identity.pem", common.PeerIdentityDir))); err == nil { // Check existing p2p identity
 		data, err := ioutil.ReadFile(filepath.FromSlash(fmt.Sprintf("%s/identity.pem", common.PeerIdentityDir))) // Read identity
-
-		if err != nil { // Check for errors
+		if err != nil {                                                                                          // Check for errors
 			return nil, err // Return found error
 		}
 
@@ -107,8 +105,7 @@ func NewHost(ctx context.Context, port int) (*routed.RoutedHost, error) {
 		}
 	} else { // No existing p2p identity
 		x509Encoded, err := x509.MarshalECPrivateKey(peerIdentity) // Marshal identity
-
-		if err != nil { // Check for errors
+		if err != nil {                                            // Check for errors
 			return nil, err // Return found error
 		}
 
@@ -120,7 +117,7 @@ func NewHost(ctx context.Context, port int) (*routed.RoutedHost, error) {
 			return nil, err // Return found error
 		}
 
-		err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/identity.pem", common.PeerIdentityDir)), pemEncoded, 0644) // Write identity
+		err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/identity.pem", common.PeerIdentityDir)), pemEncoded, 0o644) // Write identity
 
 		if err != nil { // Check for errors
 			return nil, err // Return found error
@@ -128,20 +125,17 @@ func NewHost(ctx context.Context, port int) (*routed.RoutedHost, error) {
 	}
 
 	privateKey, _, err := crypto.ECDSAKeyPairFromKey(peerIdentity) // Get privateKey key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                // Check for errors
 		return nil, err // Return found error
 	}
 
 	host, err := libp2p.New(ctx, libp2p.NATPortMap(), libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/"+strconv.Itoa(port), "/ip6/::1/tcp/"+strconv.Itoa(port)), libp2p.Identity(privateKey)) // Initialize libp2p host
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                                                                                                                      // Check for errors
 		return nil, err // Return found error
 	}
 
 	dht, err := BootstrapDht(ctx, host) // Bootstrap dht
-
-	if err != nil { // Check for errors
+	if err != nil {                     // Check for errors
 		return nil, err // Return found error
 	}
 
@@ -158,22 +152,19 @@ func NewHost(ctx context.Context, port int) (*routed.RoutedHost, error) {
 func GetBestBootstrapAddress(ctx context.Context, host *routed.RoutedHost) string {
 	for _, bootstrapAddress := range BootstrapNodes { // Iterate through bootstrap nodes
 		multiaddr, err := multiaddr.NewMultiaddr(bootstrapAddress) // Parse address
-
-		if err != nil { // Check for errors
+		if err != nil {                                            // Check for errors
 			continue // Continue
 		}
 
 		peerID, err := peer.IDB58Decode(strings.Split(bootstrapAddress, "ipfs/")[1]) // Get peer ID
-
-		if err != nil { // Check for errors
+		if err != nil {                                                              // Check for errors
 			continue // Continue
 		}
 
 		host.Peerstore().AddAddr(peerID, multiaddr, 10*time.Second) // Add bootstrap peer
 
 		peerInfo, err := peerstore.InfoFromP2pAddr(multiaddr) // Get peer info
-
-		if err != nil { // Check for errors
+		if err != nil {                                       // Check for errors
 			continue // Continue
 		}
 
@@ -200,18 +191,16 @@ func GetBestBootstrapAddress(ctx context.Context, host *routed.RoutedHost) strin
 }
 
 // BootstrapConfig bootstraps a dag config to the list of bootstrap nodes.
-func BootstrapConfig(ctx context.Context, host *routed.RoutedHost, bootstrapAddress string, network string) (*config.DagConfig, error) {
+func BootstrapConfig(ctx context.Context, host *routed.RoutedHost, bootstrapAddress, network string) (*config.DagConfig, error) {
 	peerID, err := peer.IDB58Decode(strings.Split(bootstrapAddress, "ipfs/")[1]) // Get peer ID
-
-	if err != nil { // Check for errors
+	if err != nil {                                                              // Check for errors
 		return &config.DagConfig{}, err // Return found error
 	}
 
 	readCtx, cancel := context.WithCancel(ctx) // Get context
 
 	stream, err := (*host).NewStream(readCtx, peerID, protocol.ID(GetStreamHeaderProtocolPath(network, RequestConfig))) // Initialize new stream
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                                                     // Check for errors
 		cancel() // Cancel
 
 		return &config.DagConfig{}, err // Return found error
@@ -220,8 +209,7 @@ func BootstrapConfig(ctx context.Context, host *routed.RoutedHost, bootstrapAddr
 	reader := bufio.NewReader(stream) // Initialize reader from stream
 
 	dagConfigBytes, err := readAsync(reader) // Read async
-
-	if err != nil { // Check for errors
+	if err != nil {                          // Check for errors
 		cancel() // Cancel
 
 		return &config.DagConfig{}, err // Return found error
@@ -243,8 +231,7 @@ func BootstrapConfig(ctx context.Context, host *routed.RoutedHost, bootstrapAddr
 // BootstrapDht bootstraps the WorkingDHT to the list of bootstrap nodes.
 func BootstrapDht(ctx context.Context, host host.Host) (*dht.IpfsDHT, error) {
 	dht, err := dht.New(ctx, host) // Initialize DHT with host and context
-
-	if err != nil { // Check for errors
+	if err != nil {                // Check for errors
 		return nil, err // Return found error
 	}
 
@@ -256,14 +243,12 @@ func BootstrapDht(ctx context.Context, host host.Host) (*dht.IpfsDHT, error) {
 
 	for _, addr := range BootstrapNodes { // Iterate through bootstrap nodes
 		address, err := multiaddr.NewMultiaddr(addr) // Parse multi address
-
-		if err != nil { // Check for errors
+		if err != nil {                              // Check for errors
 			continue // Continue to next peer
 		}
 
 		peerInfo, err := peerstore.InfoFromP2pAddr(address) // Get peer info
-
-		if err != nil { // Check for errors
+		if err != nil {                                     // Check for errors
 			continue // Continue to next peer
 		}
 
@@ -278,7 +263,7 @@ func BootstrapDht(ctx context.Context, host host.Host) (*dht.IpfsDHT, error) {
 }
 
 // BroadcastDht attempts to send a given message to all nodes in a dht at a given endpoint.
-func BroadcastDht(ctx context.Context, host *routed.RoutedHost, message []byte, streamProtocol string, dagIdentifier string) error {
+func BroadcastDht(ctx context.Context, host *routed.RoutedHost, message []byte, streamProtocol, dagIdentifier string) error {
 	peers := host.Peerstore().Peers() // Get peers
 
 	for _, peer := range peers { // Iterate through peers
@@ -287,8 +272,7 @@ func BroadcastDht(ctx context.Context, host *routed.RoutedHost, message []byte, 
 		}
 
 		stream, err := (*host).NewStream(ctx, peer, protocol.ID(streamProtocol)) // Connect
-
-		if err != nil { // Check for errors
+		if err != nil {                                                          // Check for errors
 			continue // Continue
 		}
 
@@ -307,7 +291,7 @@ func BroadcastDht(ctx context.Context, host *routed.RoutedHost, message []byte, 
 }
 
 // BroadcastDhtResult send a given message to all nodes in a dht, and returns the result from each node.
-func BroadcastDhtResult(ctx context.Context, host *routed.RoutedHost, message []byte, streamProtocol string, dagIdentifier string, nPeers int) ([][]byte, error) {
+func BroadcastDhtResult(ctx context.Context, host *routed.RoutedHost, message []byte, streamProtocol, dagIdentifier string, nPeers int) ([][]byte, error) {
 	peers := host.Peerstore().Peers() // Get peers
 
 	results := [][]byte{} // Init results buffer
@@ -322,8 +306,7 @@ func BroadcastDhtResult(ctx context.Context, host *routed.RoutedHost, message []
 		}
 
 		stream, err := (*host).NewStream(ctx, peer, protocol.ID(streamProtocol)) // Connect
-
-		if err != nil { // Check for errors
+		if err != nil {                                                          // Check for errors
 			continue // Continue
 		}
 
@@ -338,8 +321,7 @@ func BroadcastDhtResult(ctx context.Context, host *routed.RoutedHost, message []
 		readWriter.Flush() // Flush
 
 		responseBytes, err := readAsync(readWriter.Reader) // Read async
-
-		if err != nil { // Check for errors
+		if err != nil {                                    // Check for errors
 			continue // Continue
 		}
 
@@ -363,8 +345,7 @@ func GetStreamHeaderProtocolPath(network string, streamProtocol StreamHeaderProt
 // readAsync asynchronously reads from a given reader.
 func readAsync(reader *bufio.Reader) ([]byte, error) {
 	readBytes, err := reader.ReadBytes('\f') // Read bytes up to and including delimiter
-
-	if err != nil { // Check for errors
+	if err != nil {                          // Check for errors
 		return nil, err // Return found error
 	}
 

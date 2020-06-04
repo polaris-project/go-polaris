@@ -33,8 +33,7 @@ func TestNewTransactions(t *testing.T) {
 // TestCalculateTotalValue tests the functionality of the CalculateTotalValue() helper method.
 func TestCalculateTotalValue(t *testing.T) {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 

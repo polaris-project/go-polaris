@@ -13,8 +13,7 @@ import (
 // TestNewAccount tests the functionality of the NewAccount() helper method.
 func TestNewAccount(t *testing.T) {
 	_, err := NewAccount() // Initialize new account
-
-	if err != nil { // Check for errors
+	if err != nil {        // Check for errors
 		t.Fatal(err) // Panic
 	}
 }
@@ -22,8 +21,7 @@ func TestNewAccount(t *testing.T) {
 // TestAccountFromKey tests the functionality of the AccountFromKey() helper method.
 func TestAccountFromKey(t *testing.T) {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 

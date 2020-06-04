@@ -5,14 +5,17 @@ package transaction
 
 import (
 	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
 	math "math"
+
+	proto "github.com/golang/protobuf/proto"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ = proto.Marshal
-var _ = fmt.Errorf
-var _ = math.Inf
+var (
+	_ = proto.Marshal
+	_ = fmt.Errorf
+	_ = math.Inf
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -44,15 +47,19 @@ func (*GeneralRequest) Descriptor() ([]byte, []int) {
 func (m *GeneralRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GeneralRequest.Unmarshal(m, b)
 }
+
 func (m *GeneralRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_GeneralRequest.Marshal(b, m, deterministic)
 }
+
 func (m *GeneralRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_GeneralRequest.Merge(m, src)
 }
+
 func (m *GeneralRequest) XXX_Size() int {
 	return xxx_messageInfo_GeneralRequest.Size(m)
 }
+
 func (m *GeneralRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_GeneralRequest.DiscardUnknown(m)
 }
@@ -132,15 +139,19 @@ func (*GeneralResponse) Descriptor() ([]byte, []int) {
 func (m *GeneralResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GeneralResponse.Unmarshal(m, b)
 }
+
 func (m *GeneralResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_GeneralResponse.Marshal(b, m, deterministic)
 }
+
 func (m *GeneralResponse) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_GeneralResponse.Merge(m, src)
 }
+
 func (m *GeneralResponse) XXX_Size() int {
 	return xxx_messageInfo_GeneralResponse.Size(m)
 }
+
 func (m *GeneralResponse) XXX_DiscardUnknown() {
 	xxx_messageInfo_GeneralResponse.DiscardUnknown(m)
 }

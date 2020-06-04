@@ -10,23 +10,29 @@ It is generated from these files:
 */
 package crypto
 
-import bytes "bytes"
-import strings "strings"
-import context "context"
-import fmt "fmt"
-import ioutil "io/ioutil"
-import http "net/http"
+import (
+	bytes "bytes"
+	strings "strings"
+	context "context"
+	fmt "fmt"
+	ioutil "io/ioutil"
+	http "net/http"
+)
 
-import jsonpb "github.com/golang/protobuf/jsonpb"
-import proto "github.com/golang/protobuf/proto"
-import twirp "github.com/twitchtv/twirp"
-import ctxsetters "github.com/twitchtv/twirp/ctxsetters"
+import (
+	jsonpb "github.com/golang/protobuf/jsonpb"
+	proto "github.com/golang/protobuf/proto"
+	twirp "github.com/twitchtv/twirp"
+	ctxsetters "github.com/twitchtv/twirp/ctxsetters"
+)
 
 // Imports only used by utility functions:
-import io "io"
-import strconv "strconv"
-import json "encoding/json"
-import url "net/url"
+import (
+	io "io"
+	strconv "strconv"
+	json "encoding/json"
+	url "net/url"
+)
 
 // ================
 // Crypto Interface
@@ -1232,7 +1238,7 @@ func errorFromResponse(resp *http.Response) twirp.Error {
 // twirpErrorFromIntermediary maps HTTP errors from non-twirp sources to twirp errors.
 // The mapping is similar to gRPC: https://github.com/grpc/grpc/blob/master/doc/http-grpc-status-mapping.md.
 // Returned twirp Errors have some additional metadata for inspection.
-func twirpErrorFromIntermediary(status int, msg string, bodyOrLocation string) twirp.Error {
+func twirpErrorFromIntermediary(status int, msg, bodyOrLocation string) twirp.Error {
 	var code twirp.ErrorCode
 	if isHTTPRedirect(status) { // 3xx
 		code = twirp.Internal
@@ -1263,6 +1269,7 @@ func twirpErrorFromIntermediary(status int, msg string, bodyOrLocation string) t
 	}
 	return twerr
 }
+
 func isHTTPRedirect(status int) bool {
 	return status >= 300 && status <= 399
 }
@@ -1284,7 +1291,7 @@ func clientError(desc string, err error) twirp.Error {
 }
 
 // badRouteError is used when the twirp server cannot route a request
-func badRouteError(msg string, method, url string) twirp.Error {
+func badRouteError(msg, method, url string) twirp.Error {
 	err := twirp.NewError(twirp.BadRoute, msg)
 	err = err.WithMeta("twirp_invalid_route", method+" "+url)
 	return err

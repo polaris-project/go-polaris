@@ -22,7 +22,7 @@ var (
 	// ErrInvalidTransactionHash is an error definition representing a transaction hash of invalid value.
 	ErrInvalidTransactionHash = errors.New("transaction hash is invalid")
 
-	//ErrInvalidTransactionTimestamp is an error definition representing a transaction timestamp of invalid value.
+	// ErrInvalidTransactionTimestamp is an error definition representing a transaction timestamp of invalid value.
 	ErrInvalidTransactionTimestamp = errors.New("invalid transaction timestamp")
 
 	// ErrInvalidTransactionSignature is an error definition representing a transaction signature of invalid value.
@@ -113,8 +113,7 @@ func (validator *BeaconDagValidator) ValidateTransactionHash(transaction *types.
 func (validator *BeaconDagValidator) ValidateTransactionTimestamp(transaction *types.Transaction) bool {
 	for _, parentHash := range transaction.ParentTransactions { // Iterate through parent hashes
 		parentTransaction, err := validator.WorkingDag.GetTransactionByHash(parentHash) // Get parent transaction pointer
-
-		if err != nil { // Check for errors
+		if err != nil {                                                                 // Check for errors
 			return false // Invalid parent
 		}
 
@@ -139,8 +138,7 @@ func (validator *BeaconDagValidator) ValidateTransactionSignature(transaction *t
 // ValidateTransactionSenderBalance checks that a given transaction's sender has a balance greater than or equal to the transaction's total value (including gas costs).
 func (validator *BeaconDagValidator) ValidateTransactionSenderBalance(transaction *types.Transaction) bool {
 	balance, err := validator.WorkingDag.CalculateAddressBalance(transaction.Sender) // Calculate balance
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                  // Check for errors
 		return false // Invalid
 	}
 
@@ -166,15 +164,13 @@ func (validator *BeaconDagValidator) ValidateTransactionDepth(transaction *types
 		}
 
 		children, err := validator.WorkingDag.GetTransactionChildren(parentHash) // Get children of transaction
-
-		if err != nil { // Check for errors
+		if err != nil {                                                          // Check for errors
 			return false // Invalid
 		}
 
 		for _, child := range children { // Iterate through children
 			currentChildren, err := validator.WorkingDag.GetTransactionChildren(child.Hash) // Get children of current child
-
-			if err != nil { // Check for errors
+			if err != nil {                                                                 // Check for errors
 				return false // Invalid
 			}
 
@@ -190,8 +186,7 @@ func (validator *BeaconDagValidator) ValidateTransactionDepth(transaction *types
 // ValidateTransactionNonce checks that a given transaction's nonce is equivalent to the sending account's last nonce + 1.
 func (validator *BeaconDagValidator) ValidateTransactionNonce(transaction *types.Transaction) bool {
 	senderTransactions, err := validator.WorkingDag.GetTransactionsBySender(transaction.Sender) // Get sender txs
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                             // Check for errors
 		return false // Invalid
 	}
 

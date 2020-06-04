@@ -27,8 +27,7 @@ func TestNewBeaconDagValidator(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := types.NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {                     // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -50,14 +49,12 @@ func TestValidateTransaction(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := types.NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {                     // Check for errors
 		t.Fatal(err) // Panic
 	}
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -155,8 +152,7 @@ func TestBeaconDagValidationProtocol(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := types.NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {                     // Check for errors
 		t.Fatal(err) // Panic
 	}
 

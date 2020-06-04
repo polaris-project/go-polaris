@@ -20,8 +20,7 @@ type Server struct{}
 // NewDagConfig handles the NewDagConfig request method.
 func (server *Server) NewDagConfig(ctx context.Context, request *configProto.GeneralRequest) (*configProto.GeneralResponse, error) {
 	config, err := config.NewDagConfigFromGenesis(request.FilePath) // Initialize config
-
-	if err != nil { // Check for errors
+	if err != nil {                                                 // Check for errors
 		return &configProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -37,8 +36,7 @@ func (server *Server) NewDagConfig(ctx context.Context, request *configProto.Gen
 // GetAllConfigs handles the GetAllConfigs request method.
 func (server *Server) GetAllConfigs(ctx context.Context, request *configProto.GeneralRequest) (*configProto.GeneralResponse, error) {
 	files, err := ioutil.ReadDir(common.ConfigDir) // Read all files in config dir
-
-	if err != nil { // Check for errors
+	if err != nil {                                // Check for errors
 		return &configProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -54,8 +52,7 @@ func (server *Server) GetAllConfigs(ctx context.Context, request *configProto.Ge
 // GetConfig handles the GetConfig request method.
 func (server *Server) GetConfig(ctx context.Context, request *configProto.GeneralRequest) (*configProto.GeneralResponse, error) {
 	config, err := config.ReadDagConfigFromMemory(request.Network) // Read config from persistent memory
-
-	if err != nil { // Check for errors
+	if err != nil {                                                // Check for errors
 		return &configProto.GeneralResponse{}, err // Return found error
 	}
 

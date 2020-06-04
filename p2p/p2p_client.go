@@ -31,10 +31,8 @@ var (
 	ErrNoAvailablePeers = errors.New("no available peers")
 )
 
-var (
-	// logger is the p2p package logger.
-	logger = getLogger()
-)
+// logger is the p2p package logger.
+var logger = getLogger()
 
 // Client represents an active p2p peer, that of which is serving a list of available stream header protocol paths.
 type Client struct {
@@ -57,8 +55,7 @@ func NewClient(network string, validator *validator.Validator) *Client {
 func (client *Client) StartIntermittentSync(ctx context.Context, duration time.Duration) {
 	for range time.Tick(duration) { // Sync every duration seconds
 		err := client.SyncDag(ctx) // Sync dag
-
-		if err != nil { // Check for errors
+		if err != nil {            // Check for errors
 			logger.Errorf("intermittent sync errored (if private net, this is expected): %s", err.Error()) // Log error
 		}
 	}
@@ -73,14 +70,12 @@ func (client *Client) SyncDag(ctx context.Context) error {
 	}
 
 	bestLastTransactionHash, err := client.RequestBestTransactionHash(ctx, 64) // Request best tx hash
-
-	if err != nil { // Check for errors
+	if err != nil {                                                            // Check for errors
 		return err // Return found error
 	}
 
 	remoteBestTransaction, err := client.RequestTransactionWithHash(ctx, bestLastTransactionHash, 16) // Get last transaction
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                                   // Check for errors
 		return err // Return found error
 	}
 
@@ -120,8 +115,7 @@ func (client *Client) SyncDag(ctx context.Context) error {
 // SyncBestTransaction syncs the best local and remote transactions.
 func (client *Client) SyncBestTransaction(ctx context.Context, remoteBestTransactionHash common.Hash) error {
 	localBestTransaction, err := (*client.Validator).GetWorkingDag().GetBestTransaction() // Get local best transaction
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                       // Check for errors
 		return err // Return found error
 	}
 
@@ -133,8 +127,7 @@ func (client *Client) SyncBestTransaction(ctx context.Context, remoteBestTransac
 		logger.Infof("requesting children for current best transaction: %s", hex.EncodeToString(localBestTransaction.Hash.Bytes())) // Log request children
 
 		childHashes, err := client.RequestTransactionChildren(getChildrenCtx, localBestTransaction.Hash, 16) // Get child hashes
-
-		if err != nil { // Check for errors
+		if err != nil {                                                                                      // Check for errors
 			cancel() // Cancel
 
 			return err // Return found error
@@ -154,8 +147,7 @@ func (client *Client) SyncBestTransaction(ctx context.Context, remoteBestTransac
 			requestTransactionCtx, cancel := context.WithCancel(ctx) // Initialize context
 
 			destinationTransaction, err := client.RequestTransactionWithHash(requestTransactionCtx, childHash, 16) // Get transaction
-
-			if err != nil { // Check for errors
+			if err != nil {                                                                                        // Check for errors
 				cancel() // Cancel
 
 				return err // Return found error
@@ -193,8 +185,7 @@ func (client *Client) SyncGenesis(ctx context.Context) error {
 	logger.Infof("requesting genesis transaction hash") // Log request genesis
 
 	genesisHashes, err := BroadcastDhtResult(getGenHashCtx, WorkingHost, types.GenesisHashRequest, GetStreamHeaderProtocolPath(client.Network, RequestGenesisHash), client.Network, 128) // Get genesis transaction hashes
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                                                                                                                      // Check for errors
 		cancel() // Cancel
 
 		return err // Return found error
@@ -225,8 +216,7 @@ func (client *Client) SyncGenesis(ctx context.Context) error {
 	logger.Infof("requesting full genesis transaction") // Log request genesis tx
 
 	genesisTransaction, err := client.RequestTransactionWithHash(getGenCtx, common.NewHash(bestGenesisHash), 16) // Get genesis transaction
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                                              // Check for errors
 		cancel() // cancel
 
 		return err // Return found error
@@ -245,8 +235,7 @@ func (client *Client) SyncGenesis(ctx context.Context) error {
 
 		return types.WorkingDagDB.Update(func(tx *bolt.Tx) error {
 			_, err := tx.CreateBucketIfNotExists([]byte("transaction-bucket")) // Create tx bucket if it doesn't already exist
-
-			if err != nil { // Check for errors
+			if err != nil {                                                    // Check for errors
 				return err // Return found error
 			}
 
@@ -288,8 +277,7 @@ func (client *Client) PublishTransaction(ctx context.Context, transaction *types
 // Returns best response from peer sampling set nPeers.
 func (client *Client) RequestTransactionWithHash(ctx context.Context, hash common.Hash, nPeers int) (*types.Transaction, error) {
 	transactionBytes, err := BroadcastDhtResult(ctx, WorkingHost, hash.Bytes(), GetStreamHeaderProtocolPath(client.Network, RequestTransaction), client.Network, nPeers) // Request transaction
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                                                                                                      // Check for errors
 		return &types.Transaction{}, err // Return found error
 	}
 
@@ -325,8 +313,7 @@ func (client *Client) RequestTransactionChildren(ctx context.Context, parentHash
 	}
 
 	childHashesAllResponses, err := BroadcastDhtResult(ctx, WorkingHost, parentHash.Bytes(), GetStreamHeaderProtocolPath(client.Network, RequestChildHashes), client.Network, nPeers) // Request child hashes
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                                                                                                                   // Check for errors
 		return nil, err // Return found error
 	}
 
@@ -366,8 +353,7 @@ func (client *Client) RequestTransactionChildren(ctx context.Context, parentHash
 // RequestBestTransactionHash returns the average best tx hash between nPeers.
 func (client *Client) RequestBestTransactionHash(ctx context.Context, nPeers int) (common.Hash, error) {
 	lastTransactionHashes, err := BroadcastDhtResult(ctx, WorkingHost, types.BestTransactionRequest, GetStreamHeaderProtocolPath(client.Network, RequestBestTransaction), client.Network, nPeers) // Get last transaction hashes
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                                                                                                                               // Check for errors
 		return common.Hash{}, err // Return found error
 	}
 

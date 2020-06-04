@@ -14,8 +14,7 @@ import (
 // TestAddressFromPrivateKey tests the functionality of the AddressFromPrivateKey() helper method.
 func TestAddressFromPrivateKey(t *testing.T) {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate ecdsa private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -27,8 +26,7 @@ func TestAddressFromPrivateKey(t *testing.T) {
 // TestAddressFromPublicKey tests the functionality of the AddressFromPublicKey() helper method.
 func TestAddressFromPublicKey(t *testing.T) {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate ecdsa private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 

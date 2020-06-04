@@ -17,8 +17,7 @@ import (
 // TestSignTransaction tests the functionality of the SignTransaction() method.
 func TestSignTransaction(t *testing.T) {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate ecdsa private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -47,8 +46,7 @@ func TestSignTransaction(t *testing.T) {
 // TestVerifySignature tests the functionality of the VerifySignature() method.
 func TestVerifySignature(t *testing.T) {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate ecdsa private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 

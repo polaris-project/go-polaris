@@ -17,8 +17,7 @@ func TestNewDagConfig(t *testing.T) {
 // TestNewDagConfig tests the functionality of the NewDagConfigFromGenesis() helper method.
 func TestNewDagConfigFromGenesis(t *testing.T) {
 	dagConfig, err := NewDagConfigFromGenesis("test_genesis.json") // Initialize new dag config with test genesis file.
-
-	if err != nil { // Check for errors
+	if err != nil {                                                // Check for errors
 		t.Fatal(err) // Panic
 	}
 

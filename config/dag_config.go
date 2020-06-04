@@ -8,10 +8,8 @@ import (
 	"io/ioutil"
 )
 
-var (
-	// DagConfigRequest represents the global dag config request message byte value.
-	DagConfigRequest = []byte("dag_config_req")
-)
+// DagConfigRequest represents the global dag config request message byte value.
+var DagConfigRequest = []byte("dag_config_req")
 
 // DagConfig represents a DAG configuration.
 type DagConfig struct {
@@ -36,8 +34,7 @@ func NewDagConfig(alloc map[string]float64, identifier string, network uint64) *
 // NewDagConfigFromGenesis generates a new DagConfig from the given genesis.json file.
 func NewDagConfigFromGenesis(genesisFilePath string) (*DagConfig, error) {
 	rawJSON, err := ioutil.ReadFile(genesisFilePath) // Read genesis file
-
-	if err != nil { // Check for errors
+	if err != nil {                                  // Check for errors
 		return &DagConfig{}, err // Return found error
 	}
 

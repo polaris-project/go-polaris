@@ -31,10 +31,8 @@ import (
 	"github.com/polaris-project/go-polaris/cli"
 )
 
-var (
-	// errNoBootstrap defines an invalid bootstrap value error.
-	errNoBootstrap = errors.New("bootstrap failed: was expecting a bootstrap peer address, got 'localhost' (must be able to bootstrap dag config if no config exists locally)")
-)
+// errNoBootstrap defines an invalid bootstrap value error.
+var errNoBootstrap = errors.New("bootstrap failed: was expecting a bootstrap peer address, got 'localhost' (must be able to bootstrap dag config if no config exists locally)")
 
 var (
 	dataDirFlag              = flag.String("data-dir", common.DataDir, "performs all node I/O operations in a given data directory")                            // Init data dir flag
@@ -65,8 +63,7 @@ func main() {
 	flag.Parse() // Parse flags
 
 	err := setUserParams() // Set common params
-
-	if err != nil { // Check for errors
+	if err != nil {        // Check for errors
 		logger.Criticalf("main panicked: %s", err.Error()) // Log pending panic
 
 		os.Exit(1) // Panic
@@ -101,12 +98,11 @@ func setUserParams() error {
 	if !*disableColoredOutputFlag { // Check can log colored output
 		if !*disableLogFileFlag { // Check can have log files
 			err := common.CreateDirIfDoesNotExist(filepath.FromSlash(common.LogsDir)) // Create log dir
-
-			if err != nil { // Check for errors
+			if err != nil {                                                           // Check for errors
 				return err // Return found error
 			}
 
-			logFile, err = os.OpenFile(filepath.FromSlash(fmt.Sprintf("%s/logs_%s.txt", common.LogsDir, time.Now().Format("2006-01-02_15-04-05"))), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666) // Create log file
+			logFile, err = os.OpenFile(filepath.FromSlash(fmt.Sprintf("%s/logs_%s.txt", common.LogsDir, time.Now().Format("2006-01-02_15-04-05"))), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0o666) // Create log file
 
 			if err != nil { // Check for errors
 				return err // Return found error
@@ -134,8 +130,7 @@ func startNode() error {
 	defer cancel() // Cancel context
 
 	host, err := p2p.NewHost(ctx, p2p.NodePort) // Initialize host
-
-	if err != nil { // Check for errors
+	if err != nil {                             // Check for errors
 		return err // Return found error
 	}
 
@@ -144,8 +139,7 @@ func startNode() error {
 	}
 
 	dagConfig, needsSync, err := getDagConfig(ctx, host) // Get dag config
-
-	if err != nil { // Check for errors
+	if err != nil {                                      // Check for errors
 		return err // Return found error
 	}
 
@@ -231,8 +225,7 @@ func startInitialSync(ctx context.Context, needsSync bool, client *p2p.Client) (
 
 	if localBestTransaction.Hash.IsNil() && remoteBestTransactionHash.IsNil() { // Check nil genesis
 		_, err := (*client.Validator).GetWorkingDag().MakeGenesis() // Make genesis
-
-		if err != nil { // Check for errors
+		if err != nil {                                             // Check for errors
 			return false, err // Return found error
 		}
 	}
@@ -243,8 +236,7 @@ func startInitialSync(ctx context.Context, needsSync bool, client *p2p.Client) (
 // startServingRPC starts the RPC node interface.
 func startServingRPC(ctx context.Context, network string) error {
 	rpcAPI, err := api.NewRPCAPI(network, fmt.Sprintf(":%d", *apiPortFlag)) // Initialize API
-
-	if err != nil { // Check for errors
+	if err != nil {                                                         // Check for errors
 		return err // Return found error
 	}
 
@@ -279,7 +271,6 @@ func getDagConfig(ctx context.Context, host *routed.RoutedHost) (*config.DagConf
 // checkNodeAlreadyUp checks if a node RPC API is already running.
 func checkNodeAlreadyUp() bool {
 	ln, err := net.Listen("tcp", ":"+strconv.Itoa(*apiPortFlag)) // Attempt to listen
-
 	if err != nil {
 		return true // Already running
 	}

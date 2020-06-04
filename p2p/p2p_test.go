@@ -21,8 +21,7 @@ import (
 // TestNewHost tests the functionality of the NewHost() helper method.
 func TestNewHost(t *testing.T) {
 	_, err := NewHost(context.Background(), 2831) // Initialize host
-
-	if err != nil { // Check for errors
+	if err != nil {                               // Check for errors
 		t.Fatal(err) // Panic
 	}
 }
@@ -30,8 +29,7 @@ func TestNewHost(t *testing.T) {
 // TestGetBestBootstrap tests the functionality of the GetBestBootstrap() helper method.
 func TestGetBestBootstrap(t *testing.T) {
 	host, err := NewHost(context.Background(), 2831) // Initialize host
-
-	if err != nil { // Check for errors
+	if err != nil {                                  // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -52,8 +50,7 @@ func TestBootstrapDht(t *testing.T) {
 	} // Set bootstrap nodes
 
 	_, err := NewHost(ctx, 2831) // Initialize libp2p host with context and nat manager
-
-	if err != nil { // Check for errors
+	if err != nil {              // Check for errors
 		t.Fatal(err) // Panic
 	}
 }
@@ -70,8 +67,7 @@ func TestBroadcastDht(t *testing.T) {
 	} // Set bootstrap nodes
 
 	host, err := NewHost(ctx, 2831) // Initialize libp2p host with context and nat manager
-
-	if err != nil { // Check for errors
+	if err != nil {                 // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -85,8 +81,7 @@ func TestBroadcastDht(t *testing.T) {
 // TestPublish tests the functionality of the Publish() helper method.
 func TestPublish(t *testing.T) {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -122,8 +117,7 @@ func TestPublish(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := types.NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {                     // Check for errors
 		t.Fatal(err) // Panic
 	}
 

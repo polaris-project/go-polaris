@@ -27,8 +27,7 @@ func TestNewDag(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	_, err := NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {             // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -44,14 +43,12 @@ func TestGetTransactionByHash(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {               // Check for errors
 		t.Fatal(err) // Panic
 	}
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate ecdsa private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -96,14 +93,12 @@ func TestGetTransactionByAddress(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {               // Check for errors
 		t.Fatal(err) // Panic
 	}
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate ecdsa private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -131,8 +126,7 @@ func TestGetTransactionByAddress(t *testing.T) {
 	}
 
 	transactions, err := dag.GetTransactionsByAddress(crypto.AddressFromPrivateKey(privateKey)) // Get transactions related to sender
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                             // Check for errors
 		t.Fatal(err) // panic
 	}
 
@@ -152,14 +146,12 @@ func TestGetTransactionsBySender(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {               // Check for errors
 		t.Fatal(err) // Panic
 	}
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate ecdsa private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -187,8 +179,7 @@ func TestGetTransactionsBySender(t *testing.T) {
 	}
 
 	transactions, err := dag.GetTransactionsBySender(crypto.AddressFromPrivateKey(privateKey)) // Get transactions from sender
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                            // Check for errors
 		t.Fatal(err) // panic
 	}
 
@@ -208,14 +199,12 @@ func TestGetTransactionChildren(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {               // Check for errors
 		t.Fatal(err) // Panic
 	}
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate ecdsa private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -266,8 +255,7 @@ func TestGetTransactionChildren(t *testing.T) {
 	}
 
 	children, err := dag.GetTransactionChildren(transaction.Hash) // Get children
-
-	if err != nil { // Check for errors
+	if err != nil {                                               // Check for errors
 		t.Fatal(err) // panic
 	}
 
@@ -287,14 +275,12 @@ func TestGetBestTransaction(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {               // Check for errors
 		t.Fatal(err) // Panic
 	}
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate ecdsa private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -347,8 +333,7 @@ func TestGetBestTransaction(t *testing.T) {
 	}
 
 	bestTransaction, err := dag.GetBestTransaction() // Get best transaction
-
-	if err != nil { // Check for errors
+	if err != nil {                                  // Check for errors
 		t.Fatal(err) // panic
 	}
 
@@ -368,14 +353,12 @@ func TestCalculateAddressBalance(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {               // Check for errors
 		t.Fatal(err) // Panic
 	}
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader) // Generate ecdsa private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -403,8 +386,7 @@ func TestCalculateAddressBalance(t *testing.T) {
 	}
 
 	balance, err := dag.CalculateAddressBalance(crypto.AddressFromPrivateKey(privateKey)) // Calculate balance
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                       // Check for errors
 		t.Fatal(err) // Panic
 	}
 

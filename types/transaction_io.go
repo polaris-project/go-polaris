@@ -19,8 +19,7 @@ func TransactionFromBytes(b []byte) *Transaction {
 	buffer := &Transaction{} // Initialize tx buffer
 
 	err := json.Unmarshal(b, buffer) // Unmarshal
-
-	if err != nil { // Check for errors
+	if err != nil {                  // Check for errors
 		return &Transaction{}
 	}
 
@@ -44,12 +43,11 @@ func (transaction *Transaction) String() string {
 // WriteToMemory writes a given transaction to persistent memory in the mempool.
 func (transaction *Transaction) WriteToMemory() error {
 	err := common.CreateDirIfDoesNotExist(common.MempoolDir) // Create mempool dir if necessary
-
-	if err != nil { // Check for errors
+	if err != nil {                                          // Check for errors
 		return err // Return found error
 	}
 
-	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/transaction_%s.json", common.MempoolDir, hex.EncodeToString(transaction.Hash.Bytes()))), transaction.Bytes(), 0644) // Write transaction to persistent memory
+	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/transaction_%s.json", common.MempoolDir, hex.EncodeToString(transaction.Hash.Bytes()))), transaction.Bytes(), 0o644) // Write transaction to persistent memory
 
 	if err != nil { // Check for errors
 		return err // Return error
@@ -61,8 +59,7 @@ func (transaction *Transaction) WriteToMemory() error {
 // ReadTransactionFromMemory reads a given transaction (specified by hash) from persistent memory.
 func ReadTransactionFromMemory(hash common.Hash) (*Transaction, error) {
 	data, err := ioutil.ReadFile(filepath.FromSlash(fmt.Sprintf("%s/transaction_%s.json", common.MempoolDir, hex.EncodeToString(hash.Bytes())))) // Read transaction
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                                                                              // Check for errors
 		return &Transaction{}, err // Return found error
 	}
 

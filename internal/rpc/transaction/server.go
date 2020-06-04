@@ -32,20 +32,17 @@ type Server struct{}
 // NewTransaction handles the NewTransaction request method.
 func (server *Server) NewTransaction(ctx context.Context, request *transactionProto.GeneralRequest) (*transactionProto.GeneralResponse, error) {
 	senderBytes, err := hex.DecodeString(request.Address) // Decode sender address hex-encoded string value
-
-	if err != nil { // Check for errors
+	if err != nil {                                       // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
 	recipientBytes, err := hex.DecodeString(request.Address2) // Decode recipient address hex-encoded string value
-
-	if err != nil { // Check for errors
+	if err != nil {                                           // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
 	amount, _, err := big.ParseFloat(string(request.Amount), 10, 18, big.ToNearestEven) // Parse amount value
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                     // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -53,8 +50,7 @@ func (server *Server) NewTransaction(ctx context.Context, request *transactionPr
 
 	for _, parentHashString := range request.TransactionHash { // Iterate through parent hashes
 		parentHashBytes, err := hex.DecodeString(parentHashString) // Decode hash string value
-
-		if err != nil { // Check for errors
+		if err != nil {                                            // Check for errors
 			return &transactionProto.GeneralResponse{}, err // Return found error
 		}
 
@@ -83,14 +79,12 @@ func (server *Server) CalculateTotalValue(ctx context.Context, request *transact
 	}
 
 	transactionHashBytes, err := hex.DecodeString(request.TransactionHash[0]) // Get transaction hash byte value
-
-	if err != nil { // Check for errors
+	if err != nil {                                                           // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
 	transaction, err := types.ReadTransactionFromMemory(common.NewHash(transactionHashBytes)) // Read transaction
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                           // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -104,20 +98,17 @@ func (server *Server) SignTransaction(ctx context.Context, request *transactionP
 	}
 
 	transactionHashBytes, err := hex.DecodeString(request.TransactionHash[0]) // Get transaction hash byte value
-
-	if err != nil { // Check for errors
+	if err != nil {                                                           // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
 	transaction, err := types.ReadTransactionFromMemory(common.NewHash(transactionHashBytes)) // Read transaction
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                           // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
 	account, err := accounts.ReadAccountFromMemory(common.NewAddress(transaction.Sender.Bytes())) // Open account
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                               // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -143,14 +134,12 @@ func (server *Server) Publish(ctx context.Context, request *transactionProto.Gen
 	}
 
 	transactionHashBytes, err := hex.DecodeString(request.TransactionHash[0]) // Get transaction hash byte value
-
-	if err != nil { // Check for errors
+	if err != nil {                                                           // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
 	transaction, err := types.ReadTransactionFromMemory(common.NewHash(transactionHashBytes)) // Read transaction
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                           // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -176,14 +165,12 @@ func (server *Server) Publish(ctx context.Context, request *transactionProto.Gen
 // SignMessage handles the SignMessage request method.
 func (server *Server) SignMessage(ctx context.Context, request *transactionProto.GeneralRequest) (*transactionProto.GeneralResponse, error) {
 	senderBytes, err := hex.DecodeString(request.Address) // Decode sender address hex-encoded string value
-
-	if err != nil { // Check for errors
+	if err != nil {                                       // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
 	account, err := accounts.ReadAccountFromMemory(common.NewAddress(senderBytes)) // Open account
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -192,8 +179,7 @@ func (server *Server) SignMessage(ctx context.Context, request *transactionProto
 	}
 
 	signature, err := types.SignMessage(common.NewHash(request.Payload), account.PrivateKey()) // Sign message
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                            // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -203,14 +189,12 @@ func (server *Server) SignMessage(ctx context.Context, request *transactionProto
 // Verify handles the Verify request method.
 func (server *Server) Verify(ctx context.Context, request *transactionProto.GeneralRequest) (*transactionProto.GeneralResponse, error) {
 	transactionHashBytes, err := hex.DecodeString(request.TransactionHash[0]) // Get transaction hash byte value
-
-	if err != nil { // Check for errors
+	if err != nil {                                                           // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
 	transaction, err := types.ReadTransactionFromMemory(common.NewHash(transactionHashBytes)) // Read transaction
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                           // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
@@ -220,14 +204,12 @@ func (server *Server) Verify(ctx context.Context, request *transactionProto.Gene
 // String handles the String request method.
 func (server *Server) String(ctx context.Context, request *transactionProto.GeneralRequest) (*transactionProto.GeneralResponse, error) {
 	transactionHashBytes, err := hex.DecodeString(request.TransactionHash[0]) // Get transaction hash byte value
-
-	if err != nil { // Check for errors
+	if err != nil {                                                           // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 
 	transaction, err := types.ReadTransactionFromMemory(common.NewHash(transactionHashBytes)) // Read transaction
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                           // Check for errors
 		return &transactionProto.GeneralResponse{}, err // Return found error
 	}
 

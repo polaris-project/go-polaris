@@ -16,8 +16,7 @@ func TestBytesDag(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {               // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -35,8 +34,7 @@ func TestReadDagDbHeaderFromMemory(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {               // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -47,8 +45,7 @@ func TestReadDagDbHeaderFromMemory(t *testing.T) {
 	}
 
 	readDag, err := readDagDbHeaderFromMemory(dag.DagConfig.Identifier) // Read dag db header
-
-	if err != nil { // Check for errors
+	if err != nil {                                                     // Check for errors
 		t.Fatal(err) // Panic
 	}
 
@@ -64,8 +61,7 @@ func TestWriteToMemoryDagDbHeader(t *testing.T) {
 	dagConfig := config.NewDagConfig(nil, "test_network", 1) // Initialize new dag config with test genesis file.
 
 	dag, err := NewDag(dagConfig) // Initialize dag with dag config
-
-	if err != nil { // Check for errors
+	if err != nil {               // Check for errors
 		t.Fatal(err) // Panic
 	}
 

@@ -26,8 +26,7 @@ func generateCert(certName string, hosts []string) error {
 	os.Remove(fmt.Sprintf("%sCert.pem", certName)) // Remove existent cert
 
 	privateKey, err := generateTLSKey(certName) // Generate key
-
-	if err != nil { // Check for errors
+	if err != nil {                             // Check for errors
 		return err // Return found error
 	}
 
@@ -43,26 +42,23 @@ func generateCert(certName string, hosts []string) error {
 // generateTLSKey generates necessary TLS keys.
 func generateTLSKey(keyName string) (*ecdsa.PrivateKey, error) {
 	err := common.CreateDirIfDoesNotExist(common.CertificatesDir) // Create certs dir if does not exist
-
-	if err != nil { // Check for errors
+	if err != nil {                                               // Check for errors
 		return &ecdsa.PrivateKey{}, err // Return found error
 	}
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader) // Generate private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                    // Check for errors
 		return &ecdsa.PrivateKey{}, err // Return found error
 	}
 
 	marshaledPrivateKey, err := x509.MarshalECPrivateKey(privateKey) // Marshal private key
-
-	if err != nil { // Check for errors
+	if err != nil {                                                  // Check for errors
 		return &ecdsa.PrivateKey{}, err // Return found error
 	}
 
 	pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: marshaledPrivateKey}) // Encode to memory
 
-	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/%sKey.pem", common.CertificatesDir, keyName)), pemEncoded, 0644) // Write pem
+	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/%sKey.pem", common.CertificatesDir, keyName)), pemEncoded, 0o644) // Write pem
 
 	if err != nil { // Check for errors
 		return &ecdsa.PrivateKey{}, err // Return found error
@@ -74,8 +70,7 @@ func generateTLSKey(keyName string) (*ecdsa.PrivateKey, error) {
 // generateTLSCert generates necessary TLS certs.
 func generateTLSCert(privateKey *ecdsa.PrivateKey, certName string, hosts []string) error {
 	err := common.CreateDirIfDoesNotExist(common.CertificatesDir) // Create certs dir if does not exist
-
-	if err != nil { // Check for errors
+	if err != nil {                                               // Check for errors
 		return err // Return found error
 	}
 
@@ -85,8 +80,7 @@ func generateTLSCert(privateKey *ecdsa.PrivateKey, certName string, hosts []stri
 
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)     // Init limit
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit) // Init serial number
-
-	if err != nil { // Check for errors
+	if err != nil {                                               // Check for errors
 		return err // Return found error
 	}
 
@@ -105,14 +99,13 @@ func generateTLSCert(privateKey *ecdsa.PrivateKey, certName string, hosts []stri
 	}
 
 	cert, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey) // Generate certificate
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                                           // Check for errors
 		return err // Return found error
 	}
 
 	pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert}) // Encode pem
 
-	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/%sCert.pem", common.CertificatesDir, certName)), pemEncoded, 0644) // Write cert file
+	err = ioutil.WriteFile(filepath.FromSlash(fmt.Sprintf("%s/%sCert.pem", common.CertificatesDir, certName)), pemEncoded, 0o644) // Write cert file
 
 	if err != nil { // Check for errors
 		return err // Return found error
@@ -124,20 +117,17 @@ func generateTLSCert(privateKey *ecdsa.PrivateKey, certName string, hosts []stri
 // keyToFile writes a given key to a pem-encoded file.
 func keyToFile(filename string, key *ecdsa.PrivateKey) error {
 	err := common.CreateDirIfDoesNotExist(common.CertificatesDir) // Create cert dir if doesn't already exist
-
-	if err != nil { // Check for errors
+	if err != nil {                                               // Check for errors
 		return err // Return found error
 	}
 
 	file, err := os.Create(filepath.FromSlash(fmt.Sprintf("%s/%s", common.CertificatesDir, filename))) // Create key file
-
-	if err != nil { // Check for errors
+	if err != nil {                                                                                    // Check for errors
 		return err // Return found error
 	}
 
 	b, err := x509.MarshalECPrivateKey(key) // Marshal private key
-
-	if err != nil { // Check for errors
+	if err != nil {                         // Check for errors
 		file.Close() // Close file
 
 		return err // Return found error
@@ -155,13 +145,11 @@ func keyToFile(filename string, key *ecdsa.PrivateKey) error {
 // certToFile writes a given certificate to a file.
 func certToFile(filename string, derBytes []byte) error {
 	err := common.CreateDirIfDoesNotExist(common.CertificatesDir) // Create cert dir if doesn't already exist
-
-	if err != nil { // Check for errors
+	if err != nil {                                               // Check for errors
 		return err // Return found error
 	}
 
 	certOut, err := os.Create(filepath.FromSlash(fmt.Sprintf("%s/%s", common.CertificatesDir, filename))) // Create file
-
 	if err != nil {
 		return err // Return found error
 	}
