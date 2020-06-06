@@ -17,7 +17,9 @@ require (
 	github.com/multiformats/go-multiaddr v0.0.1
 	github.com/twitchtv/twirp v5.5.2+incompatible
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
-	mvdan.cc/gofumpt v0.0.0-20200513141252-abc0db2c416a // indirect
+	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b // indirect
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 )
 
 go 1.13
