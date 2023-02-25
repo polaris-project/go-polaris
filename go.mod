@@ -16,9 +16,7 @@ require (
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/multiformats/go-multiaddr v0.0.1
 	github.com/twitchtv/twirp v5.5.2+incompatible
-	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b // indirect
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
+	golang.org/x/crypto v0.1.0
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 )
 
